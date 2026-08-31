@@ -3,10 +3,10 @@
  * Extracted from: apps/backend/src/api/routes/posts.controller.ts
  */
 
-const { Post, Integration } = require('../models');
-const { makeId } = require('../utils/makeId');
-const { generatePosts, generatePostsFromUrl, separatePosts } = require('../services/ai.service');
-const { publishGroup } = require('../services/scheduler.service');
+import { Post, Integration } from '../models/index.js';
+import { makeId } from '../utils/makeId.js';
+import { generatePosts, generatePostsFromUrl, separatePosts } from '../services/ai.service.js';
+import { publishGroup } from '../services/scheduler.service.js';
 
 // ─── GET /posts ───────────────────────────────────────────────────────────────
 // List all posts for the user with optional date range filter
@@ -205,7 +205,7 @@ async function separatePostsHandler(req, res) {
   }
 }
 
-module.exports = {
+export {
   listPosts,
   getPost,
   createPost,

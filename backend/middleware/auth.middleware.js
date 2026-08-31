@@ -15,7 +15,7 @@
  *   router.get('/protected', requireAuth, handler);
  */
 
-const { verifyToken, getUserById } = require('../services/auth.service');
+import { verifyToken, getUserById } from '../services/auth.service.js';
 
 /**
  * Middleware that requires authentication.
@@ -74,4 +74,4 @@ function extractToken(req) {
   return null;
 }
 
-module.exports = { requireAuth, optionalAuth };
+export { requireAuth, optionalAuth };

@@ -7,7 +7,7 @@
  * npm install: multer
  */
 
-const multer = require('multer');
+import multer from 'multer';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -23,7 +23,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'audio/wav',
 ]);
 
-const upload = multer({
+export const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB
@@ -36,5 +36,3 @@ const upload = multer({
     }
   },
 });
-
-module.exports = { upload };

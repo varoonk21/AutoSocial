@@ -1,6 +1,6 @@
-const express = require('express');
-const { requireAuth } = require('../middleware/auth.middleware');
-const {
+import express from 'express';
+import { requireAuth } from '../middleware/auth.middleware.js';
+import {
   listIntegrations,
   getOAuthUrl,
   oauthCallback,
@@ -8,7 +8,7 @@ const {
   savePage,
   deleteIntegration,
   toggleDisable,
-} = require('../controllers/integrations.controller');
+} from '../controllers/integrations.controller.js';
 
 const router = express.Router();
 
@@ -23,4 +23,4 @@ router.post('/social/:provider/page', savePage);
 router.delete('/:id', deleteIntegration);
 router.put('/:id/disable', toggleDisable);
 
-module.exports = router;
+export default router;

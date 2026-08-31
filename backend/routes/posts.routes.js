@@ -1,6 +1,6 @@
-const express = require('express');
-const { requireAuth } = require('../middleware/auth.middleware');
-const {
+import express from 'express';
+import { requireAuth } from '../middleware/auth.middleware.js';
+import {
   listPosts,
   getPost,
   createPost,
@@ -8,7 +8,7 @@ const {
   deletePost,
   generatePostsHandler,
   separatePostsHandler,
-} = require('../controllers/posts.controller');
+} from '../controllers/posts.controller.js';
 
 const router = express.Router();
 
@@ -22,4 +22,4 @@ router.delete('/:id', deletePost);
 router.post('/ai/generate', generatePostsHandler);
 router.post('/ai/separate', separatePostsHandler);
 
-module.exports = router;
+export default router;

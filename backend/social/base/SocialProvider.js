@@ -16,7 +16,7 @@
  *   - BadBodyError: Thrown when the post content/media is rejected by the platform.
  */
 
-const { timer } = require('../../utils/timer');
+import { timer } from '../../utils/timer.js';
 
 // ─── Custom Error Types ───────────────────────────────────────────────────────
 
@@ -268,7 +268,7 @@ class SocialProvider {
  * @property {string} status     - 'success' | 'error' | 'pending'
  */
 
-module.exports = {
+export {
   SocialProvider,
   RefreshTokenError,
   BadBodyError,

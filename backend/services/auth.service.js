@@ -19,9 +19,9 @@
  * npm install: jsonwebtoken bcryptjs
  */
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { User } from '../models/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -154,7 +154,7 @@ function sanitizeUser(user) {
   return obj;
 }
 
-module.exports = {
+export {
   register,
   login,
   generateToken,

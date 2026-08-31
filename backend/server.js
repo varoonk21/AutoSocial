@@ -11,19 +11,25 @@
  *   node server.js
  */
 
-require('dotenv').config({ path: './config/.env' });
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const path = require('path');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const { connectDB } = require('./config/db');
-const { startScheduler } = require('./services/scheduler.service');
+import { connectDB } from './config/db.js';
+import { startScheduler } from './services/scheduler.service.js';
 
-const authRoutes = require('./routes/auth.routes');
-const integrationsRoutes = require('./routes/integrations.routes');
-const postsRoutes = require('./routes/posts.routes');
-const mediaRoutes = require('./routes/media.routes');
+import authRoutes from './routes/auth.routes.js';
+import integrationsRoutes from './routes/integrations.routes.js';
+import postsRoutes from './routes/posts.routes.js';
+import mediaRoutes from './routes/media.routes.js';
+
+dotenv.config({ path: './config/.env' });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;

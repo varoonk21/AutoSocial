@@ -31,13 +31,13 @@
  * npm install: twitter-api-v2 mime-types
  */
 
-const { SocialProvider, BadBodyError } = require('./base/SocialProvider');
-const { TwitterApi } = require('twitter-api-v2');
-const { createHmac, randomBytes } = require('crypto');
-const { lookup } = require('mime-types');
-const { createReadStream, statSync } = require('fs');
-const { timer } = require('../utils/timer');
-const { hasExtension } = require('../utils/hasExtension');
+import { SocialProvider, BadBodyError } from './base/SocialProvider.js';
+import { TwitterApi } from 'twitter-api-v2';
+import { createHmac, randomBytes } from 'crypto';
+import { lookup } from 'mime-types';
+import { createReadStream, statSync } from 'fs';
+import { timer } from '../utils/timer.js';
+import { hasExtension } from '../utils/hasExtension.js';
 
 class XProvider extends SocialProvider {
   constructor() {
@@ -436,4 +436,4 @@ class XProvider extends SocialProvider {
   }
 }
 
-module.exports = { XProvider };
+export { XProvider };

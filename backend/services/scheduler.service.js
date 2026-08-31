@@ -22,13 +22,13 @@
  *   Or migrate to Temporal when needed.
  */
 
-const { Post, Integration } = require('../models');
-const { RefreshTokenError } = require('../social/base/SocialProvider');
-const { FacebookProvider } = require('../social/facebook.provider');
-const { InstagramProvider } = require('../social/instagram.provider');
-const { XProvider } = require('../social/x.provider');
-const { LinkedInProvider } = require('../social/linkedin.provider');
-const { timer } = require('../utils/timer');
+import { Post, Integration } from '../models/index.js';
+import { RefreshTokenError } from '../social/base/SocialProvider.js';
+import { FacebookProvider } from '../social/facebook.provider.js';
+import { InstagramProvider } from '../social/instagram.provider.js';
+import { XProvider } from '../social/x.provider.js';
+import { LinkedInProvider } from '../social/linkedin.provider.js';
+import { timer } from '../utils/timer.js';
 
 // ─── Provider Registry ────────────────────────────────────────────────────────
 
@@ -242,4 +242,4 @@ async function markPostsError(posts, errorMessage) {
   );
 }
 
-module.exports = { startScheduler, stopScheduler, publishGroup, getProvider };
+export { startScheduler, stopScheduler, publishGroup, getProvider };

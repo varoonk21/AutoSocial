@@ -10,7 +10,7 @@
  * npm install: openai
  */
 
-const OpenAI = require('openai');
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
@@ -109,8 +109,8 @@ async function generatePostsFromUrl(url) {
  * @returns {{ posts: string[] }}
  */
 async function separatePosts(content, len) {
-  const { zodResponseFormat } = require('openai/helpers/zod');
-  const { z } = require('zod');
+  const { zodResponseFormat } = await import('openai/helpers/zod');
+  const { z } = await import('zod');
 
   const schema = z.object({ posts: z.array(z.string()) });
 
@@ -152,4 +152,4 @@ async function generateImage(prompt, isVertical = false) {
   return result.data[0].b64_json;
 }
 
-module.exports = { generatePosts, generatePostsFromUrl, separatePosts, generateImage };
+export { generatePosts, generatePostsFromUrl, separatePosts, generateImage };

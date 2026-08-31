@@ -33,11 +33,11 @@
  *   FRONTEND_URL        - Your app's frontend URL
  */
 
-const { SocialProvider, BadBodyError } = require('./base/SocialProvider');
-const { makeId } = require('../utils/makeId');
-const { timer } = require('../utils/timer');
-const { hasExtension } = require('../utils/hasExtension');
-const dayjs = require('dayjs');
+import { SocialProvider, BadBodyError } from './base/SocialProvider.js';
+import { makeId } from '../utils/makeId.js';
+import { timer } from '../utils/timer.js';
+import { hasExtension } from '../utils/hasExtension.js';
+import dayjs from 'dayjs';
 
 class InstagramProvider extends SocialProvider {
   constructor() {
@@ -443,4 +443,4 @@ class InstagramProvider extends SocialProvider {
   }
 }
 
-module.exports = { InstagramProvider };
+export { InstagramProvider };

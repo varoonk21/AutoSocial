@@ -3,7 +3,7 @@
  * Extracted from: apps/backend/src/api/routes/auth.controller.ts
  */
 
-const { register, login } = require('../services/auth.service');
+import { register, login } from '../services/auth.service.js';
 
 async function registerHandler(req, res) {
   try {
@@ -51,4 +51,4 @@ function meHandler(req, res) {
   res.json({ user: req.user });
 }
 
-module.exports = { registerHandler, loginHandler, logoutHandler, meHandler };
+export { registerHandler, loginHandler, logoutHandler, meHandler };

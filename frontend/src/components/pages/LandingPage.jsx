@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signIn } from '../../lib/auth-client'
+import { signIn, signUp } from '../../lib/auth-client'
 
 export function LandingPage() {
   const navigate = useNavigate()
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -14,30 +16,55 @@ export function LandingPage() {
     return new Date().getFullYear()
   }
 
-  const handleSignIn = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
-      const { data, error: authError } = await signIn.email({
-        email,
-        password,
-      })
+      if (isSignUp) {
+        const { data, error: authError } = await signUp.email({
+          name,
+          email,
+          password,
+        })
 
-      if (authError) {
-        setError(authError.message || 'Failed to sign in')
-        return
-      }
+        if (authError) {
+          setError(authError.message || 'Failed to sign up')
+          return
+        }
 
-      if (data) {
-        navigate('/')
+        if (data) {
+          navigate('/')
+        }
+      } else {
+        const { data, error: authError } = await signIn.email({
+          email,
+          password,
+        })
+
+        if (authError) {
+          setError(authError.message || 'Failed to sign in')
+          return
+        }
+
+        if (data) {
+          navigate('/')
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
+  }
+
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp)
+    setError('')
+    setName('')
+    setEmail('')
+    setPassword('')
   }
 
   return (
@@ -91,8 +118,12 @@ export function LandingPage() {
           <div className="w-full max-w-sm flex justify-center">
             <div className="w-full bg-white rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
               <div className="text-center space-y-1">
-                <h2 className="text-lg font-bold text-neutral-900 tracking-tight">Sign in to AutoSocial</h2>
-                <p className="text-sm text-neutral-500 font-normal">Welcome back! Please sign in to continue</p>
+                <h2 className="text-lg font-bold text-neutral-900 tracking-tight">
+                  {isSignUp ? 'Create an account' : 'Sign in to AutoSocial'}
+                </h2>
+                <p className="text-sm text-neutral-500 font-normal">
+                  {isSignUp ? 'Enter your details to get started' : 'Welcome back! Please sign in to continue'}
+                </p>
               </div>
 
               {error && (
@@ -101,7 +132,21 @@ export function LandingPage() {
                 </div>
               )}
 
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1.5">Name</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
+                      required
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-medium text-neutral-700 mb-1.5">Email address</label>
                   <input
@@ -117,13 +162,15 @@ export function LandingPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-medium text-neutral-700">Password</label>
-                    <a
-                      href="#forgot"
-                      onClick={(e) => e.preventDefault()}
-                      className="text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:underline"
-                    >
-                      Forgot password?
-                    </a>
+                    {!isSignUp && (
+                      <a
+                        href="#forgot"
+                        onClick={(e) => e.preventDefault()}
+                        className="text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:underline"
+                      >
+                        Forgot password?
+                      </a>
+                    )}
                   </div>
                   <div className="relative">
                     <input
@@ -133,6 +180,7 @@ export function LandingPage() {
                       placeholder="••••••••"
                       className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all pr-12 shadow-2xs"
                       required
+                      minLength={8}
                     />
                     <button
                       type="button"
@@ -149,9 +197,26 @@ export function LandingPage() {
                   disabled={loading}
                   className="w-full py-2.5 px-4 bg-neutral-900 hover:bg-black text-white text-sm font-medium rounded-xl shadow-xs transition-all duration-150 active:scale-[0.99] cursor-pointer disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
                 >
-                  {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <span>Sign In</span>}
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <span>{isSignUp ? 'Sign Up' : 'Sign In'}</span>
+                  )}
                 </button>
               </form>
+
+              <div className="text-center">
+                <span className="text-sm text-neutral-500 font-normal">
+                  {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className="text-sm font-medium text-neutral-900 hover:underline cursor-pointer"
+                  >
+                    {isSignUp ? 'Sign in' : 'Sign up'}
+                  </button>
+                </span>
+              </div>
 
               <div className="pt-4 border-t border-neutral-100 text-center">
                 <span className="text-xs text-neutral-400 font-normal flex items-center justify-center gap-1.5">

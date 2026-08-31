@@ -31,12 +31,12 @@
  * npm install: mime-types
  */
 
-const { SocialProvider, BadBodyError } = require('./base/SocialProvider');
-const { makeId } = require('../utils/makeId');
-const { timer } = require('../utils/timer');
-const { hasExtension } = require('../utils/hasExtension');
-const { lookup } = require('mime-types');
-const { statSync, createReadStream } = require('fs');
+import { SocialProvider, BadBodyError } from './base/SocialProvider.js';
+import { makeId } from '../utils/makeId.js';
+import { timer } from '../utils/timer.js';
+import { hasExtension } from '../utils/hasExtension.js';
+import { lookup } from 'mime-types';
+import { statSync, createReadStream } from 'fs';
 
 class LinkedInProvider extends SocialProvider {
   constructor() {
@@ -466,4 +466,4 @@ class LinkedInProvider extends SocialProvider {
   }
 }
 
-module.exports = { LinkedInProvider };
+export { LinkedInProvider };

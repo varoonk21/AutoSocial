@@ -9,7 +9,7 @@
  * Complex relations (billing, agencies, marketplace) are removed.
  */
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // ─── User Model ────────────────────────────────────────────────────────────────
 // Source: schema.prisma → model User
@@ -119,4 +119,4 @@ MediaSchema.index({ userId: 1 });
 
 const Media = mongoose.model('Media', MediaSchema);
 
-module.exports = { User, Integration, Post, Media };
+export { User, Integration, Post, Media };

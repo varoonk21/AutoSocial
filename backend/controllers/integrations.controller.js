@@ -9,9 +9,9 @@
  *   This works for single-server deployments. For multi-server, use Redis.
  */
 
-const { Integration } = require('../models');
-const { getProvider } = require('../services/scheduler.service');
-const { makeId } = require('../utils/makeId');
+import { Integration } from '../models/index.js';
+import { getProvider } from '../services/scheduler.service.js';
+import { makeId } from '../utils/makeId.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
 // For production with multiple servers, replace with Redis
@@ -245,7 +245,7 @@ async function saveIntegration(userId, provider, authResult, extraData = {}) {
   });
 }
 
-module.exports = {
+export {
   listIntegrations,
   getOAuthUrl,
   oauthCallback,

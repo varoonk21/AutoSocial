@@ -1,12 +1,12 @@
-const express = require('express');
-const { requireAuth } = require('../middleware/auth.middleware');
-const { upload } = require('../middleware/upload.middleware');
-const {
+import express from 'express';
+import { requireAuth } from '../middleware/auth.middleware.js';
+import { upload } from '../middleware/upload.middleware.js';
+import {
   uploadFileHandler,
   generateImageHandler,
   listMedia,
   deleteMediaHandler,
-} = require('../controllers/media.controller');
+} from '../controllers/media.controller.js';
 
 const router = express.Router();
 
@@ -17,4 +17,4 @@ router.post('/upload', upload.single('file'), uploadFileHandler);
 router.post('/generate-image', generateImageHandler);
 router.delete('/:id', deleteMediaHandler);
 
-module.exports = router;
+export default router;

@@ -15,9 +15,9 @@
  * npm install: file-type
  */
 
-const path = require('path');
-const fs = require('fs');
-const { Media } = require('../models');
+import path from 'path';
+import fs from 'fs';
+import { Media } from '../models/index.js';
 
 // Allowed MIME types (matches original local.storage.ts allow-list)
 const ALLOWED_MIME_TYPES = new Set([
@@ -152,4 +152,4 @@ function generateRandomName() {
     .join('');
 }
 
-module.exports = { uploadFile, saveMedia, getMedia, deleteMedia };
+export { uploadFile, saveMedia, getMedia, deleteMedia };

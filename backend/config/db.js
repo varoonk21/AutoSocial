@@ -3,8 +3,8 @@
  * Connects to MongoDB using the DATABASE_URL env variable.
  */
 
-const mongoose = require('mongoose');
-const dns = require('dns');
+import mongoose from 'mongoose';
+import dns from 'dns';
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -29,4 +29,4 @@ async function connectDB() {
   });
 }
 
-module.exports = { connectDB };
+export { connectDB };

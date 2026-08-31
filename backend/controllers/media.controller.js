@@ -3,8 +3,8 @@
  * Extracted from: apps/backend/src/api/routes/media.controller.ts
  */
 
-const { uploadFile, saveMedia, getMedia, deleteMedia } = require('../services/media.service');
-const { generateImage } = require('../services/ai.service');
+import { uploadFile, saveMedia, getMedia, deleteMedia } from '../services/media.service.js';
+import { generateImage } from '../services/ai.service.js';
 
 async function uploadFileHandler(req, res) {
   try {
@@ -57,4 +57,4 @@ async function deleteMediaHandler(req, res) {
   }
 }
 
-module.exports = { uploadFileHandler, generateImageHandler, listMedia, deleteMediaHandler };
+export { uploadFileHandler, generateImageHandler, listMedia, deleteMediaHandler };

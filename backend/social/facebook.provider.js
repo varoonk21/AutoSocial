@@ -30,11 +30,11 @@
  *   pages_manage_engagement, pages_read_engagement, read_insights
  */
 
-const { SocialProvider, RefreshTokenError, BadBodyError } = require('./base/SocialProvider');
-const { makeId } = require('../utils/makeId');
-const { timer } = require('../utils/timer');
-const { hasExtension } = require('../utils/hasExtension');
-const dayjs = require('dayjs');
+import { SocialProvider, RefreshTokenError, BadBodyError } from './base/SocialProvider.js';
+import { makeId } from '../utils/makeId.js';
+import { timer } from '../utils/timer.js';
+import { hasExtension } from '../utils/hasExtension.js';
+import dayjs from 'dayjs';
 
 // Characters limit for text background presets
 const FACEBOOK_PRESET_MAX_CHARS = 130;
@@ -612,4 +612,4 @@ class FacebookProvider extends SocialProvider {
   }
 }
 
-module.exports = { FacebookProvider };
+export { FacebookProvider };

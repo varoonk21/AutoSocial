@@ -7,8 +7,8 @@ async function start() {
   await connectDB();
 
   app.listen(env.PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${env.PORT}`);
-    console.log(`📁 Uploads served at http://localhost:${env.PORT}/uploads`);
+    console.log(`Server running on http://localhost:${env.PORT}`);
+    console.log(`Uploads served at http://localhost:${env.PORT}/uploads`);
   });
 
   startScheduler(60 * 1000);

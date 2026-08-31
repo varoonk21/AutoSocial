@@ -4,20 +4,18 @@
  */
 
 import mongoose from 'mongoose';
-import dns from 'dns';
+import env from './env.config.js';
 
-dns.setServers(['8.8.8.8', '1.1.1.1']);
 
-async function connectDB() {
-  import env from './env.config.js';
+export async function connectDB() {
 
   try {
     await mongoose.connect(env.DATABASE_URL, {
       serverSelectionTimeoutMS: 10000,
     });
-    console.log('✅ MongoDB connected');
+    console.log('MongoDB connected');
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('MongoDB connection error:', err.message);
     process.exit(1);
   }
 
@@ -25,5 +23,3 @@ async function connectDB() {
     console.error('MongoDB error:', err);
   });
 }
-
-export { connectDB };

@@ -515,7 +515,7 @@ class FacebookProvider extends SocialProvider {
             throw new BadBodyError(this.identifier, '{}', 'Video story processing timed out');
           }
           const { status } = await (
-            await fetch(`https://graph.facebook.com/v20.0/${video_id}?fields=status&access_token=${accessToken}`)
+            await this.fetch(`https://graph.facebook.com/v20.0/${video_id}?fields=status&access_token=${accessToken}`, {}, 'video status')
           ).json();
           const videoStatus = status?.video_status || 'in_progress';
           if (videoStatus === 'error') throw new BadBodyError(this.identifier, '{}', 'Video processing failed');

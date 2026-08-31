@@ -11,11 +11,12 @@
  */
 
 import OpenAI from 'openai';
+import env from '../config/env.config.js';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
+  apiKey: env.OPENAI_API_KEY,
   // To use with a different provider (Groq, Azure, etc.), add:
-  // baseURL: process.env.OPENAI_BASE_URL,
+  // baseURL: env.OPENAI_BASE_URL,
 });
 
 // ─── Content Generation ────────────────────────────────────────────────────────

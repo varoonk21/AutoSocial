@@ -22,9 +22,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/index.js';
+import env from '../config/env.config.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET = env.JWT_SECRET;
+const JWT_EXPIRES_IN = env.JWT_EXPIRES_IN;
 const BCRYPT_ROUNDS = 12;
 
 // ─── Registration ─────────────────────────────────────────────────────────────

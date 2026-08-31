@@ -162,7 +162,7 @@ class LinkedInProvider extends SocialProvider {
 
   async _videoSize(path) {
     if (path.startsWith('http')) {
-      const head = await fetch(path, { method: 'HEAD' });
+      const head = await this.fetch(path, { method: 'HEAD' }, 'video size');
       const length = head.headers.get('content-length');
       if (!length) throw new BadBodyError(this.identifier, '{}', 'Could not determine video size for LinkedIn upload');
       return Number(length);
@@ -172,7 +172,7 @@ class LinkedInProvider extends SocialProvider {
 
   async _videoChunk(path, start, end) {
     if (path.startsWith('http')) {
-      const response = await fetch(path, { headers: { Range: `bytes=${start}-${end}` } });
+      const response = await this.fetch(path, { headers: { Range: `bytes=${start}-${end}` } }, 'video chunk');
       if (response.status !== 206) throw new BadBodyError(this.identifier, '{}', `Server ignored Range request (${response.status})`);
       return Buffer.from(await response.arrayBuffer());
     }
@@ -361,7 +361,7 @@ class LinkedInProvider extends SocialProvider {
           mediaBuffer = media.path; // Videos pass through as path/URL
         } else {
           // Fetch the file for images/PDFs
-          const response = await fetch(media.path);
+          const response = await this.fetch(media.path, {}, 'fetch media');
           mediaBuffer = Buffer.from(await response.arrayBuffer());
         }
         return this._uploadMedia(media.path, accessToken, id, mediaBuffer, postType);

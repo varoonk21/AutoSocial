@@ -228,7 +228,7 @@ class XProvider extends SocialProvider {
    */
   async _videoSize(path) {
     if (path.indexOf('http') === 0) {
-      const head = await fetch(path, { method: 'HEAD' });
+      const head = await this.fetch(path, { method: 'HEAD' }, 'video size');
       const length = head.headers.get('content-length');
       if (!length) throw new BadBodyError(this.identifier, '{}', 'Could not determine video size for X upload');
       return Number(length);
@@ -244,7 +244,7 @@ class XProvider extends SocialProvider {
    */
   async _videoChunk(path, start, end) {
     if (path.indexOf('http') === 0) {
-      const response = await fetch(path, { headers: { Range: `bytes=${start}-${end}` } });
+      const response = await this.fetch(path, { headers: { Range: `bytes=${start}-${end}` } }, 'video chunk');
       if (response.status !== 206) {
         throw new BadBodyError(this.identifier, '{}', `Media server ignored Range request (${response.status}); must support Range requests for X chunked uploads`);
       }
@@ -319,7 +319,7 @@ class XProvider extends SocialProvider {
             ? await this._uploadVideoChunked(client, m.path)
             : await client.v2.uploadMedia(
                 await (async () => {
-                  const response = await fetch(m.path);
+                  const response = await this.fetch(m.path, {}, 'fetch media');
                   return Buffer.from(await response.arrayBuffer());
                 })(),
                 { media_type: (lookup(m.path) || '') }

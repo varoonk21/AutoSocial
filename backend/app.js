@@ -3,6 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './config/auth.js';
 import authRoutes from './routes/auth.routes.js';
 import integrationsRoutes from './routes/integrations.routes.js';
 import postsRoutes from './routes/posts.routes.js';
@@ -22,6 +24,10 @@ app.use(
     credentials: true,
   })
 );
+
+// Better Auth handler - must be before body parser
+app.all('/api/auth/*', toNodeHandler(auth));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

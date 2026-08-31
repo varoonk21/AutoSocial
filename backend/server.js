@@ -11,7 +11,6 @@
  *   node server.js
  */
 
-import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -25,8 +24,6 @@ import authRoutes from './routes/auth.routes.js';
 import integrationsRoutes from './routes/integrations.routes.js';
 import postsRoutes from './routes/posts.routes.js';
 import mediaRoutes from './routes/media.routes.js';
-
-dotenv.config({ path: './config/.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { signIn } from '../../lib/auth-client'
 
 export function LandingPage() {
   const navigate = useNavigate()
@@ -7,18 +8,36 @@ export function LandingPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   function getCurrentYear() {
     return new Date().getFullYear()
   }
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
+    setError('')
+
+    try {
+      const { data, error: authError } = await signIn.email({
+        email,
+        password,
+      })
+
+      if (authError) {
+        setError(authError.message || 'Failed to sign in')
+        return
+      }
+
+      if (data) {
+        navigate('/')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+    } finally {
       setLoading(false)
-      navigate('/')
-    }, 300)
+    }
   }
 
   return (
@@ -76,6 +95,12 @@ export function LandingPage() {
                 <p className="text-sm text-neutral-500 font-normal">Welcome back! Please sign in to continue</p>
               </div>
 
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-neutral-700 mb-1.5">Email address</label>
@@ -85,6 +110,7 @@ export function LandingPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
                     className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
+                    required
                   />
                 </div>
 
@@ -106,6 +132,7 @@ export function LandingPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all pr-12 shadow-2xs"
+                      required
                     />
                     <button
                       type="button"
@@ -136,7 +163,7 @@ export function LandingPage() {
                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                   </svg>
-                  Secured by AutoSocial Auth
+                  Secured by Better Auth
                 </span>
               </div>
             </div>

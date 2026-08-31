@@ -37,7 +37,7 @@ app.use('/api/posts', postsRoutes);
 app.use('/api/media', mediaRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
 // ─── Error Handler ─────────────────────────────────────────────────────────────
 

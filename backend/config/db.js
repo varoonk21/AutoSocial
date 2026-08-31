@@ -9,13 +9,10 @@ import dns from 'dns';
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 async function connectDB() {
-  const uri = process.env.DATABASE_URL || process.env.MONGODB_URI;
-  if (!uri) {
-    throw new Error('DATABASE_URL environment variable is not set');
-  }
+  import env from './env.config.js';
 
   try {
-    await mongoose.connect(uri, {
+    await mongoose.connect(env.DATABASE_URL, {
       serverSelectionTimeoutMS: 10000,
     });
     console.log('✅ MongoDB connected');

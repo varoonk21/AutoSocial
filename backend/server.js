@@ -17,6 +17,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import env from './config/env.config.js';
 import { connectDB } from './config/db.js';
 import { startScheduler } from './services/scheduler.service.js';
 
@@ -29,13 +30,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = env.PORT;
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: env.FRONTEND_URL,
     credentials: true, // Required for cookie auth
   })
 );

@@ -18,6 +18,7 @@
 import path from 'path';
 import fs from 'fs';
 import { Media } from '../models/index.js';
+import env from '../config/env.config.js';
 
 // Allowed MIME types (matches original local.storage.ts allow-list)
 const ALLOWED_MIME_TYPES = new Set([
@@ -35,7 +36,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'audio/ogg',
 ]);
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+const UPLOAD_DIR = env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
 
 // ─── Upload to local filesystem ───────────────────────────────────────────────
 
@@ -72,7 +73,7 @@ async function uploadFile(file) {
 
   return {
     filename,
-    path: `${process.env.FRONTEND_URL}/uploads${publicPath}`,
+    path: `${env.FRONTEND_URL}/uploads${publicPath}`,
     mimetype: safeMime,
     originalname: filename,
   };

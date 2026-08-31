@@ -4,6 +4,7 @@
  */
 
 import { register, login } from '../services/auth.service.js';
+import env from '../config/env.config.js';
 
 async function registerHandler(req, res) {
   try {
@@ -12,7 +13,7 @@ async function registerHandler(req, res) {
 
     res.cookie('auth', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -30,7 +31,7 @@ async function loginHandler(req, res) {
 
     res.cookie('auth', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });

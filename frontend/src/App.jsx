@@ -9,13 +9,29 @@ import { AnalyticsPage } from './components/tabs/AnalyticsPage'
 import { BrandKitPage } from './components/tabs/BrandKitPage'
 import { ConnectedAccountsPage } from './components/tabs/ConnectedAccountsPage'
 import { SettingsPage } from './components/tabs/SettingsPage'
+import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute'
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LandingPage />} />
+      {/* Public routes - accessible only when NOT logged in */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
 
-      <Route element={<Layout />}>
+      {/* Protected routes - require authentication */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<DashboardOverview />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/scheduled-posts" element={<ScheduledPostsPage />} />

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { signOut } from "@/lib/auth-client";
 import {
   Sun,
   Moon,
@@ -11,13 +12,21 @@ import {
   Download,
   Share2,
   Calendar,
-  Check,
+  LogOut,
+  User,
+  ChevronDown,
 } from "lucide-react";
 
 export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   // Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -168,17 +177,50 @@ export function Header() {
         </button>
 
         {/* Profile Avatar Icon */}
-        <div
-          onClick={() => navigate("/login")}
-          className="relative shrink-0 cursor-pointer group"
-          title="User Account / Sign Out"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
-            alt="User profile"
-            className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-[#243746] transition-all"
-          />
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="relative shrink-0 cursor-pointer group flex items-center gap-1"
+            title="User Account"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
+              alt="User profile"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-[#243746] transition-all"
+            />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+            <ChevronDown className="w-3 h-3 text-gray-500" />
+          </button>
+
+          {/* Dropdown Menu */}
+          {showUserMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowUserMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1.5 animate-in fade-in">
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    navigate("/settings");
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Profile Settings</span>
+                </button>
+                <div className="my-1.5 border-t border-gray-100 dark:border-gray-700" />
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

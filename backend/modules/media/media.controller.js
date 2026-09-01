@@ -3,7 +3,7 @@ import {
   deleteMediaPermanently,
   getUploadUrl,
   saveMediaMetadata,
-} from '../../services/media.service.js';
+} from './media.service.js';
 import { generateImage } from '../../services/ai.service.js';
 
 async function getUploadUrlHandler(req, res) {

@@ -1,1 +1,1 @@
-export { api } from './api/index'
+export { api, uploadFileToS3 } from './api/index'

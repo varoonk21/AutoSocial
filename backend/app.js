@@ -25,8 +25,7 @@ app.use(
   })
 );
 
-// Better Auth handler - must be before body parser
-app.all('/api/auth/*', toNodeHandler(auth));
+app.all('/api/auth/{*path}', toNodeHandler(auth));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));

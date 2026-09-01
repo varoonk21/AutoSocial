@@ -1,23 +1,24 @@
 import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { mongooseAdapter } from "better-auth-mongoose";
 import mongoose from "mongoose";
 import env from "./env.config.js";
-
-// Get the native MongoDB client from Mongoose
-// Note: mongoose must be connected before importing this module
-const client = mongoose.connection.getClient();
-const db = mongoose.connection.db;
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
-  database: mongodbAdapter(db, { client }),
+  database: mongooseAdapter(mongoose.connection, {
+    schemas: {
+      user: new mongoose.Schema({
+        role: { type: String, default: "user" },
+      }),
+    },
+  }),
   emailAndPassword: {
     enabled: true,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
   user: {
     modelName: "user",

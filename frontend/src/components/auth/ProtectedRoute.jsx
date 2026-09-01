@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useSession } from "../lib/auth-client";
+import { useSession } from "../../lib/auth-client";
 
 export function ProtectedRoute({ children }) {
   const { data: session, isPending } = useSession();

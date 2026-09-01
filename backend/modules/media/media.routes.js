@@ -1,14 +1,14 @@
 import express from 'express';
-import { requireAuth } from '../middleware/auth.middleware.js';
-import { validateBody, validateParams } from '../middleware/validate.middleware.js';
+import { requireAuth } from '../../middleware/auth.middleware.js';
+import { validateBody, validateParams } from '../../middleware/validate.middleware.js';
 import {
   generateImageHandler,
   listMedia,
   deleteMediaHandler,
   getUploadUrlHandler,
   saveMetadataHandler,
-} from '../controllers/media.controller.js';
-import { uploadUrlSchema, saveMetadataSchema, mediaIdParamSchema } from '../validations/media.validation.js';
+} from './media.controller.js';
+import { uploadUrlSchema, saveMetadataSchema, mediaIdParamSchema } from './media.validation.js';
 
 const router = express.Router();
 

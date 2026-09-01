@@ -1,15 +1,10 @@
-/**
- * Media Controller
- * Extracted from: apps/backend/src/api/routes/media.controller.ts
- */
-
 import {
   getMedia,
   deleteMediaPermanently,
   getUploadUrl,
   saveMediaMetadata,
-} from '../services/media.service.js';
-import { generateImage } from '../services/ai.service.js';
+} from '../../services/media.service.js';
+import { generateImage } from '../../services/ai.service.js';
 
 async function getUploadUrlHandler(req, res) {
   try {

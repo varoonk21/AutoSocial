@@ -1,42 +1,13 @@
-const BASE = '/api'
+import { fetcher } from '../lib/fetcher'
 
-async function request(method, path, body) {
-  const opts = {
-    method,
-    credentials: 'include',
-    headers: {},
-  }
-
-  if (body && !(body instanceof FormData)) {
-    opts.headers['Content-Type'] = 'application/json'
-    opts.body = JSON.stringify(body)
-  } else if (body instanceof FormData) {
-    opts.body = body
-  }
-
-  const res = await fetch(`${BASE}${path}`, opts)
-  const data = await res.json()
-
-  if (!res.ok) {
-    throw new Error(data.error || 'Request failed')
-  }
-
-  return data
-}
-
-export const api = {
-  get: (path) => request('GET', path),
-  post: (path, body) => request('POST', path, body),
-  put: (path, body) => request('PUT', path, body),
-  del: (path) => request('DELETE', path),
-}
+export const api = fetcher
 
 /**
  * Uploads a file to S3 via presigned URL.
  * Returns metadata for saving to backend.
  */
 export async function uploadFileToS3(file, onProgress) {
-  const { presignedUrl, key, url } = await api.post('/media/upload-url', {
+  const { presignedUrl, key, url } = await fetcher.post('/media/upload-url', {
     fileName: file.name,
     contentType: file.type,
     fileSize: file.size,
@@ -56,7 +27,7 @@ export async function uploadFileToS3(file, onProgress) {
     xhr.onload = async () => {
       if (xhr.status === 200 || xhr.status === 204) {
         try {
-          const media = await api.post('/media', {
+          const media = await fetcher.post('/media', {
             key,
             url,
             originalName: file.name,

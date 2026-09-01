@@ -27,12 +27,12 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-app.use("/api/integrations", integrationsRoutes);
-app.use("/api/posts", postsRoutes);
-app.use("/api/media", mediaRoutes);
+app.use("/api/v1/integrations", integrationsRoutes);
+app.use("/api/v1/posts", postsRoutes);
+app.use("/api/v1/media", mediaRoutes);
 
 // Health check
-app.get("/api/health", (_req, res) => res.json({ status: "ok", timestamp: new Date() }));
+app.get("/api/v1/health", (_req, res) => res.json({ status: "ok", timestamp: new Date() }));
 
 const frontendDist = path.join(__dirname, "../frontend/dist");
 app.use(express.static(frontendDist));

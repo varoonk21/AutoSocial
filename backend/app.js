@@ -1,11 +1,10 @@
 import express from "express";
-import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
-import authRoutes from "./routes/auth.routes.js";
+
 import integrationsRoutes from "./routes/integrations.routes.js";
 import postsRoutes from "./routes/posts.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
@@ -18,13 +17,6 @@ const app = express();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
-app.use(
-  cors({
-    origin: env.FRONTEND_URL,
-    credentials: true,
-  }),
-);
-
 app.all("/api/auth/{*path}", toNodeHandler(auth));
 
 app.use(express.json({ limit: "10mb" }));
@@ -36,7 +28,6 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-app.use("/api/auth", authRoutes);
 app.use("/api/integrations", integrationsRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/media", mediaRoutes);

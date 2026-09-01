@@ -6,8 +6,8 @@
  */
 
 import crypto from 'crypto';
-import { Media } from '../models/index.js';
-import { getPresignedUploadUrl, deleteS3Object, getS3PublicUrl } from '../utils/s3.js';
+import { Media } from '../../models/index.js';
+import { getPresignedUploadUrl, deleteS3Object, getS3PublicUrl } from '../../utils/s3.js';
 
 // ─── List user media ──────────────────────────────────────────────────────────
 

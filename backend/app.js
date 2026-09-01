@@ -8,7 +8,6 @@ import { auth } from "./config/auth.js";
 import integrationsRoutes from "./routes/integrations.routes.js";
 import postsRoutes from "./routes/posts.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
-import env from "./config/env.config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

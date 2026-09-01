@@ -22,98 +22,12 @@ import {
 } from "lucide-react";
 import { api, uploadFileToS3 } from "../../api";
 
-const REFERENCE_SAMPLE_MEDIA = [
-  {
-    _id: "m1",
-    name: "wireless-headphones.jpg",
-    type: "image",
-    badge: "IMAGE",
-    path: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "2.4 MB",
-    date: "May 20, 2025",
-    source: "user", // "user" | "ai"
-  },
-  {
-    _id: "m2",
-    name: "smart-watch.png",
-    type: "image",
-    badge: "IMAGE",
-    path: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "1.8 MB",
-    date: "May 20, 2025",
-    source: "user",
-  },
-  {
-    _id: "m3",
-    name: "product-video.mp4",
-    type: "video",
-    badge: "VIDEO",
-    duration: "00:15",
-    path: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "12.6 MB",
-    date: "May 18, 2025",
-    source: "user",
-  },
-  {
-    _id: "m4",
-    name: "campaign-brief.pdf",
-    type: "document",
-    badge: "DOCUMENT",
-    docType: "PDF",
-    path: "",
-    size: "1.2 MB",
-    date: "May 17, 2025",
-    source: "user",
-  },
-  {
-    _id: "m5",
-    name: "skincare-product.jpg",
-    type: "image",
-    badge: "IMAGE",
-    path: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "2.7 MB",
-    date: "May 18, 2025",
-    source: "ai",
-  },
-  {
-    _id: "m6",
-    name: "summer-sale-banner.jpg",
-    type: "image",
-    badge: "IMAGE",
-    path: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "3.1 MB",
-    date: "May 19, 2025",
-    source: "ai",
-  },
-  {
-    _id: "m7",
-    name: "nature-video.mp4",
-    type: "video",
-    badge: "VIDEO",
-    duration: "00:30",
-    path: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "18.3 MB",
-    date: "May 16, 2025",
-    source: "user",
-  },
-  {
-    _id: "m8",
-    name: "sneaker-product.png",
-    type: "image",
-    badge: "IMAGE",
-    path: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800&h=600",
-    size: "1.9 MB",
-    date: "May 15, 2025",
-    source: "ai",
-  },
-];
-
 export function MediaLibraryPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   // State
-  const [mediaList, setMediaList] = useState(REFERENCE_SAMPLE_MEDIA);
+  const [mediaList, setMediaList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all"); // "all", "image", "video", "document"
   const [sourceFilter, setSourceFilter] = useState("all"); // "all", "user", "ai"
@@ -150,18 +64,18 @@ export function MediaLibraryPage() {
   const fetchBackendMedia = async () => {
     try {
       const data = await api.get("/media");
-      if (data && data.media && data.media.length > 0) {
+      if (data && data.media) {
         const backendItems = data.media.map((item) => ({
-          _id: item._id || String(Math.random()),
-          name: item.filename || item.name || "uploaded-file.jpg",
+          _id: item._id,
+          name: item.originalName || item.name || "uploaded-file.jpg",
           type: item.type === "video" ? "video" : "image",
           badge: item.type === "video" ? "VIDEO" : "IMAGE",
-          path: item.path || item.url,
-          size: item.size ? `${(item.size / 1024 / 1024).toFixed(1)} MB` : "2.0 MB",
-          date: "Just now",
-          source: item.aiGenerated ? "ai" : "user",
+          path: item.path,
+          size: item.fileSize ? `${(item.fileSize / 1024 / 1024).toFixed(1)} MB` : "0 MB",
+          date: new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          source: "user",
         }));
-        setMediaList([...backendItems, ...REFERENCE_SAMPLE_MEDIA]);
+        setMediaList(backendItems);
       }
     } catch (e) {}
   };

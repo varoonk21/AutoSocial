@@ -18,7 +18,6 @@ export const uploadUrlSchema = z.object({
 
 export const saveMetadataSchema = z.object({
   key: z.string().min(1, 'key is required'),
-  url: z.string().url('url must be a valid URL'),
   originalName: z.string().min(1, 'originalName is required'),
   contentType: z.enum(ALLOWED_IMAGE_TYPES, {
     errorMap: () => ({ message: 'Unsupported file type' }),

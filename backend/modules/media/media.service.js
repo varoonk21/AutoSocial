@@ -1,19 +1,17 @@
-/**
- * Media Service
- *
- * Handles file uploads to AWS S3 via presigned URLs.
- * Files are stored in: users/{userId}/images/{uuid}.{ext}
- */
-
 import crypto from 'crypto';
 import { Media } from '../../models/index.js';
-import { getPresignedUploadUrl, deleteS3Object, getS3PublicUrl } from '../../utils/s3.js';
+import { getPresignedUploadUrl, getS3Url, deleteS3Object } from '../../lib/s3.js';
 
-// ─── List user media ──────────────────────────────────────────────────────────
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+]);
 
-/**
- * Gets paginated media for a user.
- */
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 async function getMedia(userId, page = 1, search = '') {
   const limit = 24;
   const skip = (page - 1) * limit;
@@ -28,28 +26,17 @@ async function getMedia(userId, page = 1, search = '') {
     Media.countDocuments(query),
   ]);
 
-  return { media, total, page, pages: Math.ceil(total / limit) };
+  const mediaWithUrls = await Promise.all(
+    media.map(async (m) => {
+      const obj = m.toObject();
+      obj.path = await getS3Url(m.key);
+      return obj;
+    })
+  );
+
+  return { media: mediaWithUrls, total, page, pages: Math.ceil(total / limit) };
 }
 
-// ─── S3 Presigned URL ─────────────────────────────────────────────────────────
-
-const ALLOWED_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/avif',
-]);
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-/**
- * Generates a presigned S3 upload URL for the frontend to upload directly.
- *
- * @param {string} userId
- * @param {{ fileName: string, contentType: string, fileSize: number }} params
- * @returns {{ presignedUrl: string, key: string, url: string }}
- */
 async function getUploadUrl(userId, { fileName, contentType, fileSize }) {
   if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
     throw new Error(`Unsupported file type: ${contentType}`);
@@ -64,25 +51,17 @@ async function getUploadUrl(userId, { fileName, contentType, fileSize }) {
   const key = `users/${userId}/images/${uniqueId}.${ext}`;
 
   const presignedUrl = await getPresignedUploadUrl(key, contentType);
-  const url = getS3PublicUrl(key);
 
-  return { presignedUrl, key, url };
+  return { presignedUrl, key };
 }
 
-/**
- * Saves image metadata after successful S3 upload.
- *
- * @param {string} userId
- * @param {{ key: string, url: string, originalName: string, contentType: string, fileSize: number }} params
- */
-async function saveMediaMetadata(userId, { key, url, originalName, contentType, fileSize }) {
+async function saveMediaMetadata(userId, { key, originalName, contentType, fileSize }) {
   const type = contentType.startsWith('video') ? 'video' : 'image';
 
   const media = await Media.create({
     userId,
     name: key.split('/').pop(),
     originalName,
-    path: url,
     type,
     fileSize,
     key,
@@ -91,12 +70,6 @@ async function saveMediaMetadata(userId, { key, url, originalName, contentType, 
   return media;
 }
 
-/**
- * Hard-deletes a media record and its S3 object.
- *
- * @param {string} userId
- * @param {string} mediaId
- */
 async function deleteMediaPermanently(userId, mediaId) {
   const media = await Media.findOne({ _id: mediaId, userId });
   if (!media) {

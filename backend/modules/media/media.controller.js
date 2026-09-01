@@ -18,8 +18,8 @@ async function getUploadUrlHandler(req, res) {
 
 async function saveMetadataHandler(req, res) {
   try {
-    const { key, url, originalName, contentType, fileSize } = req.body;
-    const media = await saveMediaMetadata(req.user._id, { key, url, originalName, contentType, fileSize });
+    const { key, originalName, contentType, fileSize } = req.body;
+    const media = await saveMediaMetadata(req.user._id, { key, originalName, contentType, fileSize });
     res.status(201).json({ media });
   } catch (err) {
     res.status(400).json({ error: err.message });

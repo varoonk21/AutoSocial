@@ -18,7 +18,10 @@ const envSchema = z.object({
   X_URL: z.string().optional(),
   LINKEDIN_CLIENT_ID: z.string().optional(),
   LINKEDIN_CLIENT_SECRET: z.string().optional(),
-  UPLOAD_DIR: z.string().default("./uploads"),
+  AWS_REGION: z.string().optional(),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

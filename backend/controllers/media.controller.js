@@ -14,10 +14,6 @@ import { generateImage } from '../services/ai.service.js';
 async function getUploadUrlHandler(req, res) {
   try {
     const { fileName, contentType, fileSize } = req.body;
-    if (!fileName || !contentType || !fileSize) {
-      return res.status(400).json({ error: 'fileName, contentType, and fileSize are required' });
-    }
-
     const result = await getUploadUrl(req.user._id, { fileName, contentType, fileSize });
     res.json(result);
   } catch (err) {
@@ -28,10 +24,6 @@ async function getUploadUrlHandler(req, res) {
 async function saveMetadataHandler(req, res) {
   try {
     const { key, url, originalName, contentType, fileSize } = req.body;
-    if (!key || !url || !originalName || !contentType || !fileSize) {
-      return res.status(400).json({ error: 'key, url, originalName, contentType, and fileSize are required' });
-    }
-
     const media = await saveMediaMetadata(req.user._id, { key, url, originalName, contentType, fileSize });
     res.status(201).json({ media });
   } catch (err) {

@@ -3,7 +3,15 @@
  * Extracted from: apps/backend/src/api/routes/media.controller.ts
  */
 
-import { uploadFile, saveMedia, getMedia, deleteMedia } from '../services/media.service.js';
+import {
+  uploadFile,
+  saveMedia,
+  getMedia,
+  deleteMedia,
+  getUploadUrl,
+  saveMediaMetadata,
+  deleteMediaPermanently,
+} from '../services/media.service.js';
 import { generateImage } from '../services/ai.service.js';
 
 async function uploadFileHandler(req, res) {
@@ -20,6 +28,34 @@ async function uploadFileHandler(req, res) {
       type
     );
 
+    res.status(201).json({ media });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function getUploadUrlHandler(req, res) {
+  try {
+    const { fileName, contentType, fileSize } = req.body;
+    if (!fileName || !contentType || !fileSize) {
+      return res.status(400).json({ error: 'fileName, contentType, and fileSize are required' });
+    }
+
+    const result = await getUploadUrl(req.user._id, { fileName, contentType, fileSize });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function saveMetadataHandler(req, res) {
+  try {
+    const { key, url, originalName, contentType, fileSize } = req.body;
+    if (!key || !url || !originalName || !contentType || !fileSize) {
+      return res.status(400).json({ error: 'key, url, originalName, contentType, and fileSize are required' });
+    }
+
+    const media = await saveMediaMetadata(req.user._id, { key, url, originalName, contentType, fileSize });
     res.status(201).json({ media });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -50,11 +86,18 @@ async function listMedia(req, res) {
 
 async function deleteMediaHandler(req, res) {
   try {
-    await deleteMedia(req.user._id, req.params.id);
+    await deleteMediaPermanently(req.user._id, req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
 
-export { uploadFileHandler, generateImageHandler, listMedia, deleteMediaHandler };
+export {
+  uploadFileHandler,
+  generateImageHandler,
+  listMedia,
+  deleteMediaHandler,
+  getUploadUrlHandler,
+  saveMetadataHandler,
+};

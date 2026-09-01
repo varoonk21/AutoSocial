@@ -6,6 +6,8 @@ import {
   generateImageHandler,
   listMedia,
   deleteMediaHandler,
+  getUploadUrlHandler,
+  saveMetadataHandler,
 } from '../controllers/media.controller.js';
 
 const router = express.Router();
@@ -14,6 +16,8 @@ router.use(requireAuth);
 
 router.get('/', listMedia);
 router.post('/upload', upload.single('file'), uploadFileHandler);
+router.post('/upload-url', getUploadUrlHandler);
+router.post('/', saveMetadataHandler);
 router.post('/generate-image', generateImageHandler);
 router.delete('/:id', deleteMediaHandler);
 

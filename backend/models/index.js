@@ -108,6 +108,7 @@ const MediaSchema = new mongoose.Schema(
     path: { type: String, required: true }, // Public URL to the file
     type: { type: String, default: 'image', enum: ['image', 'video'] },
     fileSize: { type: Number, default: 0 },
+    key: { type: String }, // S3 object key (for S3 uploads)
     thumbnail: { type: String },
     alt: { type: String },
     deletedAt: { type: Date },

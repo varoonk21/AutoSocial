@@ -20,7 +20,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { api } from "../../api";
+import { api, uploadFileToS3 } from "../../api";
 
 const REFERENCE_SAMPLE_MEDIA = [
   {
@@ -129,6 +129,7 @@ export function MediaLibraryPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   // Load from backend & listen to Header custom actions
   useEffect(() => {
@@ -168,18 +169,19 @@ export function MediaLibraryPage() {
   const handleFileUpload = async (files) => {
     if (!files || !files.length) return;
     setUploading(true);
+    setUploadProgress(0);
     try {
       const newItems = [];
       for (const file of Array.from(files)) {
         const isVid = file.type.startsWith("video");
         const isPdf = file.type.includes("pdf");
-        const formData = new FormData();
-        formData.append("file", file);
 
         let fileUrl = URL.createObjectURL(file);
         try {
-          const res = await api.post("/media/upload", formData);
-          if (res.media?.path) fileUrl = res.media.path;
+          const media = await uploadFileToS3(file, (progress) => {
+            setUploadProgress(progress);
+          });
+          if (media.path) fileUrl = media.path;
         } catch (e) {}
 
         newItems.push({
@@ -199,6 +201,7 @@ export function MediaLibraryPage() {
       showToast("Media uploaded successfully!");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -274,6 +277,14 @@ export function MediaLibraryPage() {
         <div className="fixed bottom-6 right-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Upload Progress Indicator */}
+      {uploading && (
+        <div className="fixed bottom-6 left-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
+          <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+          <span>Uploading... {uploadProgress !== null ? `${uploadProgress}%` : ''}</span>
         </div>
       )}
 

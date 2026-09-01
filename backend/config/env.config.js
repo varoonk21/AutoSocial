@@ -16,10 +16,12 @@ const envSchema = z.object({
   X_URL: z.string().optional(),
   LINKEDIN_CLIENT_ID: z.string().optional(),
   LINKEDIN_CLIENT_SECRET: z.string().optional(),
-  AWS_REGION: z.string().optional(),
+  AWS_REGION: z.string().optional().default("auto"),
   AWS_S3_BUCKET: z.string().optional(),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_ENDPOINT: z.string().optional(),
+  S3_PUBLIC_URL: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

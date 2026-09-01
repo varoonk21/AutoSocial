@@ -7,7 +7,7 @@ export const api = fetcher
  * Returns metadata for saving to backend.
  */
 export async function uploadFileToS3(file, onProgress) {
-  const { presignedUrl, key, url } = await fetcher.post('/media/upload-url', {
+  const { presignedUrl, key } = await fetcher.post('/media/upload-url', {
     fileName: file.name,
     contentType: file.type,
     fileSize: file.size,
@@ -29,7 +29,6 @@ export async function uploadFileToS3(file, onProgress) {
         try {
           const media = await fetcher.post('/media', {
             key,
-            url,
             originalName: file.name,
             contentType: file.type,
             fileSize: file.size,

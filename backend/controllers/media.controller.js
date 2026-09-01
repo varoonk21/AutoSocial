@@ -4,35 +4,12 @@
  */
 
 import {
-  uploadFile,
-  saveMedia,
   getMedia,
-  deleteMedia,
+  deleteMediaPermanently,
   getUploadUrl,
   saveMediaMetadata,
-  deleteMediaPermanently,
 } from '../services/media.service.js';
 import { generateImage } from '../services/ai.service.js';
-
-async function uploadFileHandler(req, res) {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-    const uploaded = await uploadFile(req.file);
-    const type = uploaded.mimetype.startsWith('video') ? 'video' : 'image';
-    const media = await saveMedia(
-      req.user._id,
-      uploaded.filename,
-      uploaded.path,
-      req.file.originalname,
-      type
-    );
-
-    res.status(201).json({ media });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-}
 
 async function getUploadUrlHandler(req, res) {
   try {
@@ -94,7 +71,6 @@ async function deleteMediaHandler(req, res) {
 }
 
 export {
-  uploadFileHandler,
   generateImageHandler,
   listMedia,
   deleteMediaHandler,

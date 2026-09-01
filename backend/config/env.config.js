@@ -1,14 +1,14 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(4000),
-  FRONTEND_URL: z.string().default('http://localhost:5173'),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  PORT: z.coerce.number().default(3000),
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
   DATABASE_URL: z.string(),
   JWT_SECRET: z.string(),
-  JWT_EXPIRES_IN: z.string().default('7d'),
+  JWT_EXPIRES_IN: z.string().default("7d"),
   BETTER_AUTH_SECRET: z.string().min(32),
-  BETTER_AUTH_URL: z.string().default('http://localhost:4000'),
+  BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().optional(),
   FACEBOOK_APP_ID: z.string().optional(),
@@ -18,13 +18,13 @@ const envSchema = z.object({
   X_URL: z.string().optional(),
   LINKEDIN_CLIENT_ID: z.string().optional(),
   LINKEDIN_CLIENT_SECRET: z.string().optional(),
-  UPLOAD_DIR: z.string().default('./uploads'),
+  UPLOAD_DIR: z.string().default("./uploads"),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
+  console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
   process.exit(1);
 }
 

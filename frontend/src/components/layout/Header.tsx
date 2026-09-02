@@ -2,16 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "@/lib/auth-client";
 import {
-  Sun,
-  Moon,
   Bell,
-  Upload,
-  Sparkles,
-  Plus,
-  Save,
-  Download,
-  Share2,
-  Calendar,
   LogOut,
   User,
   ChevronDown,
@@ -21,23 +12,11 @@ import { Button } from "@/components/ui/button";
 export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
     navigate("/login");
-  };
-
-  // Toggle Dark Mode
-  const toggleDarkMode = () => {
-    const isDark = !darkMode;
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   };
 
   // Dispatch custom action to active page
@@ -90,18 +69,8 @@ export function Header() {
         {renderDynamicActions()}
       </div>
 
-      {/* Far Right: Dark Mode Toggle, Notification Bell, Profile Icon */}
+      {/* Far Right: Notification Bell, Profile Icon */}
       <div className="flex items-center gap-3">
-        {/* Dark Mode Toggle */}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={toggleDarkMode}
-          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-        >
-          {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
-        </Button>
-
         {/* Notification Bell */}
         <Button variant="ghost" size="icon-sm" title="Notifications" className="relative">
           <Bell className="w-4 h-4 text-gray-600 dark:text-gray-300" />

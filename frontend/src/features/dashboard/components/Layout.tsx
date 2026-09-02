@@ -1,9 +1,17 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Header } from './Header'
 import { AppSidebar } from './Sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { useImageStore } from '@/store/imageStore'
 
 export function Layout() {
+  const fetchS3PublicUrl = useImageStore((state) => state.fetchS3PublicUrl)
+
+  useEffect(() => {
+    fetchS3PublicUrl()
+  }, [fetchS3PublicUrl])
+
   return (
     <SidebarProvider>
       <AppSidebar />

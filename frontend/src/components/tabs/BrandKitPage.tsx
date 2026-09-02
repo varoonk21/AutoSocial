@@ -295,7 +295,7 @@ export function BrandKitPage() {
             <CardContent>
               <div className="flex flex-wrap gap-2.5">
                 <ToggleGroup
-                  type="multiple"
+                  multiple
                   value={selectedTones}
                   onValueChange={(value) => setSelectedTones(value)}
                   variant="outline"

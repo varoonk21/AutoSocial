@@ -16,11 +16,16 @@ import {
   ChevronDown,
   ChevronRight,
   X,
-  Sun,
-  Check,
 } from "lucide-react";
 import { api } from "../../api";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const DEFAULT_PREVIEW_IMAGE =
   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800&h=600";
@@ -246,7 +251,8 @@ export function CreatePost() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* LEFT COLUMN: Content Creation Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-6">
+        <Card className="lg:col-span-7">
+          <CardContent className="space-y-6 pt-6">
           
           {/* Content Source Selection */}
           <div className="space-y-3">
@@ -330,12 +336,11 @@ export function CreatePost() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">Product / Service Name</label>
-                  <input
+                  <Input
                     type="text"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
                     placeholder="e.g. Wireless Headphones"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm text-[#1c2b36] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#243746] focus:bg-white transition-all"
                   />
                 </div>
                 <div>
@@ -343,13 +348,12 @@ export function CreatePost() {
                     <label className="text-xs font-semibold text-gray-700">Description</label>
                     <span className="text-[11px] text-gray-400">{productDescription.length}/500</span>
                   </div>
-                  <textarea
+                  <Textarea
                     rows={3}
                     maxLength={500}
                     value={productDescription}
                     onChange={(e) => setProductDescription(e.target.value)}
                     placeholder="Describe your product or service..."
-                    className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm text-[#1c2b36] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#243746] focus:bg-white transition-all resize-none"
                   />
                 </div>
               </div>
@@ -360,12 +364,11 @@ export function CreatePost() {
           {contentSource === "prompt" && (
             <div className="space-y-2 pt-2">
               <label className="block text-xs font-semibold text-gray-700">AI Prompt</label>
-              <textarea
+              <Textarea
                 rows={3}
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="Write a creative post about eco-friendly wireless headphones launching next week..."
-                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm text-[#1c2b36] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#243746] focus:bg-white transition-all resize-none"
               />
             </div>
           )}
@@ -434,13 +437,11 @@ export function CreatePost() {
                   key={opt.id}
                   className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={aiOptions[opt.id]}
-                    onChange={(e) =>
-                      setAiOptions({ ...aiOptions, [opt.id]: e.target.checked })
+                    onCheckedChange={(checked) =>
+                      setAiOptions({ ...aiOptions, [opt.id]: checked })
                     }
-                    className="w-4 h-4 rounded text-[#243746] focus:ring-[#243746] accent-[#243746] cursor-pointer"
                   />
                   <span className="text-xs font-semibold text-gray-700">{opt.label}</span>
                 </label>
@@ -451,31 +452,33 @@ export function CreatePost() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tone of Voice</label>
-                <select
-                  value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#243746]"
-                >
-                  <option value="Professional">Professional</option>
-                  <option value="Casual">Casual</option>
-                  <option value="Excited">Excited</option>
-                  <option value="Informative">Informative</option>
-                  <option value="Urgent">Urgent</option>
-                </select>
+                <Select value={tone} onValueChange={setTone}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Professional">Professional</SelectItem>
+                    <SelectItem value="Casual">Casual</SelectItem>
+                    <SelectItem value="Excited">Excited</SelectItem>
+                    <SelectItem value="Informative">Informative</SelectItem>
+                    <SelectItem value="Urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Language</label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#243746]"
-                >
-                  <option value="English (US)">English (US)</option>
-                  <option value="English (UK)">English (UK)</option>
-                  <option value="Spanish">Spanish</option>
-                  <option value="French">French</option>
-                  <option value="German">German</option>
-                </select>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English (US)">English (US)</SelectItem>
+                    <SelectItem value="English (UK)">English (UK)</SelectItem>
+                    <SelectItem value="Spanish">Spanish</SelectItem>
+                    <SelectItem value="French">French</SelectItem>
+                    <SelectItem value="German">German</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -496,37 +499,33 @@ export function CreatePost() {
               )}
             </Button>
           </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* RIGHT COLUMN: Live Preview & Post Settings (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           
           {/* Live Mock Post Preview */}
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
+          <Card>
+            <CardContent className="space-y-4 pt-6">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#1c2b36]">Preview</h3>
               
               {/* Desktop / Mobile view toggle icons */}
-              <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-lg">
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => setViewMode("desktop")}
-                  className={viewMode === "desktop" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"}
-                  title="Desktop View"
-                >
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(value) => value && setViewMode(value)}
+                variant="outline"
+                size="sm"
+              >
+                <ToggleGroupItem value="desktop" title="Desktop View">
                   <Monitor className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => setViewMode("mobile")}
-                  className={viewMode === "mobile" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"}
-                  title="Mobile View"
-                >
+                </ToggleGroupItem>
+                <ToggleGroupItem value="mobile" title="Mobile View">
                   <Smartphone className="w-4 h-4" />
-                </Button>
-              </div>
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {/* Mock Post Card Container */}
@@ -594,11 +593,13 @@ export function CreatePost() {
                 </div>
               </div>
             </div>
-          </div>
+          </CardContent>
+          </Card>
 
           {/* Post Settings Card */}
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-[#1c2b36]">Post Settings</h3>
+          <Card>
+            <CardContent className="space-y-4 pt-6">
+              <h3 className="text-sm font-bold text-[#1c2b36]">Post Settings</h3>
 
             {/* Select Accounts Row */}
             <div className="border border-gray-200 rounded-xl p-3.5 relative">
@@ -687,30 +688,18 @@ export function CreatePost() {
                 </div>
 
                 {/* Toggle switch */}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  type="button"
-                  onClick={() => setIsScheduled(!isScheduled)}
-                  className={`rounded-full ${
-                    isScheduled ? "bg-[#243746]" : "bg-gray-200"
-                  }`}
-                >
-                  <div
-                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                      isScheduled ? "translate-x-0" : "translate-x-0"
-                    }`}
-                  />
-                </Button>
+                <Switch
+                  checked={isScheduled}
+                  onCheckedChange={setIsScheduled}
+                />
               </div>
 
               {isScheduled && (
                 <div className="pt-2 border-t border-gray-100">
-                  <input
+                  <Input
                     type="datetime-local"
                     value={scheduleDate}
                     onChange={(e) => setScheduleDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-[#1c2b36] focus:outline-none focus:ring-2 focus:ring-[#243746]"
                   />
                 </div>
               )}
@@ -751,7 +740,8 @@ export function CreatePost() {
                 <span>{isScheduled ? "Schedule Post" : "Schedule Post"}</span>
               </Button>
             </div>
-          </div>
+          </CardContent>
+          </Card>
         </div>
       </div>
     </div>

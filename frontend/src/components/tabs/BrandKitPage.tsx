@@ -1,5 +1,10 @@
 import { useState, useRef } from 'react'
+import { Plus, Image, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 const AVAILABLE_FONTS = [
   'Inter (Primary)',
@@ -33,14 +38,6 @@ export function BrandKitPage() {
     if (file) {
       const url = URL.createObjectURL(file)
       setLogo(url)
-    }
-  }
-
-  const toggleTone = (tone) => {
-    if (selectedTones.includes(tone)) {
-      setSelectedTones(selectedTones.filter((t) => t !== tone))
-    } else {
-      setSelectedTones([...selectedTones, tone])
     }
   }
 
@@ -104,274 +101,271 @@ export function BrandKitPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-semibold text-gray-900 tracking-tight">Logo & Assets</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Primary Logo</label>
-                <div
-                  onClick={() => primaryLogoInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
-                >
-                  <input
-                    type="file"
-                    ref={primaryLogoInputRef}
-                    onChange={(e) => handleLogoUpload(e, setPrimaryLogo)}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  {primaryLogo ? (
-                    <img src={primaryLogo} alt="Primary Logo" className="max-h-20 object-contain" />
-                  ) : (
-                    <>
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-medium text-gray-700">
-                        Drag and drop or <span className="text-blue-600">click to upload</span>
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-1">PNG, SVG (Max 5MB)</p>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Watermark / Icon</label>
-                <div
-                  onClick={() => watermarkInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
-                >
-                  <input
-                    type="file"
-                    ref={watermarkInputRef}
-                    onChange={(e) => handleLogoUpload(e, setWatermarkLogo)}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  {watermarkLogo ? (
-                    <img src={watermarkLogo} alt="Watermark Icon" className="max-h-16 object-contain" />
-                  ) : (
-                    <>
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-medium text-gray-600">Square ratio</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900 tracking-tight">Brand Colors</h2>
-              <div className="flex rounded-md overflow-hidden h-5 w-24 border border-gray-200">
-                <div className="w-1/3 h-full" style={{ backgroundColor: primaryColor }} />
-                <div className="w-1/3 h-full" style={{ backgroundColor: secondaryColor }} />
-                <div className="w-1/3 h-full" style={{ backgroundColor: accentColor }} />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-medium text-gray-500 w-20">Primary</span>
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logo & Assets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Primary Logo</label>
+                  <div
+                    onClick={() => primaryLogoInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
+                  >
                     <input
-                      type="color"
-                      value={primaryColor}
+                      type="file"
+                      ref={primaryLogoInputRef}
+                      onChange={(e) => handleLogoUpload(e, setPrimaryLogo)}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    {primaryLogo ? (
+                      <img src={primaryLogo} alt="Primary Logo" className="max-h-20 object-contain" />
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
+                          <Plus className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs font-medium text-gray-700">
+                          Drag and drop or <span className="text-blue-600">click to upload</span>
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-1">PNG, SVG (Max 5MB)</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Watermark / Icon</label>
+                  <div
+                    onClick={() => watermarkInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
+                  >
+                    <input
+                      type="file"
+                      ref={watermarkInputRef}
+                      onChange={(e) => handleLogoUpload(e, setWatermarkLogo)}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    {watermarkLogo ? (
+                      <img src={watermarkLogo} alt="Watermark Icon" className="max-h-16 object-contain" />
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
+                          <Image className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs font-medium text-gray-600">Square ratio</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Brand Colors</CardTitle>
+                <div className="flex rounded-md overflow-hidden h-5 w-24 border border-gray-200">
+                  <div className="w-1/3 h-full" style={{ backgroundColor: primaryColor }} />
+                  <div className="w-1/3 h-full" style={{ backgroundColor: secondaryColor }} />
+                  <div className="w-1/3 h-full" style={{ backgroundColor: accentColor }} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-medium text-gray-500 w-20">Primary</span>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                      <input
+                        type="color"
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      />
+                      <div className="w-full h-full rounded-full" style={{ backgroundColor: primaryColor }} />
+                    </div>
+                    <input
+                      type="text"
+                      value={primaryColor.toUpperCase()}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <div className="w-full h-full rounded-full" style={{ backgroundColor: primaryColor }} />
                   </div>
-                  <input
-                    type="text"
-                    value={primaryColor.toUpperCase()}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-medium text-gray-500 w-20">Secondary</span>
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-medium text-gray-500 w-20">Secondary</span>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                      <input
+                        type="color"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      />
+                      <div className="w-full h-full rounded-full" style={{ backgroundColor: secondaryColor }} />
+                    </div>
                     <input
-                      type="color"
-                      value={secondaryColor}
+                      type="text"
+                      value={secondaryColor.toUpperCase()}
                       onChange={(e) => setSecondaryColor(e.target.value)}
-                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <div className="w-full h-full rounded-full" style={{ backgroundColor: secondaryColor }} />
                   </div>
-                  <input
-                    type="text"
-                    value={secondaryColor.toUpperCase()}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-medium text-gray-500 w-20">Accent</span>
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-medium text-gray-500 w-20">Accent</span>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                      <input
+                        type="color"
+                        value={accentColor}
+                        onChange={(e) => setAccentColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      />
+                      <div className="w-full h-full rounded-full" style={{ backgroundColor: accentColor }} />
+                    </div>
                     <input
-                      type="color"
-                      value={accentColor}
+                      type="text"
+                      value={accentColor.toUpperCase()}
                       onChange={(e) => setAccentColor(e.target.value)}
-                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <div className="w-full h-full rounded-full" style={{ backgroundColor: accentColor }} />
                   </div>
-                  <input
-                    type="text"
-                    value={accentColor.toUpperCase()}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                    className="flex-1 px-3.5 py-2 bg-gray-50/70 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-semibold text-gray-900 tracking-tight">Brand Fonts</h2>
-            <div className="space-y-3">
-              {selectedFonts.map((font, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <select
-                    value={font}
-                    onChange={(e) => handleFontChange(idx, e.target.value)}
-                    className="flex-1 px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {AVAILABLE_FONTS.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedFonts.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleRemoveFont(idx)}
-                      title="Remove font"
+          <Card>
+            <CardHeader>
+              <CardTitle>Brand Fonts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {selectedFonts.map((font, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <Select
+                      value={font}
+                      onValueChange={(value) => handleFontChange(idx, value)}
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                variant="link"
-                size="sm"
-                onClick={handleAddFont}
-                className="text-blue-600 hover:text-blue-700 p-0 h-auto"
-              >
-                + Add Another Font
-              </Button>
-            </div>
-          </div>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_FONTS.map((f) => (
+                          <SelectItem key={f} value={f}>
+                            {f}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedFonts.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleRemoveFont(idx)}
+                        title="Remove font"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={handleAddFont}
+                  className="text-blue-600 hover:text-blue-700 p-0 h-auto"
+                >
+                  + Add Another Font
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-semibold text-gray-900 tracking-tight">Brand Voice & Tone</h2>
-            <div className="flex flex-wrap gap-2.5">
-              {TONE_OPTIONS.map((tone) => {
-                const isSelected = selectedTones.includes(tone)
-                return (
-                  <Button
-                    key={tone}
-                    type="button"
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleTone(tone)}
-                    className={isSelected ? "scale-105" : ""}
-                  >
-                    {tone}
-                  </Button>
-                )
-              })}
-            </div>
-            <div className="pt-2">
-              <label className="block text-xs font-medium text-gray-500 mb-2">Content Style Notes (Optional)</label>
-              <textarea
-                rows="3"
-                value={styleNotes}
-                onChange={(e) => setStyleNotes(e.target.value)}
-                placeholder="e.g., Avoid emojis, always mention free shipping"
-                className="w-full px-4 py-3 bg-gray-50/70 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              />
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Brand Voice & Tone</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2.5">
+                <ToggleGroup
+                  type="multiple"
+                  value={selectedTones}
+                  onValueChange={(value) => setSelectedTones(value)}
+                  variant="outline"
+                  size="sm"
+                >
+                  {TONE_OPTIONS.map((tone) => (
+                    <ToggleGroupItem key={tone} value={tone}>
+                      {tone}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+              <div className="pt-2">
+                <label className="block text-xs font-medium text-gray-500 mb-2">Content Style Notes (Optional)</label>
+                <Textarea
+                  rows={3}
+                  value={styleNotes}
+                  onChange={(e) => setStyleNotes(e.target.value)}
+                  placeholder="e.g., Avoid emojis, always mention free shipping"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:col-span-5 sticky top-6">
-          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">LIVE PREVIEW</span>
-              <div className="p-1 text-gray-400">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">LIVE PREVIEW</span>
               </div>
-            </div>
-            <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-white shadow-xs">
-              <div className="flex items-center gap-2.5">
-                {primaryLogo ? (
-                  <img src={primaryLogo} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
-                ) : (
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    AS
-                  </div>
-                )}
-                <span className="font-semibold text-sm text-gray-900">AutoSocial</span>
-              </div>
-              <div className="relative rounded-lg overflow-hidden border border-gray-100">
-                <img
-                  src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=500&q=80"
-                  alt="Post content preview"
-                  className="w-full h-44 object-cover"
-                />
-                <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                  {watermarkLogo ? <img src={watermarkLogo} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+            </CardHeader>
+            <CardContent>
+              <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-white shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  {primaryLogo ? (
+                    <img src={primaryLogo} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
+                  ) : (
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      AS
+                    </div>
+                  )}
+                  <span className="font-semibold text-sm text-gray-900">AutoSocial</span>
                 </div>
+                <div className="relative rounded-lg overflow-hidden border border-gray-100">
+                  <img
+                    src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=500&q=80"
+                    alt="Post content preview"
+                    className="w-full h-44 object-cover"
+                  />
+                  <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                    {watermarkLogo ? <img src={watermarkLogo} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-700 leading-relaxed font-normal">
+                  <span className="font-semibold text-gray-900">AutoSocial</span> Elevate your content strategy with AI. Streamline your workflow and
+                  ensure brand consistency across all channels. 🚀 #AutoSocial #ContentCreation
+                </p>
+                <Button
+                  className="w-full font-semibold text-xs"
+                  style={{ backgroundColor: accentColor }}
+                >
+                  Learn More
+                </Button>
               </div>
-              <p className="text-xs text-gray-700 leading-relaxed font-normal">
-                <span className="font-semibold text-gray-900">AutoSocial</span> Elevate your content strategy with AI. Streamline your workflow and
-                ensure brand consistency across all channels. 🚀 #AutoSocial #ContentCreation
-              </p>
-              <Button
-                className="w-full font-semibold text-xs"
-                style={{ backgroundColor: accentColor }}
-              >
-                Learn More
-              </Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

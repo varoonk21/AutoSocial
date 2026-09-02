@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Upload,
-  Bell,
   Search,
   Image as ImageIcon,
   Video,
@@ -18,10 +16,20 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 import { api, uploadFileToS3 } from "../../api";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export function MediaLibraryPage() {
   const navigate = useNavigate();
@@ -226,47 +234,30 @@ export function MediaLibraryPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           
           {/* Left Segmented Filter Pill Box (Type Filter) */}
-          <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-2xl border border-gray-200/60">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTypeFilter("all")}
-              className={typeFilter === "all" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
-            >
+          <ToggleGroup
+            type="single"
+            value={typeFilter}
+            onValueChange={(value) => value && setTypeFilter(value)}
+            variant="outline"
+            size="sm"
+          >
+            <ToggleGroupItem value="all">
               <ImageIcon className="w-4 h-4 text-[#243746]" />
               <span>All Media</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTypeFilter("image")}
-              className={typeFilter === "image" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
-            >
+            </ToggleGroupItem>
+            <ToggleGroupItem value="image">
               <ImageIcon className="w-4 h-4 text-gray-500" />
               <span>Images</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTypeFilter("video")}
-              className={typeFilter === "video" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
-            >
+            </ToggleGroupItem>
+            <ToggleGroupItem value="video">
               <Video className="w-4 h-4 text-gray-500" />
               <span>Videos</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTypeFilter("document")}
-              className={typeFilter === "document" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
-            >
+            </ToggleGroupItem>
+            <ToggleGroupItem value="document">
               <FileText className="w-4 h-4 text-gray-500" />
               <span>Documents</span>
-            </Button>
-          </div>
+            </ToggleGroupItem>
+          </ToggleGroup>
 
           {/* Middle Source Filters (User Uploads / AI Generated) */}
           <div className="flex items-center gap-2">
@@ -309,30 +300,29 @@ export function MediaLibraryPage() {
 
           {/* Right Sort Dropdown */}
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="pl-8 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#243746] cursor-pointer appearance-none shadow-2xs"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name">Name (A-Z)</option>
-              </select>
-              <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[150px]">
+                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Search Bar Row */}
         <div className="relative w-full">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search media..."
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50/70 border border-gray-200 rounded-2xl text-xs text-[#1c2b36] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#243746] focus:bg-white transition-all shadow-2xs"
+            className="pl-10"
           />
         </div>
       </div>
@@ -627,60 +617,50 @@ export function MediaLibraryPage() {
       )}
 
       {/* AI GENERATOR MODAL */}
-      {aiModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#243746]/10 text-[#243746]">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-[#1c2b36]">AI Image Generator</h3>
+      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-[#243746]/10 text-[#243746]">
+                <Sparkles className="w-5 h-5" />
               </div>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setAiModalOpen(false)}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
+              AI Image Generator
+            </DialogTitle>
+          </DialogHeader>
 
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Describe the visual asset you want to generate using AI.
-            </p>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Describe the visual asset you want to generate using AI.
+          </p>
 
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700">Image Prompt</label>
-              <textarea
-                rows={4}
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="e.g. Sleek black wireless headphones on purple studio background..."
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-[#1c2b36] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#243746] focus:bg-white transition-all resize-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAiModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleAiGenerateImage}
-                disabled={aiGenerating || !aiPrompt.trim()}
-              >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
-              </Button>
-            </div>
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-gray-700">Image Prompt</label>
+            <Textarea
+              rows={4}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="e.g. Sleek black wireless headphones on purple studio background..."
+            />
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAiModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleAiGenerateImage}
+              disabled={aiGenerating || !aiPrompt.trim()}
+            >
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

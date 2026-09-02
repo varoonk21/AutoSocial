@@ -43,6 +43,7 @@ export function MediaLibraryPage() {
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -147,13 +148,24 @@ export function MediaLibraryPage() {
     }
   };
 
-  const handleDelete = (id, e) => {
+  const handleDeleteClick = (id, e) => {
     e?.stopPropagation();
-    api.delete(`/media/${id}`).catch(() => {});
-    setMediaList((prev) => prev.filter((item) => item._id !== id));
+    setDeleteConfirmId(id);
     setMenuOpenId(null);
-    if (selectedAsset?._id === id) setSelectedAsset(null);
-    showToast("Media deleted");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      await api.del(`/media/${deleteConfirmId}`);
+      setMediaList((prev) => prev.filter((item) => item._id !== deleteConfirmId));
+      if (selectedAsset?._id === deleteConfirmId) setSelectedAsset(null);
+      showToast("Media deleted");
+    } catch (err) {
+      showToast("Failed to delete media");
+    } finally {
+      setDeleteConfirmId(null);
+    }
   };
 
   const copyLink = (path, id, e) => {
@@ -369,7 +381,7 @@ export function MediaLibraryPage() {
                     variant="ghost"
                     size="sm"
                     className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-                    onClick={(e) => handleDelete(asset._id, e)}
+                    onClick={(e) => handleDeleteClick(asset._id, e)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete</span>
@@ -401,7 +413,7 @@ export function MediaLibraryPage() {
                 <Button
                   variant="destructive"
                   size="icon-sm"
-                  onClick={(e) => handleDelete(asset._id, e)}
+                  onClick={(e) => handleDeleteClick(asset._id, e)}
                   className="bg-white/90 hover:bg-red-50 text-red-600 shadow-md"
                   title="Delete"
                 >
@@ -498,7 +510,7 @@ export function MediaLibraryPage() {
             </div>
 
             <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-              <Button variant="destructive" size="sm" onClick={() => handleDelete(selectedAsset._id)}>
+              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(selectedAsset._id)}>
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
               </Button>
@@ -555,6 +567,27 @@ export function MediaLibraryPage() {
             <Button size="sm" onClick={handleAiGenerateImage} disabled={aiGenerating || !aiPrompt.trim()}>
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete Media</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete this media? This action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDeleteConfirm}>
+              <Trash2 className="w-4 h-4" />
+              <span>Delete</span>
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,62 +1,6 @@
-import { Routes, Route } from 'react-router-dom'
-import { Layout } from './components/layout/Layout'
-import { LandingPage } from './components/pages/LandingPage'
-import { ForgotPasswordPage } from './components/pages/ForgotPasswordPage'
-import { ResetPasswordPage } from './components/pages/ResetPasswordPage'
-import { DashboardOverview } from './components/tabs/DashboardOverview'
-import { CreatePost } from './components/tabs/CreatePost'
-import { ScheduledPostsPage } from './components/tabs/ScheduledPostsPage'
-import { MediaLibraryPage } from './components/tabs/MediaLibraryPage'
-import { AnalyticsPage } from './components/tabs/AnalyticsPage'
-import { BrandKitPage } from './components/tabs/BrandKitPage'
-import { ConnectedAccountsPage } from './components/tabs/ConnectedAccountsPage'
-import { SettingsPage } from './components/tabs/SettingsPage'
-import { OAuthCallbackPage } from './components/pages/OAuthCallbackPage'
-import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute'
+import { RouterProvider } from "react-router-dom";
+import { router } from "@/routes/routes";
 
 export default function App() {
-  return (
-    <Routes>
-      {/* Public routes - accessible only when NOT logged in */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <PublicRoute>
-            <ForgotPasswordPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={<ResetPasswordPage />}
-      />
-
-      {/* Protected routes - require authentication */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<DashboardOverview />} />
-        <Route path="/create-post" element={<CreatePost />} />
-        <Route path="/scheduled-posts" element={<ScheduledPostsPage />} />
-        <Route path="/media-library" element={<MediaLibraryPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="/brand-kit" element={<BrandKitPage />} />
-        <Route path="/connected-accounts" element={<ConnectedAccountsPage />} />
-        <Route path="/integrations/social/:provider" element={<OAuthCallbackPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Route>
-    </Routes>
-  )
+  return <RouterProvider router={router} />;
 }

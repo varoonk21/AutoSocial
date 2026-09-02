@@ -13,9 +13,11 @@ const AVAILABLE_FONTS = [
 
 const AVAILABLE_TONES = ["Professional", "Friendly", "Playful", "Bold", "Minimal", "Luxury"];
 
+const objectIdOrNull = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID").nullable().optional();
+
 export const brandKitSchema = z.object({
-  primaryLogo: z.string().optional().default(""),
-  watermarkLogo: z.string().optional().default(""),
+  primaryLogo: objectIdOrNull,
+  watermarkLogo: objectIdOrNull,
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#2563EB"),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#FFFFFF"),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#F59E0B"),

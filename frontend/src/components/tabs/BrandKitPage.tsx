@@ -27,8 +27,10 @@ export function BrandKitPage() {
   const saveMutation = useSaveBrandKit()
 
   const [showNotice, setShowNotice] = useState(true)
-  const [primaryLogo, setPrimaryLogo] = useState(null)
-  const [watermarkLogo, setWatermarkLogo] = useState(null)
+  const [primaryLogoId, setPrimaryLogoId] = useState(null)
+  const [watermarkLogoId, setWatermarkLogoId] = useState(null)
+  const [primaryLogoUrl, setPrimaryLogoUrl] = useState(null)
+  const [watermarkLogoUrl, setWatermarkLogoUrl] = useState(null)
   const primaryLogoInputRef = useRef(null)
   const watermarkInputRef = useRef(null)
   const [primaryColor, setPrimaryColor] = useState('#2563EB')
@@ -43,8 +45,10 @@ export function BrandKitPage() {
   useEffect(() => {
     const bk = brandKitData?.brandKit
     if (!bk) return
-    setPrimaryLogo(bk.primaryLogo || null)
-    setWatermarkLogo(bk.watermarkLogo || null)
+    setPrimaryLogoId(bk.primaryLogo?._id || null)
+    setWatermarkLogoId(bk.watermarkLogo?._id || null)
+    setPrimaryLogoUrl(bk.primaryLogoUrl || null)
+    setWatermarkLogoUrl(bk.watermarkLogoUrl || null)
     setPrimaryColor(bk.primaryColor || '#2563EB')
     setSecondaryColor(bk.secondaryColor || '#FFFFFF')
     setAccentColor(bk.accentColor || '#F59E0B')
@@ -56,8 +60,8 @@ export function BrandKitPage() {
   const handleSave = useCallback(() => {
     saveMutation.mutate(
       {
-        primaryLogo: primaryLogo || '',
-        watermarkLogo: watermarkLogo || '',
+        primaryLogo: primaryLogoId || null,
+        watermarkLogo: watermarkLogoId || null,
         primaryColor,
         secondaryColor,
         accentColor,
@@ -72,16 +76,17 @@ export function BrandKitPage() {
         },
       }
     )
-  }, [saveMutation, primaryLogo, watermarkLogo, primaryColor, secondaryColor, accentColor, selectedFonts, selectedTones, styleNotes])
+  }, [saveMutation, primaryLogoId, watermarkLogoId, primaryColor, secondaryColor, accentColor, selectedFonts, selectedTones, styleNotes])
 
-  const handleLogoUpload = async (e, setLogo) => {
+  const handleLogoUpload = async (e, setLogoId, setLogoUrl) => {
     const file = e.target.files?.[0]
     if (file) {
       try {
         const uploaded = await uploadFileToS3(file)
-        setLogo(uploaded.key)
+        setLogoId(uploaded._id)
+        setLogoUrl(getLogoUrl(uploaded.key))
       } catch {
-        // Upload failed — do not store blob URLs in state
+        // Upload failed
       }
     }
   }
@@ -165,12 +170,12 @@ export function BrandKitPage() {
                     <input
                       type="file"
                       ref={primaryLogoInputRef}
-                      onChange={(e) => handleLogoUpload(e, setPrimaryLogo)}
+                      onChange={(e) => handleLogoUpload(e, setPrimaryLogoId, setPrimaryLogoUrl)}
                       accept="image/*"
                       className="hidden"
                     />
-                    {primaryLogo ? (
-                      <img src={getLogoUrl(primaryLogo)} alt="Primary Logo" className="max-h-20 object-contain" />
+                    {primaryLogoUrl ? (
+                      <img src={primaryLogoUrl} alt="Primary Logo" className="max-h-20 object-contain" />
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -193,12 +198,12 @@ export function BrandKitPage() {
                     <input
                       type="file"
                       ref={watermarkInputRef}
-                      onChange={(e) => handleLogoUpload(e, setWatermarkLogo)}
+                      onChange={(e) => handleLogoUpload(e, setWatermarkLogoId, setWatermarkLogoUrl)}
                       accept="image/*"
                       className="hidden"
                     />
-                    {watermarkLogo ? (
-                      <img src={getLogoUrl(watermarkLogo)} alt="Watermark Icon" className="max-h-16 object-contain" />
+                    {watermarkLogoUrl ? (
+                      <img src={watermarkLogoUrl} alt="Watermark Icon" className="max-h-16 object-contain" />
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -344,7 +349,7 @@ export function BrandKitPage() {
             <CardContent>
               <div className="flex flex-wrap gap-2.5">
                 <ToggleGroup
-                  multiple
+                  type="multiple"
                   value={selectedTones}
                   onValueChange={(value) => setSelectedTones(value)}
                   variant="outline"
@@ -380,8 +385,8 @@ export function BrandKitPage() {
             <CardContent>
               <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-white shadow-xs">
                 <div className="flex items-center gap-2.5">
-                  {primaryLogo ? (
-                    <img src={getLogoUrl(primaryLogo)} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
+                  {primaryLogoUrl ? (
+                    <img src={primaryLogoUrl} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
                   ) : (
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
@@ -399,7 +404,7 @@ export function BrandKitPage() {
                     className="w-full h-44 object-cover"
                   />
                   <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                    {watermarkLogo ? <img src={getLogoUrl(watermarkLogo)} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+                    {watermarkLogoUrl ? <img src={watermarkLogoUrl} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
                   </div>
                 </div>
                 <p className="text-xs text-gray-700 leading-relaxed font-normal">

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 const AVAILABLE_FONTS = [
   'Inter (Primary)',
@@ -33,14 +34,6 @@ export function BrandKitPage() {
     if (file) {
       const url = URL.createObjectURL(file)
       setLogo(url)
-    }
-  }
-
-  const toggleTone = (tone) => {
-    if (selectedTones.includes(tone)) {
-      setSelectedTones(selectedTones.filter((t) => t !== tone))
-    } else {
-      setSelectedTones([...selectedTones, tone])
     }
   }
 
@@ -292,21 +285,19 @@ export function BrandKitPage() {
           <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-xs space-y-4">
             <h2 className="text-base font-semibold text-gray-900 tracking-tight">Brand Voice & Tone</h2>
             <div className="flex flex-wrap gap-2.5">
-              {TONE_OPTIONS.map((tone) => {
-                const isSelected = selectedTones.includes(tone)
-                return (
-                  <Button
-                    key={tone}
-                    type="button"
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleTone(tone)}
-                    className={isSelected ? "scale-105" : ""}
-                  >
+              <ToggleGroup
+                type="multiple"
+                value={selectedTones}
+                onValueChange={(value) => setSelectedTones(value)}
+                variant="outline"
+                size="sm"
+              >
+                {TONE_OPTIONS.map((tone) => (
+                  <ToggleGroupItem key={tone} value={tone}>
                     {tone}
-                  </Button>
-                )
-              })}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </div>
             <div className="pt-2">
               <label className="block text-xs font-medium text-gray-500 mb-2">Content Style Notes (Optional)</label>

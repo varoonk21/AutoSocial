@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { LandingPage } from './components/pages/LandingPage'
+import { ForgotPasswordPage } from './components/pages/ForgotPasswordPage'
+import { ResetPasswordPage } from './components/pages/ResetPasswordPage'
 import { DashboardOverview } from './components/tabs/DashboardOverview'
 import { CreatePost } from './components/tabs/CreatePost'
 import { ScheduledPostsPage } from './components/tabs/ScheduledPostsPage'
@@ -22,6 +24,18 @@ export default function App() {
             <LandingPage />
           </PublicRoute>
         }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={<ResetPasswordPage />}
       />
 
       {/* Protected routes - require authentication */}

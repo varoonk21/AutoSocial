@@ -15,6 +15,11 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url, token }, request) => {
+      // In a real application, you would send this URL via an email provider (e.g. Resend, Nodemailer)
+      console.log(`\n\n[Better Auth] 🔑 Password Reset Request for ${user.email}`);
+      console.log(`[Better Auth] 🔗 Click here to reset your password: ${url}\n\n`);
+    },
   },
   trustedOrigins: [env.FRONTEND_URL],
   session: {

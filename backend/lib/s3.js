@@ -37,3 +37,14 @@ export async function deleteS3Object(key) {
   const command = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
   await s3Client.send(command);
 }
+
+export async function uploadToS3(key, body, contentType) {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    ContentType: contentType,
+    Body: body,
+  });
+  await s3Client.send(command);
+  return key;
+}

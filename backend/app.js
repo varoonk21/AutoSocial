@@ -16,7 +16,7 @@ const app = express();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
-app.all("/api/auth/{*path}", toNodeHandler(auth));
+app.all("/api/v1/auth/{*path}", toNodeHandler(auth));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));

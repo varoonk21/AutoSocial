@@ -1,7 +1,7 @@
-import app from './app.js';
-import { connectDB } from './config/db.js';
-import env from './config/env.config.js';
-import { startScheduler } from './services/scheduler.service.js';
+import app from "./app.js";
+import { connectDB } from "./config/db.js";
+import env from "./config/env.config.js";
+import { startScheduler } from "./services/scheduler.service.js";
 
 async function start() {
   await connectDB();
@@ -15,6 +15,6 @@ async function start() {
 }
 
 start().catch((err) => {
-  console.error('Failed to start:', err);
+  console.error("Failed to start:", err);
   process.exit(1);
 });

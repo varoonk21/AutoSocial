@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../../api'
+import { Button } from "@/components/ui/button"
 
 const PLATFORMS = [
   { id: 'facebook', name: 'Facebook', color: '#1877F2' },
@@ -33,12 +34,11 @@ export function SocialConnect({ connectedProviders = [] }) {
         {PLATFORMS.map((platform) => {
           const isConnected = connectedProviders.includes(platform.id)
           return (
-            <button
+            <Button
               key={platform.id}
-              className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
-                isConnected
-                  ? 'bg-emerald-50 border-emerald-200'
-                  : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+              variant={isConnected ? "outline" : "default"}
+              className={`justify-start ${
+                isConnected ? "bg-emerald-50 border-emerald-200" : ""
               }`}
               onClick={() => handleConnect(platform.id)}
               disabled={connecting === platform.id}
@@ -55,7 +55,7 @@ export function SocialConnect({ connectedProviders = [] }) {
                 <p className="text-sm font-medium text-gray-900">{platform.name}</p>
                 <p className="text-xs text-gray-400">{isConnected ? 'Connected' : 'Not connected'}</p>
               </div>
-            </button>
+            </Button>
           )
         })}
       </div>

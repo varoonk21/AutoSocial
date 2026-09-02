@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { STATUS_CONFIG, PLATFORM_LABELS } from '../../constants/platforms'
 import { PlatformIcon } from '../shared/PlatformIcon'
+import { Button } from "@/components/ui/button"
 
 const MOCK_POSTS = [
   {
@@ -136,7 +137,9 @@ export function DashboardOverview() {
       <div className="bg-white rounded-xl border border-gray-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900">Recent Activity Feed</h2>
-          <button className="text-sm font-medium text-blue-600 hover:text-blue-700">View All</button>
+          <Button variant="link" size="sm">
+            View All
+          </Button>
         </div>
 
         <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -187,9 +190,9 @@ export function DashboardOverview() {
                 <div className="col-span-2 flex items-center justify-end gap-3">
                   <span className="text-sm text-gray-500">{post.date}</span>
                   {post.status === 'DRAFT' && (
-                    <button className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    <Button size="sm">
                       Review
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

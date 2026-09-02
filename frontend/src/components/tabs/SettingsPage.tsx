@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button"
+
 export function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
@@ -43,9 +45,9 @@ export function SettingsPage() {
         </div>
       </div>
 
-      <button className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+      <Button>
         Save Changes
-      </button>
+      </Button>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { Plus, Image } from 'lucide-react'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
-import { uploadFileToS3 } from '@/api'
+import { useFileUpload } from '@/hooks/useFileUpload'
 import { getLogoUrl } from '@/lib/s3'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,8 +31,6 @@ export function BrandKitPage() {
   const [watermarkLogoId, setWatermarkLogoId] = useState(null)
   const [primaryLogoUrl, setPrimaryLogoUrl] = useState(null)
   const [watermarkLogoUrl, setWatermarkLogoUrl] = useState(null)
-  const primaryLogoInputRef = useRef(null)
-  const watermarkInputRef = useRef(null)
   const [primaryColor, setPrimaryColor] = useState('#2563EB')
   const [secondaryColor, setSecondaryColor] = useState('#FFFFFF')
   const [accentColor, setAccentColor] = useState('#F59E0B')
@@ -80,18 +78,19 @@ export function BrandKitPage() {
     )
   }, [saveMutation, primaryLogoId, watermarkLogoId, primaryColor, secondaryColor, accentColor, primaryFont, secondaryFont, selectedTones, styleNotes])
 
-  const handleLogoUpload = async (e, setLogoId, setLogoUrl) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      try {
-        const uploaded = await uploadFileToS3(file)
-        setLogoId(uploaded._id)
-        setLogoUrl(getLogoUrl(uploaded.key))
-      } catch {
-        // Upload failed
-      }
-    }
-  }
+  const primaryLogoUpload = useFileUpload({
+    onUpload: (media) => {
+      setPrimaryLogoId(media._id)
+      setPrimaryLogoUrl(getLogoUrl(media.key))
+    },
+  })
+
+  const watermarkUpload = useFileUpload({
+    onUpload: (media) => {
+      setWatermarkLogoId(media._id)
+      setWatermarkLogoUrl(getLogoUrl(media.key))
+    },
+  })
 
   if (isLoading) {
     return (
@@ -149,13 +148,13 @@ export function BrandKitPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-2">Primary Logo</label>
                   <div
-                    onClick={() => primaryLogoInputRef.current?.click()}
+                    onClick={primaryLogoUpload.openPicker}
                     className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
                   >
                     <input
                       type="file"
-                      ref={primaryLogoInputRef}
-                      onChange={(e) => handleLogoUpload(e, setPrimaryLogoId, setPrimaryLogoUrl)}
+                      ref={primaryLogoUpload.inputRef}
+                      onChange={primaryLogoUpload.handleInputChange}
                       accept="image/*"
                       className="hidden"
                     />
@@ -172,18 +171,23 @@ export function BrandKitPage() {
                         <p className="text-[11px] text-gray-400 mt-1">PNG, SVG (Max 5MB)</p>
                       </>
                     )}
+                    {primaryLogoUpload.uploading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                        <p className="text-xs font-medium text-gray-600">Uploading...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-2">Watermark / Icon</label>
                   <div
-                    onClick={() => watermarkInputRef.current?.click()}
+                    onClick={watermarkUpload.openPicker}
                     className="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[140px] bg-gray-50/50 hover:bg-blue-50/20 group relative overflow-hidden"
                   >
                     <input
                       type="file"
-                      ref={watermarkInputRef}
-                      onChange={(e) => handleLogoUpload(e, setWatermarkLogoId, setWatermarkLogoUrl)}
+                      ref={watermarkUpload.inputRef}
+                      onChange={watermarkUpload.handleInputChange}
                       accept="image/*"
                       className="hidden"
                     />
@@ -196,6 +200,11 @@ export function BrandKitPage() {
                         </div>
                         <p className="text-xs font-medium text-gray-600">Square ratio</p>
                       </>
+                    )}
+                    {watermarkUpload.uploading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                        <p className="text-xs font-medium text-gray-600">Uploading...</p>
+                      </div>
                     )}
                   </div>
                 </div>

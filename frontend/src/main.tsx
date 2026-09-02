@@ -1,14 +1,14 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { Providers } from './providers'
-import App from './App'
-import { initS3PublicUrl } from './lib/s3'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { Providers } from "./providers";
+import App from "./App";
+import { useConfigStore } from "./store/configStore";
+import "./index.css";
 
-initS3PublicUrl()
+useConfigStore.getState().fetchS3PublicUrl();
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Providers>
       <BrowserRouter>
@@ -16,4 +16,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </BrowserRouter>
     </Providers>
   </React.StrictMode>,
-)
+);

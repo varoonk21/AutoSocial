@@ -22,22 +22,42 @@ const openai = new OpenAI({
 // ─── Content Generation ────────────────────────────────────────────────────────
 
 /**
+ * Builds a brand context string from brand kit data for AI prompts.
+ *
+ * @param {object} brandKit - The user's brand kit data
+ * @returns {string}
+ */
+function buildBrandContext(brandKit) {
+  if (!brandKit) return '';
+  const parts = [];
+  if (brandKit.tones?.length) parts.push(`Tone/Voice: ${brandKit.tones.join(', ')}`);
+  if (brandKit.fonts?.length) parts.push(`Preferred fonts: ${brandKit.fonts.join(', ')}`);
+  if (brandKit.styleNotes) parts.push(`Style notes: ${brandKit.styleNotes}`);
+  if (brandKit.primaryColor) parts.push(`Primary brand color: ${brandKit.primaryColor}`);
+  if (brandKit.accentColor) parts.push(`Accent color: ${brandKit.accentColor}`);
+  return parts.length ? `\nBrand guidelines: ${parts.join('. ')}.` : '';
+}
+
+/**
  * Generates multiple social media post variations from a given piece of content.
  * Returns an array of post arrays (some are single tweets, some are threads).
  *
  * Source: openai.service.ts → generatePosts()
  *
  * @param {string} content - The source text to generate posts from
+ * @param {object} [brandKit] - Optional brand kit data for personalized generation
  * @returns {Promise<Array<Array<{post: string}>>>}
  */
-async function generatePosts(content) {
+async function generatePosts(content, brandKit) {
+  const brandContext = buildBrandContext(brandKit);
+
   const [singlePosts, threads] = await Promise.all([
     openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: 'Generate a social media post from the content without emojis in the following JSON format: [{ "post": string }] with one element',
+          content: `Generate a social media post from the content without emojis in the following JSON format: [{ "post": string }] with one element.${brandContext}`,
         },
         { role: 'user', content },
       ],
@@ -49,7 +69,7 @@ async function generatePosts(content) {
       messages: [
         {
           role: 'system',
-          content: 'Generate a thread for social media in the following JSON format: Array<{ "post": string }> without emojis',
+          content: `Generate a thread for social media in the following JSON format: Array<{ "post": string }> without emojis.${brandContext}`,
         },
         { role: 'user', content },
       ],
@@ -79,8 +99,9 @@ async function generatePosts(content) {
  * Source: openai.service.ts → extractWebsiteText()
  *
  * @param {string} url
+ * @param {object} [brandKit] - Optional brand kit data for personalized generation
  */
-async function generatePostsFromUrl(url) {
+async function generatePostsFromUrl(url, brandKit) {
   const response = await fetch(url);
   const html = await response.text();
 
@@ -96,7 +117,7 @@ async function generatePostsFromUrl(url) {
   });
 
   const articleContent = extracted.choices[0].message.content || '';
-  return generatePosts(articleContent);
+  return generatePosts(articleContent, brandKit);
 }
 
 /**

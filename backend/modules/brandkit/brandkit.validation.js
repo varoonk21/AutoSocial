@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 const AVAILABLE_FONTS = [
-  "Inter (Primary)",
-  "Roboto (Secondary)",
-  "Outfit (Primary)",
-  "Poppins (Secondary)",
+  "Inter",
+  "Roboto",
+  "Outfit",
+  "Poppins",
   "Plus Jakarta Sans",
   "Montserrat",
   "Open Sans",
@@ -21,7 +21,7 @@ export const brandKitSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#2563EB"),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#FFFFFF"),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").optional().default("#F59E0B"),
-  fonts: z.array(z.enum(AVAILABLE_FONTS)).min(1).max(5).optional().default(["Inter (Primary)", "Roboto (Secondary)"]),
+  fonts: z.array(z.enum(AVAILABLE_FONTS)).length(2).optional().default(["Inter", "Roboto"]),
   tones: z.array(z.enum(AVAILABLE_TONES)).min(1).max(6).optional().default(["Professional", "Bold"]),
   styleNotes: z.string().max(1000).optional().default(""),
 });

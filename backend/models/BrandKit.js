@@ -8,7 +8,7 @@ const BrandKitSchema = new mongoose.Schema(
     primaryColor: { type: String, default: "#2563EB" },
     secondaryColor: { type: String, default: "#FFFFFF" },
     accentColor: { type: String, default: "#F59E0B" },
-    fonts: { type: [String], default: ["Inter (Primary)", "Roboto (Secondary)"] },
+    fonts: { type: [String], default: ["Inter", "Roboto"] },
     tones: { type: [String], default: ["Professional", "Bold"] },
     styleNotes: { type: String, default: "" },
   },

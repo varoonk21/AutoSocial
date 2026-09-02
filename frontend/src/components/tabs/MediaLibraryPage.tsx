@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { api, uploadFileToS3 } from "../../api";
+import { api } from "../../api";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 export function MediaLibraryPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { upload, uploading, progress } = useFileUpload();
 
   // State
   const [mediaList, setMediaList] = useState([]);
@@ -40,13 +42,11 @@ export function MediaLibraryPage() {
   // Modals & Interactivity
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(null);
 
   // Load from backend & listen to Header custom actions
   useEffect(() => {
@@ -85,8 +85,6 @@ export function MediaLibraryPage() {
 
   const handleFileUpload = async (files) => {
     if (!files || !files.length) return;
-    setUploading(true);
-    setUploadProgress(0);
     try {
       const newItems = [];
       for (const file of Array.from(files)) {
@@ -95,10 +93,8 @@ export function MediaLibraryPage() {
 
         let fileUrl = URL.createObjectURL(file);
         try {
-          const media = await uploadFileToS3(file, (progress) => {
-            setUploadProgress(progress);
-          });
-          if (media.path) fileUrl = media.path;
+          const media = await upload(file);
+          if (media?.path) fileUrl = media.path;
         } catch (e) {}
 
         newItems.push({
@@ -117,8 +113,6 @@ export function MediaLibraryPage() {
       setMediaList((prev) => [...newItems, ...prev]);
       showToast("Media uploaded successfully!");
     } finally {
-      setUploading(false);
-      setUploadProgress(null);
     }
   };
 
@@ -190,7 +184,7 @@ export function MediaLibraryPage() {
       {uploading && (
         <div className="fixed bottom-6 left-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
           <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-          <span>Uploading... {uploadProgress !== null ? `${uploadProgress}%` : ""}</span>
+          <span>Uploading... {progress > 0 ? `${progress}%` : ""}</span>
         </div>
       )}
 

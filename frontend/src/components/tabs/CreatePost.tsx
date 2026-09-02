@@ -17,7 +17,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import { api } from "../../api";
+import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -115,7 +115,7 @@ export function CreatePost() {
         Array.from(files).map(async (file) => {
           const formData = new FormData();
           formData.append("file", file);
-          const data = await api.post("/media/upload", formData);
+          const data = await apiPost("/media/upload", formData);
           return { path: data.media.path, type: data.media.type, alt: "" };
         }),
       );
@@ -141,7 +141,7 @@ export function CreatePost() {
         return;
       }
 
-      const data = await api.post("/posts/ai/generate", {
+      const data = await apiPost("/posts/ai/generate", {
         content: sourceText,
         tone,
         language,
@@ -187,7 +187,7 @@ export function CreatePost() {
           media: media.map((m) => m.path),
         }));
 
-        await api.post("/posts", {
+        await apiPost("/posts", {
           type: publishType,
           date: isScheduled && scheduleDate ? scheduleDate : undefined,
           posts,

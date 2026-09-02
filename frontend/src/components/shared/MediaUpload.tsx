@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { api } from '../../api'
+import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/fetcher'
 import { Button } from "@/components/ui/button"
 
 export function MediaUpload({ media = [], onMediaChange }) {
@@ -14,7 +14,7 @@ export function MediaUpload({ media = [], onMediaChange }) {
         Array.from(files).map(async (file) => {
           const formData = new FormData()
           formData.append('file', file)
-          const data = await api.post('/media/upload', formData)
+          const data = await apiPost('/media/upload', formData)
           return { path: data.media.path, type: data.media.type, alt: '' }
         })
       )

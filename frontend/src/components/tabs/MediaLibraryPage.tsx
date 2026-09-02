@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { api } from "../../api";
+import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/fetcher";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,7 +78,7 @@ export function MediaLibraryPage() {
       if (searchQuery) params.append("search", searchQuery);
       
       const queryString = params.toString();
-      const data = await api.get(`/media${queryString ? `?${queryString}` : ""}`);
+      const data = await apiGet(`/media${queryString ? `?${queryString}` : ""}`);
       
       if (data && data.media) {
         const backendItems = data.media.map((item) => ({
@@ -133,7 +133,7 @@ export function MediaLibraryPage() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      const res = await api.post("/media/generate-image", { prompt: aiPrompt });
+      const res = await apiPost("/media/generate-image", { prompt: aiPrompt });
       
       if (res.media) {
         setMediaList((prev) => [res.media, ...prev]);
@@ -158,7 +158,7 @@ export function MediaLibraryPage() {
   const handleDeleteConfirm = async () => {
     if (!deleteConfirmId) return;
     try {
-      await api.del(`/media/${deleteConfirmId}`);
+      await apiDelete(`/media/${deleteConfirmId}`);
       setMediaList((prev) => prev.filter((item) => item._id !== deleteConfirmId));
       if (selectedAsset?._id === deleteConfirmId) setSelectedAsset(null);
       showToast("Media deleted");

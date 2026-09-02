@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api";
+import { apiGet } from "../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../constants/platforms";
 import { PlatformIcon } from "../shared/PlatformIcon";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function DashboardOverview() {
 
   async function loadPosts() {
     try {
-      const data = await api.get("/posts?state=QUEUE");
+      const data = await apiGet("/posts?state=QUEUE");
       if (data.posts && data.posts.length > 0) {
         const mapped = data.posts.slice(0, 5).map((p) => ({
           id: p._id,

@@ -6,22 +6,24 @@ import {
 } from './media.service.js';
 import { generateImage } from '../../services/ai.service.js';
 import { uploadToS3 } from '../../lib/s3.js';
+import { sendSuccess, sendError } from '../../utils/response.util.js';
+import { AppError } from '../../utils/appError.util.js';
 
 async function getUploadUrlHandler(req, res) {
   const { fileName, contentType, fileSize } = req.body;
   const result = await getUploadUrl(req.user._id, { fileName, contentType, fileSize });
-  res.json(result);
+  sendSuccess(res, result);
 }
 
 async function saveMetadataHandler(req, res) {
   const { key, originalName, contentType, fileSize, source } = req.body;
   const media = await saveMediaMetadata(req.user._id, { key, originalName, contentType, fileSize, source });
-  res.status(201).json({ media });
+  sendSuccess(res, { media }, 201);
 }
 
 async function generateImageHandler(req, res) {
   const { prompt, vertical = false } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'prompt is required' });
+  if (!prompt) return sendError(res, new AppError('prompt is required', 400, "BAD_REQUEST"));
 
   const base64 = await generateImage(prompt, !!vertical);
   
@@ -42,18 +44,18 @@ async function generateImageHandler(req, res) {
   const { getS3Url } = await import('../../lib/s3.js');
   const path = await getS3Url(key);
 
-  res.json({ media: { ...media.toObject(), path } });
+  sendSuccess(res, { media: { ...media.toObject(), path } });
 }
 
 async function listMedia(req, res) {
   const { page = 1, search = '', type = '', source = '' } = req.query;
   const result = await getMedia(req.user._id, Number(page), search, type, source);
-  res.json(result);
+  sendSuccess(res, result);
 }
 
 async function deleteMediaHandler(req, res) {
   await deleteMediaPermanently(req.user._id, req.params.id);
-  res.json({ success: true });
+  sendSuccess(res, { success: true });
 }
 
 export {

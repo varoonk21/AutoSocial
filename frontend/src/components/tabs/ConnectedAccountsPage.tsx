@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../api'
+import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/fetcher'
 import { SocialConnect } from '../shared/SocialConnect'
 import { Button } from "@/components/ui/button"
 
@@ -14,7 +14,7 @@ export function ConnectedAccountsPage() {
 
   async function loadIntegrations() {
     try {
-      const data = await api.get('/integrations/list')
+      const data = await apiGet('/integrations/list')
       setIntegrations(data.integrations || [])
     } catch {}
   }
@@ -24,7 +24,7 @@ export function ConnectedAccountsPage() {
   const handleDisable = async (id, disabled) => {
     setLoading(id)
     try {
-      await api.put(`/integrations/${id}/disable`, { disabled })
+      await apiPut(`/integrations/${id}/disable`, { disabled })
       loadIntegrations()
     } finally {
       setLoading(null)
@@ -35,7 +35,7 @@ export function ConnectedAccountsPage() {
     if (!confirm('Disconnect this account? Future scheduled posts to this account will fail.')) return
     setLoading(id)
     try {
-      await api.del(`/integrations/${id}`)
+      await apiDelete(`/integrations/${id}`)
       loadIntegrations()
     } finally {
       setLoading(null)

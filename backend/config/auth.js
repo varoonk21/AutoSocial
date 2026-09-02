@@ -16,10 +16,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [env.FRONTEND_URL],
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
   },
+  basePath: "/api/v1/auth",
   user: {
     modelName: "user",
   },

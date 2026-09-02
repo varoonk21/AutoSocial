@@ -12,7 +12,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api/auth": "http://localhost:3000",
       "/api/v1": "http://localhost:3000",
       "/uploads": "http://localhost:3000",
     },

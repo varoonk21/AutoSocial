@@ -1,6 +1,13 @@
 import { PLATFORM_COLORS } from '@/constants/platforms'
 
-export function PlatformIcon({ platform, size = 16 }) {
+type Platform = keyof typeof PLATFORM_COLORS
+
+interface PlatformIconProps {
+  platform: Platform
+  size?: number
+}
+
+export function PlatformIcon({ platform, size = 16 }: PlatformIconProps) {
   const color = PLATFORM_COLORS[platform] || '#6b7280'
 
   return (

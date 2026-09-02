@@ -2,12 +2,23 @@ import { useRef, useState } from "react";
 import { apiPost } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 
-export function MediaUpload({ media = [], onMediaChange }) {
+interface MediaItem {
+  path: string
+  type: string
+  alt: string
+}
+
+interface MediaUploadProps {
+  media?: MediaItem[]
+  onMediaChange: (media: MediaItem[]) => void
+}
+
+export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = async (files) => {
+  const handleFiles = async (files: FileList) => {
     setUploading(true);
     try {
       const uploaded = await Promise.all(
@@ -26,7 +37,7 @@ export function MediaUpload({ media = [], onMediaChange }) {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);

@@ -1,4 +1,11 @@
-export function SchedulePicker({ type, date, onTypeChange, onDateChange }) {
+interface SchedulePickerProps {
+  type: string
+  date: string
+  onTypeChange: (type: string) => void
+  onDateChange: (date: string) => void
+}
+
+export function SchedulePicker({ type, date, onTypeChange, onDateChange }: SchedulePickerProps) {
   const minDate = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
 
   return (

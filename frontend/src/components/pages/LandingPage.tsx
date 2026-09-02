@@ -155,16 +155,17 @@ export function LandingPage() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-medium text-neutral-700">Password</label>
+                  <div className="flex justify-between items-center relative mb-1.5">
+                    <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Password</label>
                     {!isSignUp && (
-                      <a
-                        href="#forgot"
-                        onClick={(e) => e.preventDefault()}
-                        className="text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:underline"
+                      <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => navigate("/forgot-password")}
+                        className="text-xs font-medium text-blue-600 p-0 h-auto hover:text-blue-700 hover:no-underline"
                       >
                         Forgot password?
-                      </a>
+                      </Button>
                     )}
                   </div>
                   <div className="relative">

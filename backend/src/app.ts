@@ -31,7 +31,7 @@ app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/brand-kit", brandKitRoutes);
 app.use("/api/v1/settings", settingsRoutes);
 
-const frontendDist = path.join(__dirname, "../frontend/dist");
+const frontendDist = path.join(__dirname, "../../frontend/dist");
 serveFrontend(app, frontendDist);
 
 app.use((err: Error & { status?: number }, _req: Request, res: Response, _next: NextFunction) => {

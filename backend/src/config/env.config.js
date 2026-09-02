@@ -22,6 +22,14 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   S3_ENDPOINT: z.string().optional(),
   S3_PUBLIC_URL: z.string().optional(),
+  LOG_LEVEL: z
+    .string()
+    .optional()
+    .default("info")
+    .transform((v) => v.toLowerCase())
+    .refine((v) => ["trace", "debug", "info", "warn", "error", "fatal"].includes(v), {
+      message: "Invalid log level. Use trace/debug/info/warn/error/fatal",
+    }),
 });
 
 const parsed = envSchema.safeParse(process.env);

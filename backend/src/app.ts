@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { toNodeHandler } from "better-auth/node";
@@ -34,7 +34,7 @@ app.use("/api/v1/settings", settingsRoutes);
 const frontendDist = path.join(__dirname, "../frontend/dist");
 serveFrontend(app, frontendDist);
 
-app.use((err, _req, res, _next) => {
+app.use((err: Error & { status?: number }, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ error: err.message || "Internal server error" });
 });

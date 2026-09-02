@@ -4,8 +4,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Camera } from "lucide-react"
+import { useFileUpload } from "../../hooks/useFileUpload"
+import { authClient, useSession } from "@/lib/auth-client"
+import { getImageUrl } from "@/lib/s3"
 
 export function SettingsPage() {
+  const { data: session } = useSession()
+  const { upload, inputRef, uploading, openPicker } = useFileUpload({
+    onUpload: async (media) => {
+      await authClient.updateUser({ image: media.key })
+      setToast("Profile picture updated!")
+      setTimeout(() => setToast(""), 3000)
+    },
+    onError: () => {
+      setToast("Failed to upload picture")
+      setTimeout(() => setToast(""), 3000)
+    }
+  })
+
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [notifications, setNotifications] = useState({
@@ -80,7 +97,44 @@ export function SettingsPage() {
         <CardHeader>
           <CardTitle>Profile</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+            <div className="flex items-center gap-5">
+              <div className="relative">
+                <img 
+                  src={session?.user?.image ? getImageUrl(session.user.image) : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"}
+                  alt="Profile Picture" 
+                  className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-100"
+                />
+                {uploading && (
+                  <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-full">
+                    <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1">
+                <input
+                  type="file"
+                  ref={inputRef}
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) upload(file);
+                  }}
+                />
+                <Button variant="outline" size="sm" onClick={openPicker} disabled={uploading}>
+                  <Camera className="w-4 h-4 mr-2" />
+                  Change Picture
+                </Button>
+                <p className="text-xs text-gray-500">JPG, GIF or PNG. Max size of 10MB.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100" />
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <Input

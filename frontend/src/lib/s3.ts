@@ -23,7 +23,7 @@ export function getS3PublicUrl(): string {
   return cachedS3PublicUrl || ''
 }
 
-export function getLogoUrl(key: string | null | undefined): string {
+export function getImageUrl(key: string | null | undefined): string {
   if (!key) return ''
   if (key.startsWith('http') || key.startsWith('blob:')) return key
   const base = cachedS3PublicUrl || ''

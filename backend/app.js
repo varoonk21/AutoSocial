@@ -22,8 +22,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve uploaded files
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Serve uploaded files (now using S3)
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 

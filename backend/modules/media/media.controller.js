@@ -5,7 +5,7 @@ import {
   saveMediaMetadata,
 } from './media.service.js';
 import { generateImage } from '../../services/ai.service.js';
-import { putPresignedUrl } from '../../lib/s3.js';
+import { uploadToS3 } from '../../lib/s3.js';
 
 async function getUploadUrlHandler(req, res) {
   try {
@@ -38,7 +38,7 @@ async function generateImageHandler(req, res) {
     const imageBuffer = Buffer.from(base64, 'base64');
     const key = `users/${req.user._id}/images/ai-${Date.now()}.png`;
     
-    await putPresignedUrl(key, imageBuffer, 'image/png');
+    await uploadToS3(key, imageBuffer, 'image/png');
     
     const media = await saveMediaMetadata(req.user._id, {
       key,

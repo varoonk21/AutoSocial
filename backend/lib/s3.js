@@ -38,24 +38,13 @@ export async function deleteS3Object(key) {
   await s3Client.send(command);
 }
 
-export async function putPresignedUrl(key, body, contentType) {
+export async function uploadToS3(key, body, contentType) {
   const command = new PutObjectCommand({
     Bucket: BUCKET,
     Key: key,
     ContentType: contentType,
+    Body: body,
   });
-
-  const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: PRESIGNED_URL_EXPIRY });
-  
-  const response = await fetch(presignedUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body,
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to upload to S3');
-  }
-
+  await s3Client.send(command);
   return key;
 }

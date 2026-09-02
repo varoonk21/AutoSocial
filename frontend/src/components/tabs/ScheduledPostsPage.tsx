@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '../../api'
+import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/fetcher'
 import { STATUS_CONFIG } from '../../constants/platforms'
 import { PlatformIcon } from '../shared/PlatformIcon'
 import { Button } from "@/components/ui/button"
@@ -19,14 +19,14 @@ export function ScheduledPostsPage() {
 
   async function loadIntegrations() {
     try {
-      const data = await api.get('/integrations/list')
+      const data = await apiGet('/integrations/list')
       setIntegrations(data.integrations || [])
     } catch {}
   }
 
   async function loadPosts() {
     try {
-      const data = await api.get('/posts')
+      const data = await apiGet('/posts')
       setPosts(data.posts || [])
     } catch {}
   }
@@ -35,7 +35,7 @@ export function ScheduledPostsPage() {
     if (!confirm('Delete this post?')) return
     setDeleting(postId)
     try {
-      await api.del(`/posts/${postId}`)
+      await apiDelete(`/posts/${postId}`)
       loadPosts()
     } finally {
       setDeleting(null)

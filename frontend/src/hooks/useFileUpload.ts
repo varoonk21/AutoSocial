@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { uploadFileToS3 } from '../api'
+import { uploadFileToS3 } from '../api/index'
 import type { Media, UseFileUploadOptions, UseFileUploadReturn } from '../types/upload'
 
 export function useFileUpload({ onUpload, onError }: UseFileUploadOptions = {}): UseFileUploadReturn {

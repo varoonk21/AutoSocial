@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { api } from "../../api"
+import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/fetcher"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -23,7 +23,7 @@ export function SettingsPage() {
 
   async function loadSettings() {
     try {
-      const data = await api.get("/settings")
+      const data = await apiGet("/settings")
       setName(data.name || "")
       setEmail(data.email || "")
       setNotifications(data.notifications || {
@@ -42,7 +42,7 @@ export function SettingsPage() {
     setSaving(true)
     setToast("")
     try {
-      await api.put("/settings", { name, notifications })
+      await apiPut("/settings", { name, notifications })
       setToast("Settings saved successfully!")
       setTimeout(() => setToast(""), 3000)
     } catch (err) {

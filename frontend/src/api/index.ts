@@ -1,14 +1,12 @@
-import { fetcher } from "../lib/fetcher";
+import { apiPost } from "../lib/fetcher";
 import type { Media } from "../types/upload";
-
-export const api = fetcher;
 
 /**
  * Uploads a file to S3 via presigned URL.
  * Returns metadata for saving to backend.
  */
 export async function uploadFileToS3(file: File, onProgress?: (progress: number) => void, source = "user"): Promise<Media> {
-  const { presignedUrl, key } = await fetcher.post("/media/upload-url", {
+  const { presignedUrl, key } = await apiPost<{ presignedUrl: string; key: string }>("/media/upload-url", {
     fileName: file.name,
     contentType: file.type,
     fileSize: file.size,
@@ -28,7 +26,7 @@ export async function uploadFileToS3(file: File, onProgress?: (progress: number)
     xhr.onload = async () => {
       if (xhr.status === 200 || xhr.status === 204) {
         try {
-          const media = await fetcher.post("/media", {
+          const media = await apiPost<{ media: Media }>("/media", {
             key,
             originalName: file.name,
             contentType: file.type,

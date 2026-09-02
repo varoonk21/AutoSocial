@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { api } from '../../api'
+import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/fetcher'
 import { Button } from "@/components/ui/button"
 
 const PLATFORMS = [
@@ -17,7 +17,7 @@ export function SocialConnect({ connectedProviders = [] }) {
     setError('')
     setConnecting(providerId)
     try {
-      const data = await api.get(`/integrations/social/${providerId}`)
+      const data = await apiGet(`/integrations/social/${providerId}`)
       if (!data.url) throw new Error(data.error || 'Failed to get OAuth URL')
       window.location.href = data.url
     } catch (err) {

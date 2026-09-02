@@ -5,6 +5,7 @@ import {
   saveMediaMetadata,
 } from './media.service.js';
 import { generateImage } from '../../services/ai.service.js';
+import { uploadToS3 } from '../../lib/s3.js';
 
 async function getUploadUrlHandler(req, res) {
   try {
@@ -18,8 +19,8 @@ async function getUploadUrlHandler(req, res) {
 
 async function saveMetadataHandler(req, res) {
   try {
-    const { key, originalName, contentType, fileSize } = req.body;
-    const media = await saveMediaMetadata(req.user._id, { key, originalName, contentType, fileSize });
+    const { key, originalName, contentType, fileSize, source } = req.body;
+    const media = await saveMediaMetadata(req.user._id, { key, originalName, contentType, fileSize, source });
     res.status(201).json({ media });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -32,7 +33,25 @@ async function generateImageHandler(req, res) {
     if (!prompt) return res.status(400).json({ error: 'prompt is required' });
 
     const base64 = await generateImage(prompt, !!vertical);
-    res.json({ output: `data:image/png;base64,${base64}` });
+    
+    // Save AI-generated image to S3 and database
+    const imageBuffer = Buffer.from(base64, 'base64');
+    const key = `users/${req.user._id}/images/ai-${Date.now()}.png`;
+    
+    await uploadToS3(key, imageBuffer, 'image/png');
+    
+    const media = await saveMediaMetadata(req.user._id, {
+      key,
+      originalName: `ai-${prompt.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 20)}.png`,
+      contentType: 'image/png',
+      fileSize: imageBuffer.length,
+      source: 'ai',
+    });
+
+    const { getS3Url } = await import('../../lib/s3.js');
+    const path = await getS3Url(key);
+
+    res.json({ media: { ...media.toObject(), path } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { signIn, signUp } from '../../lib/auth-client'
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signIn, signUp } from "../../lib/auth-client";
+import { Button } from "@/components/ui/button";
 
 export function LandingPage() {
-  const navigate = useNavigate()
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function getCurrentYear() {
-    return new Date().getFullYear()
+    return new Date().getFullYear();
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       if (isSignUp) {
@@ -28,48 +28,48 @@ export function LandingPage() {
           name,
           email,
           password,
-        })
+        });
 
         if (authError) {
-          setError(authError.message || 'Failed to sign up')
-          return
+          setError(authError.message || "Failed to sign up");
+          return;
         }
 
         if (data) {
-          navigate('/')
+          navigate("/");
         }
       } else {
         const { data, error: authError } = await signIn.email({
           email,
           password,
-        })
+        });
 
         if (authError) {
-          setError(authError.message || 'Failed to sign in')
-          return
+          setError(authError.message || "Failed to sign in");
+          return;
         }
 
         if (data) {
-          navigate('/')
+          navigate("/");
         }
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError("An unexpected error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const toggleMode = () => {
-    setIsSignUp(!isSignUp)
-    setError('')
-    setName('')
-    setEmail('')
-    setPassword('')
-  }
+    setIsSignUp(!isSignUp);
+    setError("");
+    setName("");
+    setEmail("");
+    setPassword("");
+  };
 
   return (
-    <div className="min-h-screen w-full relative bg-white text-neutral-900 font-[Inter] selection:bg-blue-100 selection:text-blue-900 antialiased">
+    <div className="min-h-screen w-full relative bg-white text-neutral-900  selection:bg-blue-100 selection:text-blue-900 antialiased">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -77,9 +77,9 @@ export function LandingPage() {
             linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
             linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
           `,
-          backgroundSize: '50px 50px',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)',
-          maskImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)',
+          backgroundSize: "50px 50px",
+          WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)",
+          maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)",
         }}
       />
 
@@ -87,7 +87,7 @@ export function LandingPage() {
         <div className="hidden w-1/2 flex-col justify-between p-12 md:flex">
           <div
             className="flex items-center gap-2.5 font-semibold tracking-tight text-xl cursor-pointer text-neutral-900"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
             <img src="/Icon.png" alt="AutoSocial Icon" className="w-9 h-9 object-contain rounded-lg" />
             <span>AutoSocial</span>
@@ -119,19 +119,13 @@ export function LandingPage() {
           <div className="w-full max-w-sm flex justify-center">
             <div className="w-full bg-white rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
               <div className="text-center space-y-1">
-                <h2 className="text-lg font-bold text-neutral-900 tracking-tight">
-                  {isSignUp ? 'Create an account' : 'Sign in to AutoSocial'}
-                </h2>
+                <h2 className="text-lg font-bold text-neutral-900 tracking-tight">{isSignUp ? "Create an account" : "Sign in to AutoSocial"}</h2>
                 <p className="text-sm text-neutral-500 font-normal">
-                  {isSignUp ? 'Enter your details to get started' : 'Welcome back! Please sign in to continue'}
+                  {isSignUp ? "Enter your details to get started" : "Welcome back! Please sign in to continue"}
                 </p>
               </div>
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                  {error}
-                </div>
-              )}
+              {error && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignUp && (
@@ -175,7 +169,7 @@ export function LandingPage() {
                   </div>
                   <div className="relative">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
@@ -190,34 +184,25 @@ export function LandingPage() {
                       size="sm"
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? "Hide" : "Show"}
                     </Button>
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full mt-2"
-                >
+                <Button type="submit" disabled={loading} className="w-full mt-2">
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <span>{isSignUp ? 'Sign Up' : 'Sign In'}</span>
+                    <span>{isSignUp ? "Sign Up" : "Sign In"}</span>
                   )}
                 </Button>
               </form>
 
               <div className="text-center">
                 <span className="text-sm text-neutral-500 font-normal">
-                  {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={toggleMode}
-                    className="text-sm font-medium text-neutral-900 p-0 h-auto"
-                  >
-                    {isSignUp ? 'Sign in' : 'Sign up'}
+                  {isSignUp ? "Already have an account? " : "Don't have an account? "}
+                  <Button type="button" variant="link" onClick={toggleMode} className="text-sm font-medium text-neutral-900 p-0 h-auto">
+                    {isSignUp ? "Sign in" : "Sign up"}
                   </Button>
                 </span>
               </div>
@@ -242,5 +227,5 @@ export function LandingPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

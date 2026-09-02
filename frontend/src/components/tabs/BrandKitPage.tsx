@@ -2,6 +2,7 @@ import { Plus, Image, Trash2 } from 'lucide-react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
 import { uploadFileToS3 } from '@/api'
+import { getLogoUrl } from '@/lib/s3'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -80,8 +81,7 @@ export function BrandKitPage() {
         const uploaded = await uploadFileToS3(file)
         setLogo(uploaded.key)
       } catch {
-        const url = URL.createObjectURL(file)
-        setLogo(url)
+        // Upload failed — do not store blob URLs in state
       }
     }
   }
@@ -170,7 +170,7 @@ export function BrandKitPage() {
                       className="hidden"
                     />
                     {primaryLogo ? (
-                      <img src={primaryLogo.startsWith('blob:') || primaryLogo.startsWith('http') ? primaryLogo : `/api/v1/media/${primaryLogo}`} alt="Primary Logo" className="max-h-20 object-contain" />
+                      <img src={getLogoUrl(primaryLogo)} alt="Primary Logo" className="max-h-20 object-contain" />
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -198,7 +198,7 @@ export function BrandKitPage() {
                       className="hidden"
                     />
                     {watermarkLogo ? (
-                      <img src={watermarkLogo.startsWith('blob:') || watermarkLogo.startsWith('http') ? watermarkLogo : `/api/v1/media/${watermarkLogo}`} alt="Watermark Icon" className="max-h-16 object-contain" />
+                      <img src={getLogoUrl(watermarkLogo)} alt="Watermark Icon" className="max-h-16 object-contain" />
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -381,7 +381,7 @@ export function BrandKitPage() {
               <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-white shadow-xs">
                 <div className="flex items-center gap-2.5">
                   {primaryLogo ? (
-                    <img src={primaryLogo.startsWith('blob:') || primaryLogo.startsWith('http') ? primaryLogo : `/api/v1/media/${primaryLogo}`} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
+                    <img src={getLogoUrl(primaryLogo)} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
                   ) : (
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
@@ -399,7 +399,7 @@ export function BrandKitPage() {
                     className="w-full h-44 object-cover"
                   />
                   <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                    {watermarkLogo ? <img src={watermarkLogo.startsWith('blob:') || watermarkLogo.startsWith('http') ? watermarkLogo : `/api/v1/media/${watermarkLogo}`} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+                    {watermarkLogo ? <img src={getLogoUrl(watermarkLogo)} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
                   </div>
                 </div>
                 <p className="text-xs text-gray-700 leading-relaxed font-normal">

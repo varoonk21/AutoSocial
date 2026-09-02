@@ -23,13 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export function MediaLibraryPage() {
   const navigate = useNavigate();
@@ -132,8 +126,7 @@ export function MediaLibraryPage() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      let generatedPath =
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800&h=600";
+      let generatedPath = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800&h=600";
       try {
         const res = await api.post("/media/generate-image", { prompt: aiPrompt });
         if (res.path) generatedPath = res.path;
@@ -141,7 +134,10 @@ export function MediaLibraryPage() {
 
       const newItem = {
         _id: String(Date.now()),
-        name: `ai-gen-${aiPrompt.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 15)}.jpg`,
+        name: `ai-gen-${aiPrompt
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "-")
+          .slice(0, 15)}.jpg`,
         type: "image",
         badge: "IMAGE",
         path: generatedPath,
@@ -194,7 +190,7 @@ export function MediaLibraryPage() {
   });
 
   return (
-    <div className="max-w-[1360px] mx-auto space-y-6 font-[Inter] text-neutral-900 pb-16 select-none">
+    <div className="max-w-[1360px] mx-auto space-y-6  text-neutral-900 pb-16 select-none">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
@@ -207,7 +203,7 @@ export function MediaLibraryPage() {
       {uploading && (
         <div className="fixed bottom-6 left-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
           <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-          <span>Uploading... {uploadProgress !== null ? `${uploadProgress}%` : ''}</span>
+          <span>Uploading... {uploadProgress !== null ? `${uploadProgress}%` : ""}</span>
         </div>
       )}
 
@@ -224,23 +220,14 @@ export function MediaLibraryPage() {
       {/* Header Title Bar */}
       <div className="pb-2 border-b border-gray-200/80">
         <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Media Library</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Store and manage all your media files in one place.
-        </p>
+        <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
       </div>
 
       {/* Filters & Control Toolbar */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          
           {/* Left Segmented Filter Pill Box (Type Filter) */}
-          <ToggleGroup
-            type="single"
-            value={typeFilter}
-            onValueChange={(value) => value && setTypeFilter(value)}
-            variant="outline"
-            size="sm"
-          >
+          <ToggleGroup type="single" value={typeFilter} onValueChange={(value) => value && setTypeFilter(value)} variant="outline" size="sm">
             <ToggleGroupItem value="all">
               <ImageIcon className="w-4 h-4 text-[#243746]" />
               <span>All Media</span>
@@ -317,13 +304,7 @@ export function MediaLibraryPage() {
         {/* Search Bar Row */}
         <div className="relative w-full">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search media..."
-            className="pl-10"
-          />
+          <Input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search media..." className="pl-10" />
         </div>
       </div>
 
@@ -337,15 +318,12 @@ export function MediaLibraryPage() {
           >
             {/* Thumbnail Box */}
             <div className="relative aspect-4/3 bg-gray-100 overflow-hidden flex items-center justify-center">
-              
               {/* Image / Video / Document Visual */}
               {asset.type === "document" ? (
                 <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-4">
                   <div className="relative bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
                     <FileText className="w-10 h-10 text-gray-400 mb-1" />
-                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
-                      {asset.docType || "PDF"}
-                    </span>
+                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">{asset.docType || "PDF"}</span>
                   </div>
                 </div>
               ) : (
@@ -396,12 +374,7 @@ export function MediaLibraryPage() {
                   onClick={(e) => e.stopPropagation()}
                   className="absolute top-9 right-2.5 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={(e) => copyLink(asset.path, asset._id, e)}
-                  >
+                  <Button variant="ghost" size="sm" className="w-full justify-start" onClick={(e) => copyLink(asset.path, asset._id, e)}>
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy Link</span>
                   </Button>
@@ -476,60 +449,34 @@ export function MediaLibraryPage() {
       {/* Pagination & Stats Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200/80">
         <div className="flex items-center gap-1 mx-auto sm:mx-0">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          >
+          <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          
-          <Button
-            variant={currentPage === 1 ? "default" : "ghost"}
-            size="icon-sm"
-            onClick={() => setCurrentPage(1)}
-          >
+
+          <Button variant={currentPage === 1 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(1)}>
             1
           </Button>
 
-          <Button
-            variant={currentPage === 2 ? "default" : "ghost"}
-            size="icon-sm"
-            onClick={() => setCurrentPage(2)}
-          >
+          <Button variant={currentPage === 2 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(2)}>
             2
           </Button>
 
-          <Button
-            variant={currentPage === 3 ? "default" : "ghost"}
-            size="icon-sm"
-            onClick={() => setCurrentPage(3)}
-          >
+          <Button variant={currentPage === 3 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(3)}>
             3
           </Button>
 
           <span className="text-xs text-gray-400 px-1">...</span>
 
-          <Button
-            variant={currentPage === 10 ? "default" : "ghost"}
-            size="icon-sm"
-            onClick={() => setCurrentPage(10)}
-          >
+          <Button variant={currentPage === 10 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(10)}>
             10
           </Button>
 
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() => setCurrentPage(Math.min(10, currentPage + 1))}
-          >
+          <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(Math.min(10, currentPage + 1))}>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
 
-        <span className="text-xs text-gray-400 font-medium text-center sm:text-right">
-          Showing 1 to {filteredMedia.length} of 120
-        </span>
+        <span className="text-xs text-gray-400 font-medium text-center sm:text-right">Showing 1 to {filteredMedia.length} of 120</span>
       </div>
 
       {/* ASSET DETAIL MODAL */}
@@ -538,11 +485,7 @@ export function MediaLibraryPage() {
           <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#1c2b36] truncate">{selectedAsset.name}</h3>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setSelectedAsset(null)}
-              >
+              <Button variant="ghost" size="icon-sm" onClick={() => setSelectedAsset(null)}>
                 <X className="w-5 h-5" />
               </Button>
             </div>
@@ -570,9 +513,7 @@ export function MediaLibraryPage() {
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">Source</span>
-                  <span className="font-bold text-[#1c2b36]">
-                    {selectedAsset.source === "ai" ? "AI Generated" : "User Upload"}
-                  </span>
+                  <span className="font-bold text-[#1c2b36]">{selectedAsset.source === "ai" ? "AI Generated" : "User Upload"}</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">Date</span>
@@ -582,21 +523,13 @@ export function MediaLibraryPage() {
             </div>
 
             <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDelete(selectedAsset._id)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => handleDelete(selectedAsset._id)}>
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
               </Button>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyLink(selectedAsset.path, selectedAsset._id)}
-                >
+                <Button variant="outline" size="sm" onClick={() => copyLink(selectedAsset.path, selectedAsset._id)}>
                   <Copy className="w-4 h-4" />
                   <span>Copy URL</span>
                 </Button>
@@ -628,9 +561,7 @@ export function MediaLibraryPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <p className="text-xs text-gray-500 leading-relaxed">
-            Describe the visual asset you want to generate using AI.
-          </p>
+          <p className="text-xs text-gray-500 leading-relaxed">Describe the visual asset you want to generate using AI.</p>
 
           <div className="space-y-2">
             <label className="block text-xs font-bold text-gray-700">Image Prompt</label>
@@ -643,18 +574,10 @@ export function MediaLibraryPage() {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAiModalOpen(false)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setAiModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              size="sm"
-              onClick={handleAiGenerateImage}
-              disabled={aiGenerating || !aiPrompt.trim()}
-            >
+            <Button size="sm" onClick={handleAiGenerateImage} disabled={aiGenerating || !aiPrompt.trim()}>
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
             </Button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { STATUS_CONFIG } from '../../constants/platforms'
 import { PlatformIcon } from '../shared/PlatformIcon'
+import { Button } from "@/components/ui/button"
 
 export function ScheduledPostsPage() {
   const [posts, setPosts] = useState([])
@@ -56,17 +57,14 @@ export function ScheduledPostsPage() {
           { value: 'DRAFT', label: 'Drafts' },
           { value: 'ERROR', label: 'Failed' },
         ].map((f) => (
-          <button
+          <Button
             key={f.value}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              filter === f.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
+            variant={filter === f.value ? "default" : "outline"}
+            size="sm"
             onClick={() => setFilter(f.value)}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -121,13 +119,14 @@ export function ScheduledPostsPage() {
                       </a>
                     )}
                     {post.state !== 'PUBLISHED' && (
-                      <button
-                        className="text-xs px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg font-medium transition-colors"
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         disabled={deleting === post._id}
                         onClick={() => handleDelete(post._id)}
                       >
                         Delete
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

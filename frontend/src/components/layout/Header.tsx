@@ -52,25 +52,7 @@ export function Header() {
     const path = location.pathname;
 
     if (path === "/media-library") {
-      return (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatchAction("ai-generator")}
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>AI Generator</span>
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => dispatchAction("upload-media")}
-          >
-            <Upload className="w-4 h-4" />
-            <span>Upload Media</span>
-          </Button>
-        </div>
-      );
+      return null;
     }
 
     if (path === "/create-post") {

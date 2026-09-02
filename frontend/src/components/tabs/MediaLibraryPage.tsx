@@ -126,30 +126,17 @@ export function MediaLibraryPage() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      let generatedPath = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800&h=600";
-      try {
-        const res = await api.post("/media/generate-image", { prompt: aiPrompt });
-        if (res.path) generatedPath = res.path;
-      } catch (e) {}
-
-      const newItem = {
-        _id: String(Date.now()),
-        name: `ai-gen-${aiPrompt
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "-")
-          .slice(0, 15)}.jpg`,
-        type: "image",
-        badge: "IMAGE",
-        path: generatedPath,
-        size: "2.8 MB",
-        date: "Just now",
-        source: "ai",
-      };
-
-      setMediaList((prev) => [newItem, ...prev]);
+      const res = await api.post("/media/generate-image", { prompt: aiPrompt });
+      
+      if (res.media) {
+        setMediaList((prev) => [res.media, ...prev]);
+      }
+      
       setAiModalOpen(false);
       setAiPrompt("");
       showToast("AI Media generated!");
+    } catch (e) {
+      showToast("Failed to generate AI media");
     } finally {
       setAiGenerating(false);
     }
@@ -248,31 +235,22 @@ export function MediaLibraryPage() {
 
           {/* Middle Source Filters (User Uploads / AI Generated) */}
           <div className="flex items-center gap-2">
-            <Button
+            <ToggleGroup
+              type="single"
+              value={sourceFilter}
+              onValueChange={(value) => value && setSourceFilter(value)}
               variant="outline"
               size="sm"
-              onClick={() => setSourceFilter(sourceFilter === "user" ? "all" : "user")}
-              className={sourceFilter === "user" ? "border-[#243746] bg-[#243746]/10 text-[#243746]" : ""}
             >
-              <Sparkles className="w-4 h-4 text-[#243746]" />
-              <span>User Uploads</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (sourceFilter === "ai") {
-                  setSourceFilter("all");
-                } else {
-                  setSourceFilter("ai");
-                }
-              }}
-              className={sourceFilter === "ai" ? "border-[#243746] bg-[#243746]/10 text-[#243746]" : ""}
-            >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>AI Generated</span>
-            </Button>
+              <ToggleGroupItem value="user">
+                <Sparkles className="w-4 h-4 text-[#243746]" />
+                <span>User Uploads</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="ai">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>AI Generated</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
 
             <Button
               variant="outline"

@@ -55,7 +55,7 @@ async function getUploadUrl(userId, { fileName, contentType, fileSize }) {
   return { presignedUrl, key };
 }
 
-async function saveMediaMetadata(userId, { key, originalName, contentType, fileSize }) {
+async function saveMediaMetadata(userId, { key, originalName, contentType, fileSize, source = "user" }) {
   const type = contentType.startsWith('video') ? 'video' : 'image';
 
   const media = await Media.create({
@@ -63,6 +63,7 @@ async function saveMediaMetadata(userId, { key, originalName, contentType, fileS
     name: key.split('/').pop(),
     originalName,
     type,
+    source,
     fileSize,
     key,
   });

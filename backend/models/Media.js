@@ -6,6 +6,7 @@ const MediaSchema = new mongoose.Schema(
     name: { type: String, required: true },
     originalName: { type: String },
     type: { type: String, default: "image", enum: ["image", "video"] },
+    source: { type: String, default: "user", enum: ["user", "ai"] },
     fileSize: { type: Number, default: 0 },
     key: { type: String, required: true },
     thumbnail: { type: String },

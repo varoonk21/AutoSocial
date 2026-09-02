@@ -7,6 +7,7 @@ import { auth } from "./config/auth.js";
 import integrationsRoutes from "./routes/integrations.routes.js";
 import postsRoutes from "./routes/posts.routes.js";
 import mediaRoutes from "./modules/media/media.routes.js";
+import brandKitRoutes from "./modules/brandkit/brandkit.routes.js";
 import serverRoutes from "./modules/server/server.routes.js";
 import { serveFrontend } from "./static/serveFrontend.js";
 
@@ -26,6 +27,7 @@ app.use("/api/v1/", serverRoutes);
 app.use("/api/v1/integrations", integrationsRoutes);
 app.use("/api/v1/posts", postsRoutes);
 app.use("/api/v1/media", mediaRoutes);
+app.use("/api/v1/brand-kit", brandKitRoutes);
 
 const frontendDist = path.join(__dirname, "../frontend/dist");
 serveFrontend(app, frontendDist);

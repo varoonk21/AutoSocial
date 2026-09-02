@@ -3,7 +3,7 @@
  * Extracted from: apps/backend/src/api/routes/posts.controller.ts
  */
 
-import { Post, Integration } from '../models/index.js';
+import { Post, Integration, BrandKit } from '../models/index.js';
 import { makeId } from '../utils/makeId.js';
 import { generatePosts, generatePostsFromUrl, separatePosts } from '../services/ai.service.js';
 import { publishGroup } from '../services/scheduler.service.js';
@@ -180,9 +180,10 @@ async function generatePostsHandler(req, res) {
       return res.status(400).json({ error: 'Provide either content text or a URL' });
     }
 
+    const brandKit = await BrandKit.findOne({ userId: req.user._id });
     const suggestions = url
-      ? await generatePostsFromUrl(url)
-      : await generatePosts(content);
+      ? await generatePostsFromUrl(url, brandKit)
+      : await generatePosts(content, brandKit);
 
     res.json({ suggestions });
   } catch (err) {

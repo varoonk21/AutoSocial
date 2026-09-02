@@ -1,72 +1,75 @@
-import { useState, useEffect } from "react"
-import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/fetcher"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera } from "lucide-react"
-import { useFileUpload } from "../../hooks/useFileUpload"
-import { authClient, useSession } from "@/lib/auth-client"
-import { getImageUrl } from "@/lib/s3"
+import { useState, useEffect } from "react";
+import { apiGet, apiPut } from "../../lib/fetcher";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Camera } from "lucide-react";
+import { useFileUpload } from "../../hooks/useFileUpload";
+import { authClient, useSession } from "@/lib/auth-client";
+import { useConfigStore } from "@/store/configStore";
 
 export function SettingsPage() {
-  const { data: session } = useSession()
+  const getImageUrl = useConfigStore((state) => state.getImageUrl);
+  const { data: session } = useSession();
   const { upload, inputRef, uploading, openPicker } = useFileUpload({
     onUpload: async (media) => {
-      await authClient.updateUser({ image: media.key })
-      setToast("Profile picture updated!")
-      setTimeout(() => setToast(""), 3000)
+      await authClient.updateUser({ image: media.key });
+      setToast("Profile picture updated!");
+      setTimeout(() => setToast(""), 3000);
     },
     onError: () => {
-      setToast("Failed to upload picture")
-      setTimeout(() => setToast(""), 3000)
-    }
-  })
+      setToast("Failed to upload picture");
+      setTimeout(() => setToast(""), 3000);
+    },
+  });
 
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [notifications, setNotifications] = useState({
     postPublished: true,
     postFailed: true,
     tokenExpiring: true,
-  })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState("")
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
   async function loadSettings() {
     try {
-      const data = await apiGet("/settings")
-      setName(data.name || "")
-      setEmail(data.email || "")
-      setNotifications(data.notifications || {
-        postPublished: true,
-        postFailed: true,
-        tokenExpiring: true,
-      })
+      const data = await apiGet("/settings");
+      setName(data.name || "");
+      setEmail(data.email || "");
+      setNotifications(
+        data.notifications || {
+          postPublished: true,
+          postFailed: true,
+          tokenExpiring: true,
+        },
+      );
     } catch (err) {
-      console.error("Failed to load settings:", err)
+      console.error("Failed to load settings:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   async function handleSave() {
-    setSaving(true)
-    setToast("")
+    setSaving(true);
+    setToast("");
     try {
-      await apiPut("/settings", { name, notifications })
-      setToast("Settings saved successfully!")
-      setTimeout(() => setToast(""), 3000)
+      await apiPut("/settings", { name, notifications });
+      setToast("Settings saved successfully!");
+      setTimeout(() => setToast(""), 3000);
     } catch (err) {
-      setToast("Failed to save settings")
-      setTimeout(() => setToast(""), 3000)
+      setToast("Failed to save settings");
+      setTimeout(() => setToast(""), 3000);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -83,7 +86,7 @@ export function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -102,9 +105,13 @@ export function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
             <div className="flex items-center gap-5">
               <div className="relative">
-                <img 
-                  src={session?.user?.image ? getImageUrl(session.user.image) : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"}
-                  alt="Profile Picture" 
+                <img
+                  src={
+                    session?.user?.image
+                      ? getImageUrl(session.user.image)
+                      : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
+                  }
+                  alt="Profile Picture"
                   className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-100"
                 />
                 {uploading && (
@@ -137,21 +144,11 @@ export function SettingsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-            />
+            <Input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <Input
-              type="email"
-              value={email}
-              readOnly
-              className="cursor-default"
-            />
+            <Input type="email" value={email} readOnly className="cursor-default" />
           </div>
         </CardContent>
       </Card>
@@ -173,9 +170,7 @@ export function SettingsPage() {
               </div>
               <Switch
                 checked={notifications[item.key]}
-                onCheckedChange={(checked) =>
-                  setNotifications((prev) => ({ ...prev, [item.key]: checked }))
-                }
+                onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, [item.key]: checked }))}
               />
             </label>
           ))}
@@ -186,12 +181,8 @@ export function SettingsPage() {
         <Button onClick={handleSave} disabled={saving}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
-        {toast && (
-          <p className={`text-sm ${toast.includes("success") ? "text-green-600" : "text-red-600"}`}>
-            {toast}
-          </p>
-        )}
+        {toast && <p className={`text-sm ${toast.includes("success") ? "text-green-600" : "text-red-600"}`}>{toast}</p>}
       </div>
     </div>
-  )
+  );
 }

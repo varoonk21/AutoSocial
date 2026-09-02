@@ -9,9 +9,10 @@ import {
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getImageUrl } from "@/lib/s3";
+import { useConfigStore } from "@/store/configStore";
 
 export function Header() {
+  const getImageUrl = useConfigStore(state => state.getImageUrl);
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);

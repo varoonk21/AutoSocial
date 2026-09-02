@@ -1,61 +1,53 @@
-import { Plus, Image } from 'lucide-react'
-import { useState, useEffect, useCallback } from 'react'
-import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
-import { useFileUpload } from '@/hooks/useFileUpload'
-import { getImageUrl } from '@/lib/s3'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Plus, Image } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { useBrandKit, useSaveBrandKit } from "@/hooks/useBrandKitQueries";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useConfigStore } from "@/store/configStore";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-const AVAILABLE_FONTS = [
-  'Inter',
-  'Roboto',
-  'Outfit',
-  'Poppins',
-  'Plus Jakarta Sans',
-  'Montserrat',
-  'Open Sans',
-  'Lato',
-]
+const AVAILABLE_FONTS = ["Inter", "Roboto", "Outfit", "Poppins", "Plus Jakarta Sans", "Montserrat", "Open Sans", "Lato"];
 
-const TONE_OPTIONS = ['Professional', 'Friendly', 'Playful', 'Bold', 'Minimal', 'Luxury']
+const TONE_OPTIONS = ["Professional", "Friendly", "Playful", "Bold", "Minimal", "Luxury"];
 
 export function BrandKitPage() {
-  const { data: brandKitData, isLoading } = useBrandKit()
-  const saveMutation = useSaveBrandKit()
+  const getImageUrl = useConfigStore((state) => state.getImageUrl);
+  const { data: brandKitData, isLoading } = useBrandKit();
+  const saveMutation = useSaveBrandKit();
 
-  const [showNotice, setShowNotice] = useState(true)
-  const [primaryLogoId, setPrimaryLogoId] = useState(null)
-  const [watermarkLogoId, setWatermarkLogoId] = useState(null)
-  const [primaryLogoUrl, setPrimaryLogoUrl] = useState(null)
-  const [watermarkLogoUrl, setWatermarkLogoUrl] = useState(null)
-  const [primaryColor, setPrimaryColor] = useState('#2563EB')
-  const [secondaryColor, setSecondaryColor] = useState('#FFFFFF')
-  const [accentColor, setAccentColor] = useState('#F59E0B')
-  const [primaryFont, setPrimaryFont] = useState('Inter')
-  const [secondaryFont, setSecondaryFont] = useState('Roboto')
-  const [selectedTones, setSelectedTones] = useState(['Professional', 'Bold'])
-  const [styleNotes, setStyleNotes] = useState('')
-  const [savedSuccess, setSavedSuccess] = useState(false)
+  const [showNotice, setShowNotice] = useState(true);
+  const [primaryLogoId, setPrimaryLogoId] = useState(null);
+  const [watermarkLogoId, setWatermarkLogoId] = useState(null);
+  const [primaryLogoUrl, setPrimaryLogoUrl] = useState(null);
+  const [watermarkLogoUrl, setWatermarkLogoUrl] = useState(null);
+  const [primaryColor, setPrimaryColor] = useState("#2563EB");
+  const [secondaryColor, setSecondaryColor] = useState("#FFFFFF");
+  const [accentColor, setAccentColor] = useState("#F59E0B");
+  const [primaryFont, setPrimaryFont] = useState("Inter");
+  const [secondaryFont, setSecondaryFont] = useState("Roboto");
+  const [selectedTones, setSelectedTones] = useState(["Professional", "Bold"]);
+  const [styleNotes, setStyleNotes] = useState("");
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Populate state from fetched brand kit data
   useEffect(() => {
-    const bk = brandKitData?.brandKit
-    if (!bk) return
-    setPrimaryLogoId(bk.primaryLogo?._id || null)
-    setWatermarkLogoId(bk.watermarkLogo?._id || null)
-    setPrimaryLogoUrl(bk.primaryLogoUrl || null)
-    setWatermarkLogoUrl(bk.watermarkLogoUrl || null)
-    setPrimaryColor(bk.primaryColor || '#2563EB')
-    setSecondaryColor(bk.secondaryColor || '#FFFFFF')
-    setAccentColor(bk.accentColor || '#F59E0B')
-    setPrimaryFont(bk.fonts?.[0]?.replace(/\s*\(.*\)/, '') || 'Inter')
-    setSecondaryFont(bk.fonts?.[1]?.replace(/\s*\(.*\)/, '') || 'Roboto')
-    setSelectedTones(bk.tones?.length ? bk.tones : ['Professional', 'Bold'])
-    setStyleNotes(bk.styleNotes || '')
-  }, [brandKitData])
+    const bk = brandKitData?.brandKit;
+    if (!bk) return;
+    setPrimaryLogoId(bk.primaryLogo?._id || null);
+    setWatermarkLogoId(bk.watermarkLogo?._id || null);
+    setPrimaryLogoUrl(bk.primaryLogoUrl || null);
+    setWatermarkLogoUrl(bk.watermarkLogoUrl || null);
+    setPrimaryColor(bk.primaryColor || "#2563EB");
+    setSecondaryColor(bk.secondaryColor || "#FFFFFF");
+    setAccentColor(bk.accentColor || "#F59E0B");
+    setPrimaryFont(bk.fonts?.[0] || "Inter");
+    setSecondaryFont(bk.fonts?.[1] || "Roboto");
+    setSelectedTones(bk.tones?.length ? bk.tones : ["Professional", "Bold"]);
+    setStyleNotes(bk.styleNotes || "");
+  }, [brandKitData]);
 
   const handleSave = useCallback(() => {
     saveMutation.mutate(
@@ -71,33 +63,44 @@ export function BrandKitPage() {
       },
       {
         onSuccess: () => {
-          setSavedSuccess(true)
-          setTimeout(() => setSavedSuccess(false), 3000)
+          setSavedSuccess(true);
+          setTimeout(() => setSavedSuccess(false), 3000);
         },
-      }
-    )
-  }, [saveMutation, primaryLogoId, watermarkLogoId, primaryColor, secondaryColor, accentColor, primaryFont, secondaryFont, selectedTones, styleNotes])
+      },
+    );
+  }, [
+    saveMutation,
+    primaryLogoId,
+    watermarkLogoId,
+    primaryColor,
+    secondaryColor,
+    accentColor,
+    primaryFont,
+    secondaryFont,
+    selectedTones,
+    styleNotes,
+  ]);
 
   const primaryLogoUpload = useFileUpload({
     onUpload: (media) => {
-      setPrimaryLogoId(media._id)
-      setPrimaryLogoUrl(getImageUrl(media.key))
+      setPrimaryLogoId(media._id);
+      setPrimaryLogoUrl(getImageUrl(media.key));
     },
-  })
+  });
 
   const watermarkUpload = useFileUpload({
     onUpload: (media) => {
-      setWatermarkLogoId(media._id)
-      setWatermarkLogoUrl(getImageUrl(media.key))
+      setWatermarkLogoId(media._id);
+      setWatermarkLogoUrl(getImageUrl(media.key));
     },
-  })
+  });
 
   if (isLoading) {
     return (
       <div className="w-full flex items-center justify-center py-20">
         <div className="text-sm text-gray-500">Loading brand kit...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -109,11 +112,8 @@ export function BrandKitPage() {
         </div>
         <div className="flex items-center gap-3">
           {savedSuccess && <span className="text-xs font-semibold text-emerald-600 animate-fade-in flex items-center gap-1">✓ Saved!</span>}
-          <Button
-            onClick={handleSave}
-            disabled={saveMutation.isPending}
-          >
-            {saveMutation.isPending ? 'Saving...' : 'Save Brand Kit'}
+          <Button onClick={handleSave} disabled={saveMutation.isPending}>
+            {saveMutation.isPending ? "Saving..." : "Save Brand Kit"}
           </Button>
         </div>
       </div>
@@ -126,12 +126,7 @@ export function BrandKitPage() {
             </div>
             <p className="text-xs font-medium text-indigo-900">Complete your Brand Kit to unlock personalized AI generation.</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setShowNotice(false)}
-            title="Dismiss notice"
-          >
+          <Button variant="ghost" size="icon-sm" onClick={() => setShowNotice(false)} title="Dismiss notice">
             ✕
           </Button>
         </div>
@@ -303,7 +298,9 @@ export function BrandKitPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {AVAILABLE_FONTS.map((f) => (
-                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                        <SelectItem key={f} value={f}>
+                          {f}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -316,7 +313,9 @@ export function BrandKitPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {AVAILABLE_FONTS.map((f) => (
-                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                        <SelectItem key={f} value={f}>
+                          {f}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -331,13 +330,7 @@ export function BrandKitPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2.5">
-                <ToggleGroup
-                  multiple
-                  value={selectedTones}
-                  onValueChange={(value) => setSelectedTones(value)}
-                  variant="outline"
-                  size="sm"
-                >
+                <ToggleGroup multiple value={selectedTones} onValueChange={(value) => setSelectedTones(value)} variant="outline" size="sm">
                   {TONE_OPTIONS.map((tone) => (
                     <ToggleGroupItem key={tone} value={tone}>
                       {tone}
@@ -387,17 +380,14 @@ export function BrandKitPage() {
                     className="w-full h-44 object-cover"
                   />
                   <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                    {watermarkLogoUrl ? <img src={watermarkLogoUrl} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+                    {watermarkLogoUrl ? <img src={watermarkLogoUrl} alt="WM" className="w-4 h-4 object-contain" /> : "AS"}
                   </div>
                 </div>
                 <p className="text-xs text-gray-700 leading-relaxed font-normal">
                   <span className="font-semibold text-gray-900">AutoSocial</span> Elevate your content strategy with AI. Streamline your workflow and
                   ensure brand consistency across all channels. 🚀 #AutoSocial #ContentCreation
                 </p>
-                <Button
-                  className="w-full font-semibold text-xs"
-                  style={{ backgroundColor: accentColor }}
-                >
+                <Button className="w-full font-semibold text-xs" style={{ backgroundColor: accentColor }}>
                   Learn More
                 </Button>
               </div>
@@ -406,5 +396,5 @@ export function BrandKitPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -64,9 +64,20 @@ export function MediaLibraryPage() {
     return () => window.removeEventListener("header-action", handleHeaderAction);
   }, []);
 
+  useEffect(() => {
+    fetchBackendMedia();
+  }, [typeFilter, sourceFilter, searchQuery, sortBy]);
+
   const fetchBackendMedia = async () => {
     try {
-      const data = await api.get("/media");
+      const params = new URLSearchParams();
+      if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
+      if (sourceFilter && sourceFilter !== "all") params.append("source", sourceFilter);
+      if (searchQuery) params.append("search", searchQuery);
+      
+      const queryString = params.toString();
+      const data = await api.get(`/media${queryString ? `?${queryString}` : ""}`);
+      
       if (data && data.media) {
         const backendItems = data.media.map((item) => ({
           _id: item._id,
@@ -76,7 +87,7 @@ export function MediaLibraryPage() {
           path: item.path,
           size: item.fileSize ? `${(item.fileSize / 1024 / 1024).toFixed(1)} MB` : "0 MB",
           date: new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          source: "user",
+          source: item.source || "user",
         }));
         setMediaList(backendItems);
       }
@@ -159,16 +170,8 @@ export function MediaLibraryPage() {
     setTimeout(() => setToastMsg(""), 3000);
   };
 
-  // Filtered List
-  const filteredMedia = mediaList.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-
-    if (typeFilter !== "all" && item.type !== typeFilter) return false;
-    if (sourceFilter !== "all" && item.source !== sourceFilter) return false;
-
-    return true;
-  });
+  // Filtered List (filtering done on backend)
+  const filteredMedia = mediaList;
 
   return (
     <div className="max-w-[1360px] mx-auto space-y-6  text-neutral-900 pb-16 select-none">

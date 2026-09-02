@@ -6,7 +6,7 @@ export const api = fetcher
  * Uploads a file to S3 via presigned URL.
  * Returns metadata for saving to backend.
  */
-export async function uploadFileToS3(file, onProgress) {
+export async function uploadFileToS3(file, onProgress, source = "user") {
   const { presignedUrl, key } = await fetcher.post('/media/upload-url', {
     fileName: file.name,
     contentType: file.type,
@@ -32,6 +32,7 @@ export async function uploadFileToS3(file, onProgress) {
             originalName: file.name,
             contentType: file.type,
             fileSize: file.size,
+            source,
           })
           resolve(media.media)
         } catch (err) {

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { api } from '../../api'
+import { Button } from "@/components/ui/button"
 
 export function MediaUpload({ media = [], onMediaChange }) {
   const [uploading, setUploading] = useState(false)
@@ -66,13 +67,15 @@ export function MediaUpload({ media = [], onMediaChange }) {
               ) : (
                 <img src={item.path} alt="" className="w-20 h-20 object-cover rounded-lg" />
               )}
-              <button
+              <Button
+                variant="destructive"
+                size="icon-xs"
                 type="button"
-                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100"
                 onClick={() => onMediaChange(media.filter((_, i) => i !== idx))}
               >
                 ×
-              </button>
+              </Button>
             </div>
           ))}
         </div>

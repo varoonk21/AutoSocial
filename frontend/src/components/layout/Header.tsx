@@ -16,6 +16,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const location = useLocation();
@@ -53,20 +54,21 @@ export function Header() {
     if (path === "/media-library") {
       return (
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => dispatchAction("ai-generator")}
-            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-amber-600" />
+            <Sparkles className="w-4 h-4" />
             <span>AI Generator</span>
-          </button>
-          <button
+          </Button>
+          <Button
+            size="sm"
             onClick={() => dispatchAction("upload-media")}
-            className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <Upload className="w-4 h-4" />
             <span>Upload Media</span>
-          </button>
+          </Button>
         </div>
       );
     }
@@ -74,81 +76,82 @@ export function Header() {
     if (path === "/create-post") {
       return (
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => dispatchAction("save-draft")}
-            className="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl text-xs font-bold text-gray-700 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
           >
             <Save className="w-4 h-4" />
             <span>Save Draft</span>
-          </button>
-          <button
+          </Button>
+          <Button
+            size="sm"
             onClick={() => dispatchAction("publish-post")}
-            className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <Calendar className="w-4 h-4" />
             <span>Schedule / Publish</span>
-          </button>
+          </Button>
         </div>
       );
     }
 
     if (path === "/scheduled-posts") {
       return (
-        <button
+        <Button
+          size="sm"
           onClick={() => navigate("/create-post")}
-          className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Post</span>
-        </button>
+        </Button>
       );
     }
 
     if (path === "/analytics") {
       return (
-        <button
+        <Button
+          size="sm"
           onClick={() => dispatchAction("export-report")}
-          className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
         >
           <Download className="w-4 h-4" />
           <span>Export Report</span>
-        </button>
+        </Button>
       );
     }
 
     if (path === "/brand-kit") {
       return (
-        <button
+        <Button
+          size="sm"
           onClick={() => dispatchAction("save-brand-kit")}
-          className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
         >
           <Save className="w-4 h-4" />
           <span>Save Brand Kit</span>
-        </button>
+        </Button>
       );
     }
 
     if (path === "/connected-accounts") {
       return (
-        <button
+        <Button
+          size="sm"
           onClick={() => dispatchAction("connect-account")}
-          className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
         >
           <Share2 className="w-4 h-4" />
           <span>Connect Account</span>
-        </button>
+        </Button>
       );
     }
 
     // Default Dashboard action
     return (
-      <button
+      <Button
+        size="sm"
         onClick={() => navigate("/create-post")}
-        className="px-4 py-2 bg-[#243746] hover:bg-[#1a2935] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
       >
         <Plus className="w-4 h-4" />
         <span>Create Post</span>
-      </button>
+      </Button>
     );
   };
 
@@ -162,25 +165,28 @@ export function Header() {
       {/* Far Right: Dark Mode Toggle, Notification Bell, Profile Icon */}
       <div className="flex items-center gap-3">
         {/* Dark Mode Toggle */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={toggleDarkMode}
-          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
           title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
-        </button>
+        </Button>
 
         {/* Notification Bell */}
-        <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors cursor-pointer relative" title="Notifications">
+        <Button variant="ghost" size="icon-sm" title="Notifications" className="relative">
           <Bell className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
-        </button>
+        </Button>
 
         {/* Profile Avatar Icon */}
         <div className="relative">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="relative shrink-0 cursor-pointer group flex items-center gap-1"
+            className="relative shrink-0 group"
             title="User Account"
           >
             <img
@@ -190,7 +196,7 @@ export function Header() {
             />
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
             <ChevronDown className="w-3 h-3 text-gray-500" />
-          </button>
+          </Button>
 
           {/* Dropdown Menu */}
           {showUserMenu && (
@@ -200,24 +206,26 @@ export function Header() {
                 onClick={() => setShowUserMenu(false)}
               />
               <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1.5 animate-in fade-in">
-                <button
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
                   onClick={() => {
                     setShowUserMenu(false);
                     navigate("/settings");
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 cursor-pointer"
                 >
                   <User className="w-4 h-4" />
                   <span>Profile Settings</span>
-                </button>
+                </Button>
                 <div className="my-1.5 border-t border-gray-100 dark:border-gray-700" />
-                <button
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   onClick={handleLogout}
-                  className="w-full px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
-                </button>
+                </Button>
               </div>
             </>
           )}

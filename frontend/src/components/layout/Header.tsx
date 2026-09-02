@@ -90,15 +90,7 @@ export function Header() {
     }
 
     if (path === "/analytics") {
-      return (
-        <Button
-          size="sm"
-          onClick={() => dispatchAction("export-report")}
-        >
-          <Download className="w-4 h-4" />
-          <span>Export Report</span>
-        </Button>
-      );
+      return null;
     }
 
     if (path === "/connected-accounts") {

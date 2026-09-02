@@ -2,7 +2,7 @@ import { Plus, Image } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useBrandKit, useSaveBrandKit } from "../hooks/useBrandKitQueries";
 import { useFileUpload } from "../hooks/useFileUpload";
-import { useConfigStore } from "@/store/configStore";
+import { useImageStore } from "@/store/imageStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,7 +14,7 @@ const AVAILABLE_FONTS = ["Inter", "Roboto", "Outfit", "Poppins", "Plus Jakarta S
 const TONE_OPTIONS = ["Professional", "Friendly", "Playful", "Bold", "Minimal", "Luxury"];
 
 export function BrandKitPage() {
-  const getImageUrl = useConfigStore((state) => state.getImageUrl);
+  const getImageUrl = useImageStore((state) => state.getImageUrl);
   const { data: brandKitData, isLoading } = useBrandKit();
   const saveMutation = useSaveBrandKit();
 

@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from "lucide-react";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { authClient, useSession } from "@/lib/auth-client";
-import { useConfigStore } from "@/store/configStore";
+import { useImageStore } from "@/store/imageStore";
 
 export function SettingsPage() {
-  const getImageUrl = useConfigStore((state) => state.getImageUrl);
+  const getImageUrl = useImageStore((state) => state.getImageUrl);
   const { data: session } = useSession();
   const { upload, inputRef, uploading, openPicker } = useFileUpload({
     onUpload: async (media) => {

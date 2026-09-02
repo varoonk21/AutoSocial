@@ -8,7 +8,7 @@ interface ConfigState {
   getImageUrl: (key: string | null | undefined) => string;
 }
 
-export const useConfigStore = create<ConfigState>((set, get) => ({
+export const useImageStore = create<ConfigState>((set, get) => ({
   s3PublicUrl: '',
   isInitialized: false,
   fetchS3PublicUrl: async () => {

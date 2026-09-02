@@ -9,6 +9,7 @@ import postsRoutes from "./routes/posts.routes.js";
 import mediaRoutes from "./modules/media/media.routes.js";
 import brandKitRoutes from "./modules/brandkit/brandkit.routes.js";
 import serverRoutes from "./modules/server/server.routes.js";
+import settingsRoutes from "./modules/settings/settings.routes.js";
 import { serveFrontend } from "./static/serveFrontend.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,6 +29,7 @@ app.use("/api/v1/integrations", integrationsRoutes);
 app.use("/api/v1/posts", postsRoutes);
 app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/brand-kit", brandKitRoutes);
+app.use("/api/v1/settings", settingsRoutes);
 
 const frontendDist = path.join(__dirname, "../frontend/dist");
 serveFrontend(app, frontendDist);

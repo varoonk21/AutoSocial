@@ -61,13 +61,11 @@ export function AppSidebar() {
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
-                    asChild
+                    render={<NavLink to={item.to} end={item.to === "/"} />}
                     isActive={window.location.pathname === item.to}
                   >
-                    <NavLink to={item.to} end={item.to === "/"}>
-                      {ICONS[item.icon]}
-                      <span>{item.label}</span>
-                    </NavLink>
+                    {ICONS[item.icon]}
+                    <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -82,13 +80,11 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              asChild
+              render={<a href="/settings" />}
               onClick={() => navigate("/settings")}
             >
-              <a href="/settings">
-                <HelpCircle className="w-5 h-5" />
-                <span>Help</span>
-              </a>
+              <HelpCircle className="w-5 h-5" />
+              <span>Help</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

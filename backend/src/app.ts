@@ -11,6 +11,7 @@ import brandKitRoutes from "./modules/brandkit/brandkit.routes.js";
 import serverRoutes from "./modules/server/server.routes.js";
 import settingsRoutes from "./modules/settings/settings.routes.js";
 import { serveFrontend } from "./static/serveFrontend.js";
+import { requestLogger } from "./middleware/requestLogger.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,7 @@ const app = express();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
+app.use(requestLogger);
 app.all("/api/v1/auth/{*path}", toNodeHandler(auth));
 
 app.use(express.json({ limit: "10mb" }));

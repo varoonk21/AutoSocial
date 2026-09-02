@@ -1,2 +1,0 @@
-patchedDependencies:
-  better-auth-mongoose@0.1.1: patches/better-auth-mongoose@0.1.1.patch

@@ -119,18 +119,6 @@ export function Header() {
       );
     }
 
-    if (path === "/brand-kit") {
-      return (
-        <Button
-          size="sm"
-          onClick={() => dispatchAction("save-brand-kit")}
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Brand Kit</span>
-        </Button>
-      );
-    }
-
     if (path === "/connected-accounts") {
       return (
         <Button

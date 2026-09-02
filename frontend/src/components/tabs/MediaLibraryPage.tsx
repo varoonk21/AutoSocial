@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { apiGet, apiPost, apiPut, apiDelete } from "../../lib/fetcher";
+import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../lib/fetcher";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export function MediaLibraryPage() {
   const navigate = useNavigate();
@@ -39,6 +48,7 @@ export function MediaLibraryPage() {
   const [sourceFilter, setSourceFilter] = useState("all"); // "all", "user", "ai"
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState({ page: 1, pageSize: 24, total: 0, pageCount: 1 });
 
   // Modals & Interactivity
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -68,7 +78,7 @@ export function MediaLibraryPage() {
 
   useEffect(() => {
     fetchBackendMedia();
-  }, [typeFilter, sourceFilter, searchQuery, sortBy]);
+  }, [typeFilter, sourceFilter, searchQuery, sortBy, currentPage]);
 
   const fetchBackendMedia = async () => {
     try {
@@ -76,12 +86,17 @@ export function MediaLibraryPage() {
       if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
       if (sourceFilter && sourceFilter !== "all") params.append("source", sourceFilter);
       if (searchQuery) params.append("search", searchQuery);
+      params.append("page", currentPage.toString());
+
+      if (sortBy === "newest") params.append("sort", "createdAt:desc");
+      else if (sortBy === "oldest") params.append("sort", "createdAt:asc");
+      else if (sortBy === "name") params.append("sort", "originalName:asc");
       
       const queryString = params.toString();
-      const data = await apiGet(`/media${queryString ? `?${queryString}` : ""}`);
+      const { items, meta } = await apiGetPaginated(`/media${queryString ? `?${queryString}` : ""}`);
       
-      if (data && data.media) {
-        const backendItems = data.media.map((item) => ({
+      if (items) {
+        const backendItems = items.map((item) => ({
           _id: item._id,
           name: item.originalName || item.name || "uploaded-file.jpg",
           type: item.type === "video" ? "video" : "image",
@@ -92,6 +107,7 @@ export function MediaLibraryPage() {
           source: item.source || "user",
         }));
         setMediaList(backendItems);
+        setPaginationMeta(meta);
       }
     } catch (e) {}
   };
@@ -455,35 +471,63 @@ export function MediaLibraryPage() {
 
       {/* Pagination & Stats Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200/80">
-        <div className="flex items-center gap-1 mx-auto sm:mx-0">
-          <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+        <div className="flex-1">
+          {paginationMeta.pageCount > 1 && (
+            <Pagination className="justify-start">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => { e.preventDefault(); setCurrentPage(Math.max(1, currentPage - 1)); }} 
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: Math.min(5, paginationMeta.pageCount) }).map((_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink 
+                        href="#" 
+                        isActive={currentPage === pageNum}
+                        onClick={(e) => { e.preventDefault(); setCurrentPage(pageNum); }}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
 
-          <Button variant={currentPage === 1 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(1)}>
-            1
-          </Button>
+                {paginationMeta.pageCount > 5 && (
+                  <>
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink 
+                        href="#" 
+                        isActive={currentPage === paginationMeta.pageCount}
+                        onClick={(e) => { e.preventDefault(); setCurrentPage(paginationMeta.pageCount); }}
+                      >
+                        {paginationMeta.pageCount}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </>
+                )}
 
-          <Button variant={currentPage === 2 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(2)}>
-            2
-          </Button>
-
-          <Button variant={currentPage === 3 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(3)}>
-            3
-          </Button>
-
-          <span className="text-xs text-gray-400 px-1">...</span>
-
-          <Button variant={currentPage === 10 ? "default" : "ghost"} size="icon-sm" onClick={() => setCurrentPage(10)}>
-            10
-          </Button>
-
-          <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(Math.min(10, currentPage + 1))}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => { e.preventDefault(); setCurrentPage(Math.min(paginationMeta.pageCount, currentPage + 1)); }} 
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
-
-        <span className="text-xs text-gray-400 font-medium text-center sm:text-right">Showing 1 to {filteredMedia.length} of 120</span>
+        
+        <span className="text-xs text-gray-400 font-medium text-center sm:text-right shrink-0">
+          Showing {mediaList.length > 0 ? (currentPage - 1) * paginationMeta.pageSize + 1 : 0} to {Math.min(currentPage * paginationMeta.pageSize, paginationMeta.total)} of {paginationMeta.total}
+        </span>
       </div>
 
       {/* ASSET DETAIL MODAL */}

@@ -1,8 +1,8 @@
 import { Media } from '../../models/index.js';
 
-async function findMedia(query, skip, limit) {
+async function findMedia(query, skip, limit, sortParam = { createdAt: -1 }) {
   const [media, total] = await Promise.all([
-    Media.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Media.find(query).sort(sortParam).skip(skip).limit(limit),
     Media.countDocuments(query),
   ]);
   return { media, total };

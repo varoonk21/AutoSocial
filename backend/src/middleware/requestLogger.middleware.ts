@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { RequestHandler } from "express";
+import { logger } from "../utils/logger.util.js";
 
 export const requestLogger: RequestHandler = (req, res, next) => {
   const requestId = randomUUID();
@@ -8,7 +9,7 @@ export const requestLogger: RequestHandler = (req, res, next) => {
   const start = performance.now();
   res.on("finish", () => {
     const durationMs = Math.round(performance.now() - start);
-    console.log({ requestId, method: req.method, path: req.path, status: res.statusCode, durationMs }, "http_request");
+    logger.info({ requestId, method: req.method, path: req.path, status: res.statusCode, durationMs }, "http_request");
   });
   next();
 };

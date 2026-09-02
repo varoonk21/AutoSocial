@@ -12,6 +12,7 @@ import serverRoutes from "./modules/server/server.routes.js";
 import settingsRoutes from "./modules/settings/settings.routes.js";
 import { serveFrontend } from "./static/serveFrontend.js";
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
+import { logger } from "./utils/logger.util.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +38,7 @@ const frontendDist = path.join(__dirname, "../../frontend/dist");
 serveFrontend(app, frontendDist);
 
 app.use((err: Error & { status?: number }, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.stack);
+  logger.error({ err }, "Unhandled error");
   res.status(err.status || 500).json({ error: err.message || "Internal server error" });
 });
 

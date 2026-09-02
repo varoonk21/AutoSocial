@@ -1,14 +1,16 @@
 import crypto from "crypto";
 import { getPresignedUploadUrl, getS3Url, deleteS3Object } from "../../lib/s3.js";
 import * as mediaRepository from "./media.repository.js";
+import { toSkipTake } from "../../utils/pagination.util.js";
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"]);
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-async function getMedia(userId, page = 1, search = "", type = "", source = "") {
-  const limit = 24;
-  const skip = (page - 1) * limit;
+async function getMedia(userId, queryParams) {
+  const { page, pageSize, search = "", type = "", source = "", sort } = queryParams;
+  const { skip, take: limit } = toSkipTake(page, pageSize);
+  
   const query = {
     userId,
     deletedAt: null,
@@ -17,7 +19,9 @@ async function getMedia(userId, page = 1, search = "", type = "", source = "") {
     ...(source && source !== "all" ? { source } : {}),
   };
 
-  const { media, total } = await mediaRepository.findMedia(query, skip, limit);
+  const sortParam = sort ? { [sort.field]: sort.direction === "desc" ? -1 : 1 } : { createdAt: -1 };
+
+  const { media, total } = await mediaRepository.findMedia(query, skip, limit, sortParam);
 
   const mediaWithUrls = await Promise.all(
     media.map(async (m) => {
@@ -27,7 +31,7 @@ async function getMedia(userId, page = 1, search = "", type = "", source = "") {
     }),
   );
 
-  return { media: mediaWithUrls, total, page, pages: Math.ceil(total / limit) };
+  return { media: mediaWithUrls, total, limit };
 }
 
 async function getUploadUrl(userId, { fileName, contentType, fileSize }) {

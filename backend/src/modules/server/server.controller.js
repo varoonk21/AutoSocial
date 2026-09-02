@@ -2,7 +2,7 @@ import env from "../../config/env.config.js";
 import { sendSuccess } from "../../utils/response.util.js";
 
 function getHealth(_req, res) {
-  sendSuccess(res, { status: "ok", timestamp: new Date() });
+  sendSuccess(res, { status: "ok" });
 }
 
 function getConfig(_req, res) {

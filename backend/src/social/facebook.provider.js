@@ -34,6 +34,7 @@ import { SocialProvider, RefreshTokenError, BadBodyError } from './base/SocialPr
 import { makeId } from '../utils/makeId.js';
 import { timer } from '../utils/timer.js';
 import { hasExtension } from '../utils/hasExtension.js';
+import { logger } from '../utils/logger.util.js';
 import dayjs from 'dayjs';
 
 // Characters limit for text background presets
@@ -464,7 +465,7 @@ class FacebookProvider extends SocialProvider {
           /text_format_preset_id/i.test(detail) ||
           /access token|re-authenticate|revoked/i.test(detail) === false;
         if (!isPresetError) throw err;
-        console.warn('Facebook rejected text_format_preset_id — publishing without it');
+        logger.warn('Facebook rejected text_format_preset_id — publishing without it');
         feedResult = await publishFeed(false);
       }
 

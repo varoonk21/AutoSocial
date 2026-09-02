@@ -114,15 +114,7 @@ export function Header() {
     }
 
     // Default Dashboard action
-    return (
-      <Button
-        size="sm"
-        onClick={() => navigate("/create-post")}
-      >
-        <Plus className="w-4 h-4" />
-        <span>Create Post</span>
-      </Button>
-    );
+    return null;
   };
 
   return (

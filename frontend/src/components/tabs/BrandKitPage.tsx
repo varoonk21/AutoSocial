@@ -1,4 +1,4 @@
-import { Plus, Image, Trash2 } from 'lucide-react'
+import { Plus, Image } from 'lucide-react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
 import { uploadFileToS3 } from '@/api'
@@ -10,10 +10,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 const AVAILABLE_FONTS = [
-  'Inter (Primary)',
-  'Roboto (Secondary)',
-  'Outfit (Primary)',
-  'Poppins (Secondary)',
+  'Inter',
+  'Roboto',
+  'Outfit',
+  'Poppins',
   'Plus Jakarta Sans',
   'Montserrat',
   'Open Sans',
@@ -36,7 +36,8 @@ export function BrandKitPage() {
   const [primaryColor, setPrimaryColor] = useState('#2563EB')
   const [secondaryColor, setSecondaryColor] = useState('#FFFFFF')
   const [accentColor, setAccentColor] = useState('#F59E0B')
-  const [selectedFonts, setSelectedFonts] = useState(['Inter (Primary)', 'Roboto (Secondary)'])
+  const [primaryFont, setPrimaryFont] = useState('Inter')
+  const [secondaryFont, setSecondaryFont] = useState('Roboto')
   const [selectedTones, setSelectedTones] = useState(['Professional', 'Bold'])
   const [styleNotes, setStyleNotes] = useState('')
   const [savedSuccess, setSavedSuccess] = useState(false)
@@ -52,7 +53,8 @@ export function BrandKitPage() {
     setPrimaryColor(bk.primaryColor || '#2563EB')
     setSecondaryColor(bk.secondaryColor || '#FFFFFF')
     setAccentColor(bk.accentColor || '#F59E0B')
-    setSelectedFonts(bk.fonts?.length ? bk.fonts : ['Inter (Primary)', 'Roboto (Secondary)'])
+    setPrimaryFont(bk.fonts?.[0]?.replace(/\s*\(.*\)/, '') || 'Inter')
+    setSecondaryFont(bk.fonts?.[1]?.replace(/\s*\(.*\)/, '') || 'Roboto')
     setSelectedTones(bk.tones?.length ? bk.tones : ['Professional', 'Bold'])
     setStyleNotes(bk.styleNotes || '')
   }, [brandKitData])
@@ -65,7 +67,7 @@ export function BrandKitPage() {
         primaryColor,
         secondaryColor,
         accentColor,
-        fonts: selectedFonts,
+        fonts: [primaryFont, secondaryFont],
         tones: selectedTones,
         styleNotes,
       },
@@ -76,7 +78,7 @@ export function BrandKitPage() {
         },
       }
     )
-  }, [saveMutation, primaryLogoId, watermarkLogoId, primaryColor, secondaryColor, accentColor, selectedFonts, selectedTones, styleNotes])
+  }, [saveMutation, primaryLogoId, watermarkLogoId, primaryColor, secondaryColor, accentColor, primaryFont, secondaryFont, selectedTones, styleNotes])
 
   const handleLogoUpload = async (e, setLogoId, setLogoUrl) => {
     const file = e.target.files?.[0]
@@ -89,23 +91,6 @@ export function BrandKitPage() {
         // Upload failed
       }
     }
-  }
-
-  const handleAddFont = () => {
-    const unused = AVAILABLE_FONTS.find((f) => !selectedFonts.includes(f))
-    if (unused) {
-      setSelectedFonts([...selectedFonts, unused])
-    }
-  }
-
-  const handleRemoveFont = (index) => {
-    setSelectedFonts(selectedFonts.filter((_, i) => i !== index))
-  }
-
-  const handleFontChange = (index, value) => {
-    const updated = [...selectedFonts]
-    updated[index] = value
-    setSelectedFonts(updated)
   }
 
   if (isLoading) {
@@ -300,44 +285,33 @@ export function BrandKitPage() {
               <CardTitle>Brand Fonts</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {selectedFonts.map((font, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <Select
-                      value={font}
-                      onValueChange={(value) => handleFontChange(idx, value)}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AVAILABLE_FONTS.map((f) => (
-                          <SelectItem key={f} value={f}>
-                            {f}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedFonts.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleRemoveFont(idx)}
-                        title="Remove font"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={handleAddFont}
-                  className="text-blue-600 hover:text-blue-700 p-0 h-auto"
-                >
-                  + Add Another Font
-                </Button>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">Primary Font</label>
+                  <Select value={primaryFont} onValueChange={setPrimaryFont}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_FONTS.map((f) => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">Secondary Font</label>
+                  <Select value={secondaryFont} onValueChange={setSecondaryFont}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_FONTS.map((f) => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>

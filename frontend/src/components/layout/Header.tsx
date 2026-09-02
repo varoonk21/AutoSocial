@@ -102,15 +102,7 @@ export function Header() {
     }
 
     if (path === "/connected-accounts") {
-      return (
-        <Button
-          size="sm"
-          onClick={() => dispatchAction("connect-account")}
-        >
-          <Share2 className="w-4 h-4" />
-          <span>Connect Account</span>
-        </Button>
-      );
+      return null;
     }
 
     // Default Dashboard action

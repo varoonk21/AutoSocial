@@ -12,13 +12,15 @@ const ALLOWED_IMAGE_TYPES = new Set([
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-async function getMedia(userId, page = 1, search = '') {
+async function getMedia(userId, page = 1, search = '', type = '', source = '') {
   const limit = 24;
   const skip = (page - 1) * limit;
   const query = {
     userId,
     deletedAt: null,
     ...(search ? { originalName: { $regex: search, $options: 'i' } } : {}),
+    ...(type && type !== 'all' ? { type } : {}),
+    ...(source && source !== 'all' ? { source } : {}),
   };
 
   const [media, total] = await Promise.all([

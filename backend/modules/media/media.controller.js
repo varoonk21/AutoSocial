@@ -59,8 +59,8 @@ async function generateImageHandler(req, res) {
 
 async function listMedia(req, res) {
   try {
-    const { page = 1, search = '' } = req.query;
-    const result = await getMedia(req.user._id, Number(page), search);
+    const { page = 1, search = '', type = '', source = '' } = req.query;
+    const result = await getMedia(req.user._id, Number(page), search, type, source);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

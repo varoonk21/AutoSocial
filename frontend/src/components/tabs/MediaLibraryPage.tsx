@@ -21,6 +21,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { api, uploadFileToS3 } from "../../api";
+import { Button } from "@/components/ui/button";
 
 export function MediaLibraryPage() {
   const navigate = useNavigate();
@@ -226,70 +227,62 @@ export function MediaLibraryPage() {
           
           {/* Left Segmented Filter Pill Box (Type Filter) */}
           <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-2xl border border-gray-200/60">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTypeFilter("all")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                typeFilter === "all"
-                  ? "bg-white text-[#243746] shadow-2xs"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={typeFilter === "all" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
             >
               <ImageIcon className="w-4 h-4 text-[#243746]" />
               <span>All Media</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTypeFilter("image")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                typeFilter === "image"
-                  ? "bg-white text-[#243746] shadow-2xs"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={typeFilter === "image" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
             >
               <ImageIcon className="w-4 h-4 text-gray-500" />
               <span>Images</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTypeFilter("video")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                typeFilter === "video"
-                  ? "bg-white text-[#243746] shadow-2xs"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={typeFilter === "video" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
             >
               <Video className="w-4 h-4 text-gray-500" />
               <span>Videos</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTypeFilter("document")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                typeFilter === "document"
-                  ? "bg-white text-[#243746] shadow-2xs"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={typeFilter === "document" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-600 hover:text-gray-900"}
             >
               <FileText className="w-4 h-4 text-gray-500" />
               <span>Documents</span>
-            </button>
+            </Button>
           </div>
 
           {/* Middle Source Filters (User Uploads / AI Generated) */}
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setSourceFilter(sourceFilter === "user" ? "all" : "user")}
-              className={`px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                sourceFilter === "user"
-                  ? "border-[#243746] bg-[#243746]/10 text-[#243746]"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+              className={sourceFilter === "user" ? "border-[#243746] bg-[#243746]/10 text-[#243746]" : ""}
             >
               <Sparkles className="w-4 h-4 text-[#243746]" />
               <span>User Uploads</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 if (sourceFilter === "ai") {
                   setSourceFilter("all");
@@ -297,23 +290,21 @@ export function MediaLibraryPage() {
                   setSourceFilter("ai");
                 }
               }}
-              className={`px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                sourceFilter === "ai"
-                  ? "border-[#243746] bg-[#243746]/10 text-[#243746]"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+              className={sourceFilter === "ai" ? "border-[#243746] bg-[#243746]/10 text-[#243746]" : ""}
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span>AI Generated</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setAiModalOpen(true)}
-              className="px-3.5 py-2 rounded-2xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ml-1"
+              className="border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 ml-1"
             >
               <Plus className="w-4 h-4 text-amber-600" />
               <span>Generate AI</span>
-            </button>
+            </Button>
           </div>
 
           {/* Right Sort Dropdown */}
@@ -397,15 +388,17 @@ export function MediaLibraryPage() {
               </div>
 
               {/* Three Dots Button Top Right */}
-              <button
+              <Button
+                variant="ghost"
+                size="icon-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpenId(menuOpenId === asset._id ? null : asset._id);
                 }}
-                className="absolute top-2.5 right-2.5 p-1 rounded-md bg-black/40 text-white hover:bg-black/60 transition-colors cursor-pointer"
+                className="absolute top-2.5 right-2.5 bg-black/40 text-white hover:bg-black/60"
               >
                 <MoreHorizontal className="w-4 h-4" />
-              </button>
+              </Button>
 
               {/* Dropdown Options Menu */}
               {menuOpenId === asset._id && (
@@ -413,58 +406,69 @@ export function MediaLibraryPage() {
                   onClick={(e) => e.stopPropagation()}
                   className="absolute top-9 right-2.5 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
                 >
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
                     onClick={(e) => copyLink(asset.path, asset._id, e)}
-                    className="w-full px-3 py-1.5 text-xs text-left font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy Link</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
                     onClick={() => {
                       setMenuOpenId(null);
                       navigate("/create-post");
                     }}
-                    className="w-full px-3 py-1.5 text-xs text-left font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Use in Post</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
                     onClick={(e) => handleDelete(asset._id, e)}
-                    className="w-full px-3 py-1.5 text-xs text-left font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete</span>
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {/* HOVER OVERLAY ACTIONS (as requested: "keep the option of hover") */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={(e) => copyLink(asset.path, asset._id, e)}
-                  className="p-2 rounded-xl bg-white/90 hover:bg-white text-gray-800 shadow-md transition-all cursor-pointer"
+                  className="bg-white/90 hover:bg-white text-gray-800 shadow-md"
                   title="Copy Link"
                 >
                   {copiedId === asset._id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate("/create-post");
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#243746] text-white text-xs font-bold shadow-md hover:bg-[#1a2935] transition-all cursor-pointer"
+                  className="shadow-md"
                 >
                   Use in Post
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon-sm"
                   onClick={(e) => handleDelete(asset._id, e)}
-                  className="p-2 rounded-xl bg-white/90 hover:bg-red-50 text-red-600 shadow-md transition-all cursor-pointer"
+                  className="bg-white/90 hover:bg-red-50 text-red-600 shadow-md"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -482,57 +486,55 @@ export function MediaLibraryPage() {
       {/* Pagination & Stats Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200/80">
         <div className="flex items-center gap-1 mx-auto sm:mx-0">
-          <button
+          <Button
+            variant="outline"
+            size="icon-sm"
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
-          </button>
+          </Button>
           
-          <button
+          <Button
+            variant={currentPage === 1 ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setCurrentPage(1)}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              currentPage === 1 ? "bg-[#243746] text-white" : "hover:bg-gray-100 text-gray-700"
-            }`}
           >
             1
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant={currentPage === 2 ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setCurrentPage(2)}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              currentPage === 2 ? "bg-[#243746] text-white" : "hover:bg-gray-100 text-gray-700"
-            }`}
           >
             2
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant={currentPage === 3 ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setCurrentPage(3)}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              currentPage === 3 ? "bg-[#243746] text-white" : "hover:bg-gray-100 text-gray-700"
-            }`}
           >
             3
-          </button>
+          </Button>
 
           <span className="text-xs text-gray-400 px-1">...</span>
 
-          <button
+          <Button
+            variant={currentPage === 10 ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setCurrentPage(10)}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              currentPage === 10 ? "bg-[#243746] text-white" : "hover:bg-gray-100 text-gray-700"
-            }`}
           >
             10
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="outline"
+            size="icon-sm"
             onClick={() => setCurrentPage(Math.min(10, currentPage + 1))}
-            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         <span className="text-xs text-gray-400 font-medium text-center sm:text-right">
@@ -546,12 +548,13 @@ export function MediaLibraryPage() {
           <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#1c2b36] truncate">{selectedAsset.name}</h3>
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setSelectedAsset(null)}
-                className="p-1 rounded-full hover:bg-gray-100 text-gray-500 cursor-pointer"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto custom-scroll">
@@ -589,32 +592,34 @@ export function MediaLibraryPage() {
             </div>
 
             <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-              <button
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => handleDelete(selectedAsset._id)}
-                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
-              </button>
+              </Button>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => copyLink(selectedAsset.path, selectedAsset._id)}
-                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Copy className="w-4 h-4" />
                   <span>Copy URL</span>
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
                   onClick={() => {
                     setSelectedAsset(null);
                     navigate("/create-post");
                   }}
-                  className="px-5 py-2 bg-[#243746] hover:bg-[#1a2935] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Use in Create Post</span>
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -632,12 +637,13 @@ export function MediaLibraryPage() {
                 </div>
                 <h3 className="text-base font-bold text-[#1c2b36]">AI Image Generator</h3>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setAiModalOpen(false)}
-                className="p-1 rounded-full hover:bg-gray-100 text-gray-500 cursor-pointer"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             <p className="text-xs text-gray-500 leading-relaxed">
@@ -656,20 +662,21 @@ export function MediaLibraryPage() {
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setAiModalOpen(false)}
-                className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
                 onClick={handleAiGenerateImage}
                 disabled={aiGenerating || !aiPrompt.trim()}
-                className="px-5 py-2.5 bg-[#243746] hover:bg-[#1a2935] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Sparkles className="w-4 h-4 text-amber-300" />
                 <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

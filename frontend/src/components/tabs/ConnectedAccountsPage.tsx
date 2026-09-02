@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../api'
 import { SocialConnect } from '../shared/SocialConnect'
+import { Button } from "@/components/ui/button"
 
 export function ConnectedAccountsPage() {
   const [integrations, setIntegrations] = useState([])
@@ -48,12 +49,11 @@ export function ConnectedAccountsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Connected Accounts</h1>
           <p className="text-gray-500 mt-1">Manage your social media integrations.</p>
         </div>
-        <button
-          className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        <Button
           onClick={() => setShowConnect(!showConnect)}
         >
           {showConnect ? 'Close' : '+ Add Account'}
-        </button>
+        </Button>
       </div>
 
       {showConnect && (
@@ -65,12 +65,11 @@ export function ConnectedAccountsPage() {
       {integrations.length === 0 && !showConnect ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <p className="text-gray-400 mb-4">No accounts connected yet.</p>
-          <button
-            className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          <Button
             onClick={() => setShowConnect(true)}
           >
             Connect your first account
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
@@ -92,20 +91,22 @@ export function ConnectedAccountsPage() {
                 {integration.disabled ? 'Disabled' : 'Active'}
               </span>
               <div className="flex gap-2">
-                <button
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   disabled={loading === integration._id}
                   onClick={() => handleDisable(integration._id, !integration.disabled)}
                 >
                   {integration.disabled ? 'Enable' : 'Disable'}
-                </button>
-                <button
-                  className="px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
                   disabled={loading === integration._id}
                   onClick={() => handleDelete(integration._id)}
                 >
                   Disconnect
-                </button>
+                </Button>
               </div>
             </div>
           ))}

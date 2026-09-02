@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signIn, signUp } from '../../lib/auth-client'
+import { Button } from "@/components/ui/button"
 
 export function LandingPage() {
   const navigate = useNavigate()
@@ -182,39 +183,42 @@ export function LandingPage() {
                       required
                       minLength={8}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 text-xs font-medium p-1 cursor-pointer"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? 'Hide' : 'Show'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 bg-neutral-900 hover:bg-black text-white text-sm font-medium rounded-xl shadow-xs transition-all duration-150 active:scale-[0.99] cursor-pointer disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
+                  className="w-full mt-2"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <span>{isSignUp ? 'Sign Up' : 'Sign In'}</span>
                   )}
-                </button>
+                </Button>
               </form>
 
               <div className="text-center">
                 <span className="text-sm text-neutral-500 font-normal">
                   {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
                     onClick={toggleMode}
-                    className="text-sm font-medium text-neutral-900 hover:underline cursor-pointer"
+                    className="text-sm font-medium text-neutral-900 p-0 h-auto"
                   >
                     {isSignUp ? 'Sign in' : 'Sign up'}
-                  </button>
+                  </Button>
                 </span>
               </div>
 

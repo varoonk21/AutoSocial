@@ -20,6 +20,7 @@ import {
   Check,
 } from "lucide-react";
 import { api } from "../../api";
+import { Button } from "@/components/ui/button";
 
 const DEFAULT_PREVIEW_IMAGE =
   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800&h=600";
@@ -231,13 +232,13 @@ export function CreatePost() {
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center justify-between">
           <span>{error}</span>
-          <button onClick={() => setError("")} className="font-bold text-red-500 cursor-pointer"><X className="w-4 h-4" /></button>
+          <Button variant="ghost" size="icon-xs" onClick={() => setError("")}><X className="w-4 h-4" /></Button>
         </div>
       )}
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl flex items-center justify-between">
           <span>{success}</span>
-          <button onClick={() => setSuccess("")} className="font-bold text-emerald-500 cursor-pointer"><X className="w-4 h-4" /></button>
+          <Button variant="ghost" size="icon-xs" onClick={() => setSuccess("")}><X className="w-4 h-4" /></Button>
         </div>
       )}
 
@@ -403,12 +404,14 @@ export function CreatePost() {
                   className="w-full h-32 object-cover"
                 />
                 {media.length > 0 && (
-                  <button
+                  <Button
+                    variant="destructive"
+                    size="icon-xs"
                     onClick={() => setMedia([])}
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-black transition-colors cursor-pointer"
+                    className="absolute top-2 right-2"
                   >
                     <X className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -477,10 +480,11 @@ export function CreatePost() {
             </div>
 
             {/* Generate Button */}
-            <button
+            <Button
+              size="sm"
               onClick={handleAiGenerate}
               disabled={aiLoading}
-              className="w-full py-3 px-4 bg-[#243746] hover:bg-[#1a2935] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full"
             >
               {aiLoading ? (
                 <span>Generating with AI...</span>
@@ -490,7 +494,7 @@ export function CreatePost() {
                   <span>Generate Content</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -504,24 +508,24 @@ export function CreatePost() {
               
               {/* Desktop / Mobile view toggle icons */}
               <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-lg">
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => setViewMode("desktop")}
-                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "desktop" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"
-                  }`}
+                  className={viewMode === "desktop" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"}
                   title="Desktop View"
                 >
                   <Monitor className="w-4 h-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => setViewMode("mobile")}
-                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "mobile" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"
-                  }`}
+                  className={viewMode === "mobile" ? "bg-white text-[#243746] shadow-2xs" : "text-gray-400 hover:text-gray-600"}
                   title="Mobile View"
                 >
                   <Smartphone className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -532,10 +536,12 @@ export function CreatePost() {
                 {/* Platform Selector Tabs */}
                 <div className="flex items-center justify-around py-3 px-4 border-b border-gray-100 bg-gray-50/50">
                   {PLATFORMS.map((p) => (
-                    <button
+                    <Button
                       key={p.id}
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setActivePlatform(p.id)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      className={`rounded-full ${
                         activePlatform === p.id
                           ? "ring-2 ring-[#243746] bg-white shadow-2xs scale-110"
                           : "opacity-60 hover:opacity-100"
@@ -546,7 +552,7 @@ export function CreatePost() {
                       {p.id === "instagram" && <span className="text-sm">📷</span>}
                       {p.id === "linkedin" && <span className="font-bold text-[#0A66C2] text-xs">in</span>}
                       {p.id === "x" && <span className="font-bold text-black text-xs">𝕏</span>}
-                    </button>
+                    </Button>
                   ))}
                 </div>
 
@@ -571,19 +577,19 @@ export function CreatePost() {
                   {/* Social Action Bar with Lucide Icons */}
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-gray-500">
                     <div className="flex items-center gap-4">
-                      <button className="hover:text-red-500 transition-colors cursor-pointer">
+                      <Button variant="ghost" size="icon-xs" className="hover:text-red-500">
                         <Heart className="w-4 h-4" />
-                      </button>
-                      <button className="hover:text-blue-500 transition-colors cursor-pointer">
+                      </Button>
+                      <Button variant="ghost" size="icon-xs" className="hover:text-blue-500">
                         <MessageCircle className="w-4 h-4" />
-                      </button>
-                      <button className="hover:text-emerald-500 transition-colors cursor-pointer">
+                      </Button>
+                      <Button variant="ghost" size="icon-xs" className="hover:text-emerald-500">
                         <Send className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
-                    <button className="hover:text-gray-800 transition-colors cursor-pointer">
+                    <Button variant="ghost" size="icon-xs" className="hover:text-gray-800">
                       <Bookmark className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -681,19 +687,21 @@ export function CreatePost() {
                 </div>
 
                 {/* Toggle switch */}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   type="button"
                   onClick={() => setIsScheduled(!isScheduled)}
-                  className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                  className={`rounded-full ${
                     isScheduled ? "bg-[#243746]" : "bg-gray-200"
                   }`}
                 >
                   <div
                     className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                      isScheduled ? "translate-x-5" : "translate-x-0"
+                      isScheduled ? "translate-x-0" : "translate-x-0"
                     }`}
                   />
-                </button>
+                </Button>
               </div>
 
               {isScheduled && (
@@ -724,23 +732,24 @@ export function CreatePost() {
 
             {/* Bottom Actions Row */}
             <div className="pt-2 flex items-center justify-end gap-3">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 type="button"
                 onClick={() => handleSubmitPost("draft")}
-                className="px-4 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl text-xs font-bold text-gray-700 transition-colors cursor-pointer"
               >
                 Save as Draft
-              </button>
+              </Button>
 
-              <button
+              <Button
+                size="sm"
                 type="button"
                 onClick={() => handleSubmitPost(isScheduled ? "schedule" : "now")}
                 disabled={loading}
-                className="px-5 py-2.5 bg-[#243746] hover:bg-[#1a2935] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Calendar className="w-4 h-4" />
                 <span>{isScheduled ? "Schedule Post" : "Schedule Post"}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -95,10 +95,9 @@ export function SettingsPage() {
             <Input
               type="email"
               value={email}
-              disabled
-              className="bg-gray-50 text-gray-500"
+              readOnly
+              className="cursor-default"
             />
-            <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
           </div>
         </CardContent>
       </Card>

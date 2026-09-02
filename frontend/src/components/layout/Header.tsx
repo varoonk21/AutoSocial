@@ -74,25 +74,7 @@ export function Header() {
     }
 
     if (path === "/create-post") {
-      return (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatchAction("save-draft")}
-          >
-            <Save className="w-4 h-4" />
-            <span>Save Draft</span>
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => dispatchAction("publish-post")}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Schedule / Publish</span>
-          </Button>
-        </div>
-      );
+      return null;
     }
 
     if (path === "/scheduled-posts") {

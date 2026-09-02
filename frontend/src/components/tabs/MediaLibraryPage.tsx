@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Upload,
   Search,
   Image as ImageIcon,
   Video,
@@ -214,9 +215,28 @@ export function MediaLibraryPage() {
       />
 
       {/* Header Title Bar */}
-      <div className="pb-2 border-b border-gray-200/80">
-        <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Media Library</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
+      <div className="pb-2 border-b border-gray-200/80 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Media Library</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAiModalOpen(true)}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI Generator</span>
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="w-4 h-4" />
+            <span>Upload Media</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filters & Control Toolbar */}

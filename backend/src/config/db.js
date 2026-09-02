@@ -5,6 +5,7 @@
 
 import mongoose from 'mongoose';
 import env from './env.config.js';
+import { logger } from '../utils/logger.util.js';
 
 
 export async function connectDB() {
@@ -13,13 +14,13 @@ export async function connectDB() {
     await mongoose.connect(env.DATABASE_URL, {
       serverSelectionTimeoutMS: 10000,
     });
-    console.log('MongoDB connected');
+    logger.info('MongoDB connected');
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
+    logger.error({ err }, 'MongoDB connection error');
     process.exit(1);
   }
 
   mongoose.connection.on('error', (err) => {
-    console.error('MongoDB error:', err);
+    logger.error({ err }, 'MongoDB error');
   });
 }

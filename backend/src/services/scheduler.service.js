@@ -29,6 +29,7 @@ import { InstagramProvider } from '../social/instagram.provider.js';
 import { XProvider } from '../social/x.provider.js';
 import { LinkedInProvider } from '../social/linkedin.provider.js';
 import { timer } from '../utils/timer.js';
+import { logger } from '../utils/logger.util.js';
 
 // ─── Provider Registry ────────────────────────────────────────────────────────
 
@@ -62,16 +63,16 @@ let schedulerInterval = null;
  */
 function startScheduler(intervalMs = 60 * 1000) {
   if (schedulerInterval) {
-    console.warn('Scheduler already running');
+    logger.warn('Scheduler already running');
     return;
   }
 
-  console.log(`Scheduler started (polling every ${intervalMs / 1000}s)`);
+  logger.info(`Scheduler started (polling every ${intervalMs / 1000}s)`);
 
   // Run immediately on start, then on interval
-  runScheduler().catch(console.error);
+    runScheduler().catch((err) => logger.error({ err }, 'Scheduler tick failed'));
   schedulerInterval = setInterval(() => {
-    runScheduler().catch(console.error);
+  runScheduler().catch((err) => logger.error({ err }, 'Scheduler tick failed'));
   }, intervalMs);
 }
 
@@ -79,7 +80,7 @@ function stopScheduler() {
   if (schedulerInterval) {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
-    console.log('Scheduler stopped');
+    logger.info('Scheduler stopped');
   }
 }
 
@@ -211,7 +212,7 @@ async function publishGroup(posts) {
       });
     }
 
-    console.log(`Published ${results.length} post(s) for group ${firstPost.group} via ${integration.providerIdentifier}`);
+    logger.info(`Published ${results.length} post(s) for group ${firstPost.group} via ${integration.providerIdentifier}`);
   } catch (err) {
     const isRefreshError = err instanceof RefreshTokenError || err.name === 'RefreshTokenError';
 
@@ -220,11 +221,11 @@ async function publishGroup(posts) {
       await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
       const errorMsg = 'Access token expired - please reconnect your social account';
       await markPostsError(sorted, errorMsg);
-      console.error(`Token refresh needed for integration ${integration._id}: ${err.message}`);
+      logger.error({ err }, `Token refresh needed for integration ${integration._id}`);
     } else {
       const errorMsg = err.message || 'Unknown error while publishing';
       await markPostsError(sorted, errorMsg);
-      console.error(`Failed to publish group ${firstPost.group}: ${errorMsg}`);
+      logger.error({ err }, `Failed to publish group ${firstPost.group}`);
     }
   }
 }

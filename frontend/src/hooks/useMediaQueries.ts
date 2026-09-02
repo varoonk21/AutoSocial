@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiGet, apiPost, apiDelete } from '../lib/fetcher'
+import { apiGetPaginated, apiPost, apiDelete } from '../lib/fetcher'
 import { queryKeys } from './queryKeys'
 
-export function useMedia() {
+export function useMedia(params: Record<string, string> = {}) {
+  const query = new URLSearchParams(params).toString()
   return useQuery({
-    queryKey: queryKeys.media,
-    queryFn: () => apiGet('/media'),
+    queryKey: [...queryKeys.media, params],
+    queryFn: () => apiGetPaginated(`/media${query ? `?${query}` : ''}`),
   })
 }
 

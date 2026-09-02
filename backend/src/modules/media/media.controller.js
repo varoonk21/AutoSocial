@@ -6,8 +6,9 @@ import {
 } from './media.service.js';
 import { generateImage } from '../../services/ai.service.js';
 import { uploadToS3 } from '../../lib/s3.js';
-import { sendSuccess, sendError } from '../../utils/response.util.js';
+import { sendSuccess, sendPaginated, sendError } from '../../utils/response.util.js';
 import { AppError } from '../../utils/appError.util.js';
+import { parseQueryPagination } from '../../utils/pagination.util.js';
 
 async function getUploadUrlHandler(req, res) {
   const { fileName, contentType, fileSize } = req.body;
@@ -47,10 +48,12 @@ async function generateImageHandler(req, res) {
   sendSuccess(res, { media: { ...media.toObject(), path } });
 }
 
+const ALLOWED_SORT_FIELDS = ['createdAt', 'originalName'];
+
 async function listMedia(req, res) {
-  const { page = 1, search = '', type = '', source = '' } = req.query;
-  const result = await getMedia(req.user._id, Number(page), search, type, source);
-  sendSuccess(res, result);
+  const query = parseQueryPagination(req.query, ALLOWED_SORT_FIELDS);
+  const result = await getMedia(req.user._id, query);
+  sendPaginated(res, result.media, result.total, query.page, query.pageSize);
 }
 
 async function deleteMediaHandler(req, res) {

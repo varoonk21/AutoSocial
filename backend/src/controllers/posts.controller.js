@@ -7,6 +7,7 @@ import { Post, Integration, BrandKit } from '../models/index.js';
 import { makeId } from '../utils/makeId.js';
 import { generatePosts, generatePostsFromUrl, separatePosts } from '../services/ai.service.js';
 import { publishGroup } from '../services/scheduler.service.js';
+import { logger } from '../utils/logger.util.js';
 
 // ─── GET /posts ───────────────────────────────────────────────────────────────
 // List all posts for the user with optional date range filter
@@ -118,7 +119,7 @@ async function createPost(req, res) {
     if (type === 'now') {
       const populated = await Post.find({ group }).populate('integrationId');
       publishGroup(populated).catch((err) =>
-        console.error('Immediate post failed:', err.message)
+        logger.error({ err }, 'Immediate post failed')
       );
     }
 

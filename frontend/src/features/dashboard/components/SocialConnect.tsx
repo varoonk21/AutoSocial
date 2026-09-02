@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/fetcher'
+import { apiGet } from '@/lib/fetcher'
 import { Button } from "@/components/ui/button"
 
 const PLATFORMS = [
@@ -7,21 +7,25 @@ const PLATFORMS = [
   { id: 'instagram', name: 'Instagram', color: '#E1306C' },
   { id: 'x', name: 'X (Twitter)', color: '#000000' },
   { id: 'linkedin', name: 'LinkedIn', color: '#0A66C2' },
-]
+] as const
 
-export function SocialConnect({ connectedProviders = [] }) {
-  const [connecting, setConnecting] = useState(null)
+interface SocialConnectProps {
+  connectedProviders?: string[]
+}
+
+export function SocialConnect({ connectedProviders = [] }: SocialConnectProps) {
+  const [connecting, setConnecting] = useState<string | null>(null)
   const [error, setError] = useState('')
 
-  const handleConnect = async (providerId) => {
+  const handleConnect = async (providerId: string) => {
     setError('')
     setConnecting(providerId)
     try {
       const data = await apiGet(`/integrations/social/${providerId}`)
       if (!data.url) throw new Error(data.error || 'Failed to get OAuth URL')
       window.location.href = data.url
-    } catch (err) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to connect')
       setConnecting(null)
     }
   }

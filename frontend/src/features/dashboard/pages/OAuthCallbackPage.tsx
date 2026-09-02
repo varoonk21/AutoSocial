@@ -10,6 +10,13 @@ const PLATFORM_INFO: Record<string, { name: string; color: string }> = {
   linkedin: { name: 'LinkedIn', color: '#0A66C2' },
 }
 
+interface FacebookPage {
+  id: string
+  name: string
+  username?: string
+  picture?: { data?: { url?: string } }
+}
+
 export function OAuthCallbackPage() {
   const { provider } = useParams<{ provider: string }>()
   const navigate = useNavigate()
@@ -17,7 +24,7 @@ export function OAuthCallbackPage() {
 
   const [status, setStatus] = useState<'loading' | 'pages' | 'success' | 'error'>('loading')
   const [error, setError] = useState('')
-  const [pages, setPages] = useState<any[]>([])
+  const [pages, setPages] = useState<FacebookPage[]>([])
   const [tempState, setTempState] = useState('')
   const [selectedPage, setSelectedPage] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -64,9 +71,9 @@ export function OAuthCallbackPage() {
 
       setStatus('error')
       setError(data.error || 'Connection failed. Please try again.')
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error')
-      setError(err.message || 'Connection failed. Please try again.')
+      setError(err instanceof Error ? err.message : 'Connection failed. Please try again.')
     }
   }
 
@@ -83,13 +90,13 @@ export function OAuthCallbackPage() {
 
       setPages(pageList)
       setStatus('pages')
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error')
-      setError(err.message || 'Failed to load pages.')
+      setError(err instanceof Error ? err.message : 'Failed to load pages.')
     }
   }
 
-  async function handlePageSelect(pageData: any) {
+  async function handlePageSelect(pageData: FacebookPage) {
     if (!provider || !tempState) return
 
     setSelectedPage(pageData.id)
@@ -107,9 +114,9 @@ export function OAuthCallbackPage() {
         setStatus('error')
         setError(data.error || 'Failed to save page. Please try again.')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error')
-      setError(err.message || 'Failed to save page. Please try again.')
+      setError(err instanceof Error ? err.message : 'Failed to save page. Please try again.')
     } finally {
       setSaving(false)
     }

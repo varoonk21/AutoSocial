@@ -14,127 +14,8 @@ body::-webkit-scrollbar {
 body {
   font-family: "Inter";
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #fdfdfd;
-  color: #1c1c1c;
-  margin: 0;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-/* Image selection & drag prevention */
-img {
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Interactive button micro-scale */
-button {
-  cursor: pointer;
-}
-
-button:active {
-  scale: 0.98;
-}
-
-/* Global Color & Utility Classes */
-.bg-primary {
-  background-color: #ffffff;
-}
-
-.bg-light {
-  background-color: #fdfdfd;
-}
-
-.bg-dark {
-  background-color: #f9f9f9;
-}
-
-.bg-darker {
-  background-color: #f5f5f5;
-}
-
-.bg-primary-gradient {
-  background: linear-gradient(to bottom, rgb(249, 249, 249), rgb(246, 246, 246) 80%);
-  box-shadow: 0 0px 1px rgba(0, 0, 0, 0.05);
-}
-
-.bg-primary-gradient:hover {
-  background: linear-gradient(to bottom, rgb(240, 240, 240), rgb(240, 240, 240) 80%);
-}
-
-.text-gray-lab {
-  color: #727272;
-}
-
-.bg-secondary {
-  background-color: #1c1c1c;
-}
-
-.user-message-color {
-  background-color: rgba(233, 233, 233, 0.5);
-}
-
-.text-primary {
-  color: #1c1c1c;
-}
-
-.text-secondary {
-  color: #fbfbfb;
-}
-
-.border-primary {
-  border: 0.0625rem solid rgba(0, 0, 0, 0.1);
-}
-
-.border-secondary {
-  border-color: rgba(233, 233, 233, 0.5);
-}
-
-/* Shimmer Animation */
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2.5s infinite;
-}
-
-/* Custom Scrollbar Utilities */
-.custom-scroll::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
-}
-
-.custom-scroll::-webkit-scrollbar-track,
-.custom-scroll::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(28, 28, 28, 0.15);
-  border-radius: 3px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(28, 28, 28, 0.3);
-}
-
-.custom-scroll-sm::-webkit-scrollbar {
-  height: 5px;
-  width: 5px;
-}
-
-.custom-scroll-xs::-webkit-scrollbar {
-  height: 3px;
-  width: 3px;
-}
-
-/* Theme Tokens */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -206,7 +87,7 @@ button:active {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Inter Variable', sans-serif;
+  --font-sans: "Inter Variable", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -254,7 +135,8 @@ button:active {
   body {
     @apply bg-background text-foreground;
   }
-  button:not(:disabled), [role="button"]:not(:disabled) {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {

@@ -20,9 +20,7 @@ async function getMedia(userId, page = 1, search = '', type = '', source = '') {
     deletedAt: null,
     ...(search ? { originalName: { $regex: search, $options: 'i' } } : {}),
     ...(type && type !== 'all' ? { type } : {}),
-    ...(source && source !== 'all' ? { 
-      $or: [{ source }, { source: { $exists: false } }] 
-    } : {}),
+    ...(source && source !== 'all' ? { source } : {}),
   };
 
   const [media, total] = await Promise.all([

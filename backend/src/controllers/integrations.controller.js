@@ -12,6 +12,7 @@
 import { Integration } from '../models/index.js';
 import { getProvider } from '../services/scheduler.service.js';
 import { makeId } from '../utils/makeId.js';
+import { logger } from '../utils/logger.util.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
 // For production with multiple servers, replace with Redis
@@ -20,9 +21,11 @@ const STATE_TTL_MS = 10 * 60 * 1000;
 
 function setOAuthState(state, data) {
   oauthStateStore.set(state, { ...data, expiresAt: Date.now() + STATE_TTL_MS });
+  logger.info({ state, provider: data.provider, mapSize: oauthStateStore.size }, 'OAuth state stored');
 }
 
 function getOAuthState(state) {
+  logger.info({ state, mapSize: oauthStateStore.size, keys: [...oauthStateStore.keys()] }, 'OAuth state lookup');
   const entry = oauthStateStore.get(state);
   if (!entry) return null;
   if (Date.now() > entry.expiresAt) {
@@ -58,8 +61,8 @@ async function listIntegrations(req, res) {
 // Step 1: Get OAuth URL for a social provider
 
 async function getOAuthUrl(req, res) {
+  const { provider } = req.params;
   try {
-    const { provider } = req.params;
     const socialProvider = getProvider(provider);
 
     const { url, codeVerifier, state } = await socialProvider.generateAuthUrl();
@@ -81,12 +84,13 @@ async function getOAuthUrl(req, res) {
 // Step 2: Handle OAuth callback and save tokens
 
 async function oauthCallback(req, res) {
+  const { provider } = req.params;
   try {
-    const { provider } = req.params;
     const { code, state, oauth_verifier } = req.query;
 
     const stateData = getOAuthState(state);
     if (!stateData) {
+      logger.warn({ provider, state }, 'OAuth callback: invalid or expired state');
       return res.status(400).json({ error: 'Invalid or expired OAuth state. Please try again.' });
     }
 
@@ -116,6 +120,7 @@ async function oauthCallback(req, res) {
     const integration = await saveIntegration(stateData.userId, provider, authResult, {});
     res.json({ success: true, integration });
   } catch (err) {
+    logger.error({ err, provider }, 'OAuth callback failed');
     res.status(400).json({ error: err.message });
   }
 }
@@ -124,33 +129,37 @@ async function oauthCallback(req, res) {
 // Step 3 (optional): Save selected page/account for providers that need it
 
 async function savePage(req, res) {
+  const { provider } = req.params;
   try {
-    const { provider } = req.params;
     const { tempState, pageData } = req.body;
+
+    logger.info({ provider, tempState, pageData }, 'savePage: received request');
 
     const stateData = getOAuthState(tempState);
     if (!stateData) {
+      logger.warn({ provider, tempState }, 'savePage: invalid or expired state');
       return res.status(400).json({ error: 'Invalid or expired state. Please reconnect.' });
     }
 
-    const socialProvider = getProvider(provider);
     oauthStateStore.delete(tempState);
-
-    // Get page-specific token and details
-    const pageInfo = await socialProvider.fetchPageInformation(stateData.authResult.accessToken, pageData);
 
     const integration = await saveIntegration(
       stateData.userId,
       provider,
       {
-        ...pageInfo,
-        accessToken: pageInfo.access_token,
+        id: pageData.id,
+        name: pageData.name,
+        accessToken: pageData.access_token,
+        picture: pageData.picture?.data?.url || '',
+        username: pageData.username || '',
       },
       {}
     );
 
+    logger.info({ provider, integrationId: integration._id }, 'savePage: integration saved');
     res.json({ success: true, integration });
   } catch (err) {
+    logger.error({ err, provider }, 'savePage failed');
     res.status(400).json({ error: err.message });
   }
 }
@@ -159,20 +168,25 @@ async function savePage(req, res) {
 // Gets list of pages/accounts for providers with isBetweenSteps
 
 async function getPages(req, res) {
+  const { provider } = req.params;
   try {
-    const { provider } = req.params;
     const { tempState } = req.query;
+
+    logger.info({ provider, tempState }, 'getPages: received request');
 
     const stateData = getOAuthState(tempState);
     if (!stateData) {
+      logger.warn({ provider, tempState }, 'getPages: invalid or expired state');
       return res.status(400).json({ error: 'Invalid or expired state. Please reconnect.' });
     }
 
     const socialProvider = getProvider(provider);
     const pages = await socialProvider.pages(stateData.authResult.accessToken);
 
+    logger.info({ provider, pageCount: pages.length }, 'getPages: returning pages');
     res.json({ pages });
   } catch (err) {
+    logger.error({ err, provider }, 'getPages failed');
     res.status(400).json({ error: err.message });
   }
 }

@@ -39,6 +39,13 @@ async function fetchApiJson(endpoint: string, options: RequestInit = {}): Promis
   const url = `${BASE}${endpoint}`;
 
   const response = await fetch(url, fetchOptions);
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    const text = await response.text().catch(() => "");
+    throw new Error(text || `Server returned ${response.status} ${response.statusText}`);
+  }
+
   const json = (await response.json()) as JsonEnvelope;
 
   if (!response.ok) {

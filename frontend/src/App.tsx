@@ -11,6 +11,7 @@ import { AnalyticsPage } from './components/tabs/AnalyticsPage'
 import { BrandKitPage } from './components/tabs/BrandKitPage'
 import { ConnectedAccountsPage } from './components/tabs/ConnectedAccountsPage'
 import { SettingsPage } from './components/tabs/SettingsPage'
+import { OAuthCallbackPage } from './components/pages/OAuthCallbackPage'
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute'
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/brand-kit" element={<BrandKitPage />} />
         <Route path="/connected-accounts" element={<ConnectedAccountsPage />} />
+        <Route path="/integrations/social/:provider" element={<OAuthCallbackPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>

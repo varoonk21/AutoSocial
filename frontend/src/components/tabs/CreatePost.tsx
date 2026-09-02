@@ -80,8 +80,7 @@ export function CreatePost() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    api
-      .get("/integrations/list")
+    apiGet("/integrations/list")
       .then((d) => {
         const list = d.integrations || [];
         setIntegrations(list);

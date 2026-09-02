@@ -6,6 +6,7 @@ import {
   LogOut,
   User,
   ChevronDown,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

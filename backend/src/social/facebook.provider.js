@@ -293,7 +293,7 @@ class FacebookProvider extends SocialProvider {
    * Source: facebook.provider.ts → fetchPageInformation()
    */
   async fetchPageInformation(accessToken, data) {
-    const pageId = data.page;
+    const pageId = data.id;
     const fields = 'id,username,name,access_token,picture.type(large)';
 
     const searchPaginated = async (startUrl) => {

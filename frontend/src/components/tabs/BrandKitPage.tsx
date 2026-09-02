@@ -2,7 +2,7 @@ import { Plus, Image } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
 import { useFileUpload } from '@/hooks/useFileUpload'
-import { getLogoUrl } from '@/lib/s3'
+import { getImageUrl } from '@/lib/s3'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -81,14 +81,14 @@ export function BrandKitPage() {
   const primaryLogoUpload = useFileUpload({
     onUpload: (media) => {
       setPrimaryLogoId(media._id)
-      setPrimaryLogoUrl(getLogoUrl(media.key))
+      setPrimaryLogoUrl(getImageUrl(media.key))
     },
   })
 
   const watermarkUpload = useFileUpload({
     onUpload: (media) => {
       setWatermarkLogoId(media._id)
-      setWatermarkLogoUrl(getLogoUrl(media.key))
+      setWatermarkLogoUrl(getImageUrl(media.key))
     },
   })
 

@@ -1,4 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useBrandKit, useSaveBrandKit } from '@/hooks/useBrandKitQueries'
+import { uploadFileToS3 } from '@/api'
 import { Button } from "@/components/ui/button"
 
 const AVAILABLE_FONTS = [
@@ -15,6 +17,9 @@ const AVAILABLE_FONTS = [
 const TONE_OPTIONS = ['Professional', 'Friendly', 'Playful', 'Bold', 'Minimal', 'Luxury']
 
 export function BrandKitPage() {
+  const { data: brandKitData, isLoading } = useBrandKit()
+  const saveMutation = useSaveBrandKit()
+
   const [showNotice, setShowNotice] = useState(true)
   const [primaryLogo, setPrimaryLogo] = useState(null)
   const [watermarkLogo, setWatermarkLogo] = useState(null)
@@ -28,11 +33,51 @@ export function BrandKitPage() {
   const [styleNotes, setStyleNotes] = useState('')
   const [savedSuccess, setSavedSuccess] = useState(false)
 
-  const handleLogoUpload = (e, setLogo) => {
+  // Populate state from fetched brand kit data
+  useEffect(() => {
+    const bk = brandKitData?.brandKit
+    if (!bk) return
+    setPrimaryLogo(bk.primaryLogo || null)
+    setWatermarkLogo(bk.watermarkLogo || null)
+    setPrimaryColor(bk.primaryColor || '#2563EB')
+    setSecondaryColor(bk.secondaryColor || '#FFFFFF')
+    setAccentColor(bk.accentColor || '#F59E0B')
+    setSelectedFonts(bk.fonts?.length ? bk.fonts : ['Inter (Primary)', 'Roboto (Secondary)'])
+    setSelectedTones(bk.tones?.length ? bk.tones : ['Professional', 'Bold'])
+    setStyleNotes(bk.styleNotes || '')
+  }, [brandKitData])
+
+  const handleSave = useCallback(() => {
+    saveMutation.mutate(
+      {
+        primaryLogo: primaryLogo || '',
+        watermarkLogo: watermarkLogo || '',
+        primaryColor,
+        secondaryColor,
+        accentColor,
+        fonts: selectedFonts,
+        tones: selectedTones,
+        styleNotes,
+      },
+      {
+        onSuccess: () => {
+          setSavedSuccess(true)
+          setTimeout(() => setSavedSuccess(false), 3000)
+        },
+      }
+    )
+  }, [saveMutation, primaryLogo, watermarkLogo, primaryColor, secondaryColor, accentColor, selectedFonts, selectedTones, styleNotes])
+
+  const handleLogoUpload = async (e, setLogo) => {
     const file = e.target.files?.[0]
     if (file) {
-      const url = URL.createObjectURL(file)
-      setLogo(url)
+      try {
+        const uploaded = await uploadFileToS3(file)
+        setLogo(uploaded.key)
+      } catch {
+        const url = URL.createObjectURL(file)
+        setLogo(url)
+      }
     }
   }
 
@@ -61,9 +106,12 @@ export function BrandKitPage() {
     setSelectedFonts(updated)
   }
 
-  const handleSave = () => {
-    setSavedSuccess(true)
-    setTimeout(() => setSavedSuccess(false), 3000)
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center py-20">
+        <div className="text-sm text-gray-500">Loading brand kit...</div>
+      </div>
+    )
   }
 
   return (
@@ -77,8 +125,9 @@ export function BrandKitPage() {
           {savedSuccess && <span className="text-xs font-semibold text-emerald-600 animate-fade-in flex items-center gap-1">✓ Saved!</span>}
           <Button
             onClick={handleSave}
+            disabled={saveMutation.isPending}
           >
-            Save Brand Kit
+            {saveMutation.isPending ? 'Saving...' : 'Save Brand Kit'}
           </Button>
         </div>
       </div>
@@ -121,7 +170,7 @@ export function BrandKitPage() {
                     className="hidden"
                   />
                   {primaryLogo ? (
-                    <img src={primaryLogo} alt="Primary Logo" className="max-h-20 object-contain" />
+                    <img src={primaryLogo.startsWith('blob:') || primaryLogo.startsWith('http') ? primaryLogo : `/api/v1/media/${primaryLogo}`} alt="Primary Logo" className="max-h-20 object-contain" />
                   ) : (
                     <>
                       <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -151,7 +200,7 @@ export function BrandKitPage() {
                     className="hidden"
                   />
                   {watermarkLogo ? (
-                    <img src={watermarkLogo} alt="Watermark Icon" className="max-h-16 object-contain" />
+                    <img src={watermarkLogo.startsWith('blob:') || watermarkLogo.startsWith('http') ? watermarkLogo : `/api/v1/media/${watermarkLogo}`} alt="Watermark Icon" className="max-h-16 object-contain" />
                   ) : (
                     <>
                       <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center text-gray-400 mb-2 transition-colors">
@@ -339,7 +388,7 @@ export function BrandKitPage() {
             <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-white shadow-xs">
               <div className="flex items-center gap-2.5">
                 {primaryLogo ? (
-                  <img src={primaryLogo} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
+                  <img src={primaryLogo.startsWith('blob:') || primaryLogo.startsWith('http') ? primaryLogo : `/api/v1/media/${primaryLogo}`} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
                 ) : (
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
@@ -357,7 +406,7 @@ export function BrandKitPage() {
                   className="w-full h-44 object-cover"
                 />
                 <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                  {watermarkLogo ? <img src={watermarkLogo} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
+                  {watermarkLogo ? <img src={watermarkLogo.startsWith('blob:') || watermarkLogo.startsWith('http') ? watermarkLogo : `/api/v1/media/${watermarkLogo}`} alt="WM" className="w-4 h-4 object-contain" /> : 'AS'}
                 </div>
               </div>
               <p className="text-xs text-gray-700 leading-relaxed font-normal">

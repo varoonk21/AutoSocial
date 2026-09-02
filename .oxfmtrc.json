@@ -1,4 +1,7 @@
 {
   "$schema": "https://oxc.rs/schema/oxfmtrc.json",
-  "tailwindcss": true
+  "tailwindcss": {
+    "stylesheet": "./frontend/src/index.css",
+    "functions": ["cn", "clsx"]
+  }
 }

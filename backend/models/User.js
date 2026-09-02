@@ -7,6 +7,11 @@ const UserSchema = new mongoose.Schema(
     picture: { type: String },
     activated: { type: Boolean, default: true },
     isSuperAdmin: { type: Boolean, default: false },
+    notifications: {
+      postPublished: { type: Boolean, default: true },
+      postFailed: { type: Boolean, default: true },
+      tokenExpiring: { type: Boolean, default: true },
+    },
   },
   { timestamps: true },
 );

@@ -1,6 +1,6 @@
 import { BrandKit } from "../../models/index.js";
 import { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference } from "./ai.service.js";
-import { uploadToS3, downloadFromS3 } from "../../lib/s3.js";
+import { uploadToS3, getS3Url } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
 import fs from "fs";
 
@@ -40,8 +40,8 @@ async function generateImageHandler(req, res) {
 
     let base64;
     if (referenceImageKey) {
-      const imageBuffer = await downloadFromS3(referenceImageKey);
-      base64 = await generateImageWithReference(imageBuffer, prompt, !!vertical);
+      const imageUrl = await getS3Url(referenceImageKey);
+      base64 = await generateImageWithReference(imageUrl, prompt, !!vertical);
     } else {
       base64 = await generateImage(prompt, !!vertical);
     }
@@ -62,7 +62,6 @@ async function generateImageHandler(req, res) {
       source: "ai",
     });
 
-    const { getS3Url } = await import("../../lib/s3.js");
     const path = await getS3Url(key);
 
     res.json({ media: { ...media.toObject(), path } });

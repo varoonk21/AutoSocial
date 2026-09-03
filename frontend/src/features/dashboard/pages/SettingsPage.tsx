@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { authClient, useSession } from "@/lib/auth-client";
@@ -105,15 +106,19 @@ export function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
             <div className="flex items-center gap-5">
               <div className="relative">
-                <img
-                  src={
-                    session?.user?.image
-                      ? getImageUrl(session.user.image)
-                      : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
-                  }
-                  alt="Profile Picture"
-                  className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-100"
-                />
+                <Avatar className="w-16 h-16">
+                  <AvatarImage
+                    src={
+                      session?.user?.image
+                        ? getImageUrl(session.user.image)
+                        : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
+                    }
+                    alt="Profile Picture"
+                  />
+                  <AvatarFallback>
+                    {name?.slice(0, 2).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
                 {uploading && (
                   <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-full">
                     <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />

@@ -1,5 +1,5 @@
 import { z, ZodError } from "zod";
-import { AppError } from "../utils/appError.utils.js";
+import { AppError } from "../utils/appError.util.js";
 
 function createValidater(source, schema) {
   return (req, _res, next) => {

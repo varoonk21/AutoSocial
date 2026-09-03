@@ -155,8 +155,8 @@ export function MediaLibraryPage() {
     setAiGenerating(true);
     try {
       const body = { prompt: aiPrompt };
-      if (aiReferenceImage?.key) {
-        body.referenceImageKey = aiReferenceImage.key;
+      if (aiReferenceImage?.path) {
+        body.referenceImageUrl = aiReferenceImage.path;
       }
       const res = await apiPost("/ai/generate-image", body);
       

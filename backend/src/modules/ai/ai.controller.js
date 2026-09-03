@@ -2,7 +2,6 @@ import { BrandKit } from "../../models/index.js";
 import { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference } from "./ai.service.js";
 import { uploadToS3, getS3Url } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
-import fs from "fs";
 
 async function generatePostsHandler(req, res) {
   try {
@@ -35,13 +34,12 @@ async function separatePostsHandler(req, res) {
 
 async function generateImageHandler(req, res) {
   try {
-    const { prompt, vertical = false, referenceImageKey } = req.body;
+    const { prompt, vertical = false, referenceImageUrl } = req.body;
     if (!prompt) return res.status(400).json({ error: "prompt is required" });
 
     let base64;
-    if (referenceImageKey) {
-      const imageUrl = await getS3Url(referenceImageKey);
-      base64 = await generateImageWithReference(imageUrl, prompt, !!vertical);
+    if (referenceImageUrl) {
+      base64 = await generateImageWithReference(referenceImageUrl, prompt, !!vertical);
     } else {
       base64 = await generateImage(prompt, !!vertical);
     }

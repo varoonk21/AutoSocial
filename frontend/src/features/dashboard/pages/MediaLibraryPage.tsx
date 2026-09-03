@@ -17,9 +17,12 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ImagePlus,
 } from "lucide-react";
 import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
+import { uploadToS3Only } from "../../../api/index";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { useImageStore } from "../../../store/imageStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +43,7 @@ export function MediaLibraryPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const { upload, uploading, progress } = useFileUpload();
+  const getImageUrl = useImageStore((s) => s.getImageUrl);
 
   // State
   const [mediaList, setMediaList] = useState([]);
@@ -59,6 +63,10 @@ export function MediaLibraryPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [aiReferenceImage, setAiReferenceImage] = useState(null);
+  const [aiReferencePreview, setAiReferencePreview] = useState(null);
+  const [aiReferenceUploading, setAiReferenceUploading] = useState(false);
+  const aiReferenceInputRef = useRef(null);
 
   // Load from backend & listen to Header custom actions
   useEffect(() => {
@@ -149,19 +157,54 @@ export function MediaLibraryPage() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      const res = await apiPost("/ai/generate-image", { prompt: aiPrompt });
+      const body = { prompt: aiPrompt };
+      if (aiReferenceImage?.key) {
+        body.referenceImageUrl = getImageUrl(aiReferenceImage.key);
+      }
+      const res = await apiPost("/ai/generate-image", body);
       
       if (res.media) {
-        setMediaList((prev) => [res.media, ...prev]);
+        setMediaList((prev) => [{ ...res.media, path: getImageUrl(res.media.key) }, ...prev]);
       }
       
       setAiModalOpen(false);
       setAiPrompt("");
+      setAiReferenceImage(null);
+      setAiReferencePreview(null);
       showToast("AI Media generated!");
     } catch (e) {
       showToast("Failed to generate AI media");
     } finally {
       setAiGenerating(false);
+    }
+  };
+
+  const handleReferenceImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAiReferenceUploading(true);
+    try {
+      const preview = URL.createObjectURL(file);
+      setAiReferencePreview(preview);
+
+      const media = await upload(file);
+      if (media) {
+        setAiReferenceImage(media);
+      }
+    } catch (err) {
+      showToast("Failed to upload reference image");
+      setAiReferencePreview(null);
+    } finally {
+      setAiReferenceUploading(false);
+    }
+  };
+
+  const handleRemoveReferenceImage = () => {
+    setAiReferenceImage(null);
+    setAiReferencePreview(null);
+    if (aiReferenceInputRef.current) {
+      aiReferenceInputRef.current.value = "";
     }
   };
 
@@ -601,7 +644,13 @@ export function MediaLibraryPage() {
       )}
 
       {/* AI GENERATOR MODAL */}
-      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+      <Dialog open={aiModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          setAiReferenceImage(null);
+          setAiReferencePreview(null);
+        }
+        setAiModalOpen(open);
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -622,6 +671,54 @@ export function MediaLibraryPage() {
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="e.g. Sleek black wireless headphones on purple studio background..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-gray-700">Reference Image (Optional)</label>
+            <p className="text-[11px] text-gray-400">Upload a reference image to guide the AI generation.</p>
+            
+            <input
+              ref={aiReferenceInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleReferenceImageSelect}
+            />
+
+            {aiReferencePreview ? (
+              <div className="relative inline-block">
+                <img
+                  src={aiReferencePreview}
+                  alt="Reference"
+                  className="w-24 h-24 object-cover rounded-xl border border-gray-200"
+                />
+                {aiReferenceUploading && (
+                  <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+                <Button
+                  variant="destructive"
+                  size="icon-xs"
+                  className="absolute -top-2 -right-2"
+                  onClick={handleRemoveReferenceImage}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => aiReferenceInputRef.current?.click()}
+                disabled={aiReferenceUploading}
+                className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <ImagePlus className="w-8 h-8 text-gray-400" />
+                <span className="text-xs text-gray-500">
+                  {aiReferenceUploading ? "Uploading..." : "Click to upload reference image"}
+                </span>
+              </button>
+            )}
           </div>
 
           <DialogFooter>

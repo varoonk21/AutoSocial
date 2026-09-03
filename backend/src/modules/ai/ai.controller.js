@@ -1,6 +1,6 @@
 import { BrandKit } from "../../models/index.js";
 import { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference } from "./ai.service.js";
-import { uploadToS3, getS3Url } from "../../lib/s3.js";
+import { uploadToS3 } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
 
 async function generatePostsHandler(req, res) {
@@ -60,9 +60,7 @@ async function generateImageHandler(req, res) {
       source: "ai",
     });
 
-    const path = await getS3Url(key);
-
-    res.json({ media: { ...media.toObject(), path } });
+    res.json({ media: media.toObject() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

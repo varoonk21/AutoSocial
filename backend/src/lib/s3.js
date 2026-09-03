@@ -48,13 +48,3 @@ export async function uploadToS3(key, body, contentType) {
   await s3Client.send(command);
   return key;
 }
-
-export async function downloadFromS3(key) {
-  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
-  const response = await s3Client.send(command);
-  const chunks = [];
-  for await (const chunk of response.Body) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-}

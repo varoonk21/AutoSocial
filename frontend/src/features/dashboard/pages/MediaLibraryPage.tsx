@@ -20,7 +20,9 @@ import {
   ImagePlus,
 } from "lucide-react";
 import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
+import { uploadToS3Only } from "../../../api/index";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { useImageStore } from "../../../store/imageStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +43,7 @@ export function MediaLibraryPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const { upload, uploading, progress } = useFileUpload();
+  const getImageUrl = useImageStore((s) => s.getImageUrl);
 
   // State
   const [mediaList, setMediaList] = useState([]);
@@ -155,8 +158,8 @@ export function MediaLibraryPage() {
     setAiGenerating(true);
     try {
       const body = { prompt: aiPrompt };
-      if (aiReferenceImage?.path) {
-        body.referenceImageUrl = aiReferenceImage.path;
+      if (aiReferenceImage?.key) {
+        body.referenceImageUrl = getImageUrl(aiReferenceImage.key);
       }
       const res = await apiPost("/ai/generate-image", body);
       

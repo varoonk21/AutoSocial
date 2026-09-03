@@ -149,7 +149,7 @@ export function MediaLibraryPage() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      const res = await apiPost("/media/generate-image", { prompt: aiPrompt });
+      const res = await apiPost("/ai/generate-image", { prompt: aiPrompt });
       
       if (res.media) {
         setMediaList((prev) => [res.media, ...prev]);

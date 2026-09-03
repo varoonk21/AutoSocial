@@ -7,8 +7,6 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
-  OPENAI_API_KEY: z.string().optional(),
-  OPENAI_BASE_URL: z.string().optional(),
   FACEBOOK_APP_ID: z.string().optional(),
   FACEBOOK_APP_SECRET: z.string().optional(),
   X_API_KEY: z.string().optional(),
@@ -30,6 +28,10 @@ const envSchema = z.object({
     .refine((v) => ["trace", "debug", "info", "warn", "error", "fatal"].includes(v), {
       message: "Invalid log level. Use trace/debug/info/warn/error/fatal",
     }),
+
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_BASE_URL: z.string().optional(),
+  IMAGE_MODEL_NAME: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -40,5 +42,7 @@ if (!parsed.success) {
 }
 
 const env = parsed.data;
+
+export type Env = z.infer<typeof envSchema>;
 
 export default env;

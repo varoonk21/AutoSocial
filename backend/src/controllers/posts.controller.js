@@ -1,16 +1,7 @@
-/**
- * Posts Controller
- * Extracted from: apps/backend/src/api/routes/posts.controller.ts
- */
-
-import { Post, Integration, BrandKit } from '../models/index.js';
+import { Post, Integration } from '../models/index.js';
 import { makeId } from '../utils/makeId.js';
-import { generatePosts, generatePostsFromUrl, separatePosts } from '../services/ai.service.js';
 import { publishGroup } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
-
-// ─── GET /posts ───────────────────────────────────────────────────────────────
-// List all posts for the user with optional date range filter
 
 async function listPosts(req, res) {
   try {
@@ -34,8 +25,6 @@ async function listPosts(req, res) {
   }
 }
 
-// ─── GET /posts/:id ───────────────────────────────────────────────────────────
-
 async function getPost(req, res) {
   try {
     const post = await Post.findOne({ _id: req.params.id, userId: req.user._id }).populate(
@@ -49,27 +38,8 @@ async function getPost(req, res) {
   }
 }
 
-// ─── POST /posts ──────────────────────────────────────────────────────────────
-// Create one or more scheduled posts (possibly a thread across platforms)
-
 async function createPost(req, res) {
   try {
-    /**
-     * Request body shape:
-     * {
-     *   type: 'schedule' | 'draft' | 'now',
-     *   date: ISO date string,
-     *   posts: [
-     *     {
-     *       integrationId: string,        // Which connected account to post to
-     *       content: string,              // Post text
-     *       settings: object,             // Platform-specific settings
-     *       media: [{ path, type }],      // Media attachments
-     *     },
-     *     // ... additional posts = thread replies
-     *   ]
-     * }
-     */
     const { type = 'schedule', date, posts: rawPosts } = req.body;
 
     if (!rawPosts || !Array.isArray(rawPosts) || rawPosts.length === 0) {
@@ -81,7 +51,6 @@ async function createPost(req, res) {
       return res.status(400).json({ error: 'A publish date is required for scheduled posts' });
     }
 
-    // Validate integrations belong to user
     const integrationIds = [...new Set(rawPosts.map((p) => p.integrationId))];
     const integrations = await Integration.find({
       _id: { $in: integrationIds },
@@ -91,7 +60,6 @@ async function createPost(req, res) {
       return res.status(403).json({ error: 'One or more integrations are invalid' });
     }
 
-    // Group all posts under a shared group ID
     const group = makeId(8);
     const state = type === 'draft' ? 'DRAFT' : 'QUEUE';
 
@@ -111,11 +79,10 @@ async function createPost(req, res) {
         parentPostId,
       });
 
-      if (!parentPostId) parentPostId = post._id; // Set parent for thread replies
+      if (!parentPostId) parentPostId = post._id;
       createdPosts.push(post);
     }
 
-    // If 'now' — publish immediately without waiting for scheduler
     if (type === 'now') {
       const populated = await Post.find({ group }).populate('integrationId');
       publishGroup(populated).catch((err) =>
@@ -128,9 +95,6 @@ async function createPost(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
-
-// ─── PUT /posts/:id ───────────────────────────────────────────────────────────
-// Update post content (only QUEUE/DRAFT posts)
 
 async function updatePost(req, res) {
   try {
@@ -155,14 +119,11 @@ async function updatePost(req, res) {
   }
 }
 
-// ─── DELETE /posts/:id ────────────────────────────────────────────────────────
-
 async function deletePost(req, res) {
   try {
     const post = await Post.findOne({ _id: req.params.id, userId: req.user._id });
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    // Delete all posts in the same group (thread)
     await Post.deleteMany({ group: post.group, userId: req.user._id });
     res.json({ success: true });
   } catch (err) {
@@ -170,49 +131,4 @@ async function deletePost(req, res) {
   }
 }
 
-// ─── POST /posts/generate ─────────────────────────────────────────────────────
-// AI-powered post generation from text or URL
-
-async function generatePostsHandler(req, res) {
-  try {
-    const { content, url } = req.body;
-
-    if (!content && !url) {
-      return res.status(400).json({ error: 'Provide either content text or a URL' });
-    }
-
-    const brandKit = await BrandKit.findOne({ userId: req.user._id });
-    const suggestions = url
-      ? await generatePostsFromUrl(url, brandKit)
-      : await generatePosts(content, brandKit);
-
-    res.json({ suggestions });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// ─── POST /posts/separate ─────────────────────────────────────────────────────
-// Split a long post into a thread using AI
-
-async function separatePostsHandler(req, res) {
-  try {
-    const { content, len = 280 } = req.body;
-    if (!content) return res.status(400).json({ error: 'content is required' });
-
-    const result = await separatePosts(content, Number(len));
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export {
-  listPosts,
-  getPost,
-  createPost,
-  updatePost,
-  deletePost,
-  generatePostsHandler,
-  separatePostsHandler,
-};
+export { listPosts, getPost, createPost, updatePost, deletePost };

@@ -1,5 +1,4 @@
-import express from 'express';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import express from "express";
 import {
   listIntegrations,
   getOAuthUrl,
@@ -8,19 +7,16 @@ import {
   savePage,
   deleteIntegration,
   toggleDisable,
-} from '../controllers/integrations.controller.js';
+} from "../controllers/integrations.controller.js";
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(requireAuth);
-
-router.get('/list', listIntegrations);
-router.get('/social/:provider', getOAuthUrl);
-router.get('/social/:provider/callback', oauthCallback);
-router.get('/social/:provider/pages', getPages);
-router.post('/social/:provider/page', savePage);
-router.delete('/:id', deleteIntegration);
-router.put('/:id/disable', toggleDisable);
+router.get("/list", listIntegrations);
+router.get("/social/:provider", getOAuthUrl);
+router.get("/social/:provider/callback", oauthCallback);
+router.get("/social/:provider/pages", getPages);
+router.post("/social/:provider/page", savePage);
+router.delete("/:id", deleteIntegration);
+router.put("/:id/disable", toggleDisable);
 
 export default router;

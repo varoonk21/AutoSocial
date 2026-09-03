@@ -164,7 +164,7 @@ export function MediaLibraryPage() {
       const res = await apiPost("/ai/generate-image", body);
       
       if (res.media) {
-        setMediaList((prev) => [res.media, ...prev]);
+        setMediaList((prev) => [{ ...res.media, path: getImageUrl(res.media.key) }, ...prev]);
       }
       
       setAiModalOpen(false);

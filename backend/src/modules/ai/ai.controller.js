@@ -1,6 +1,6 @@
 import { BrandKit } from "../../models/index.js";
-import { generatePosts, generatePostsFromUrl, separatePosts, generateImage } from "./ai.service.js";
-import { uploadToS3 } from "../../lib/s3.js";
+import { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference } from "./ai.service.js";
+import { uploadToS3, downloadFromS3 } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
 import fs from "fs";
 
@@ -35,10 +35,16 @@ async function separatePostsHandler(req, res) {
 
 async function generateImageHandler(req, res) {
   try {
-    const { prompt, vertical = false } = req.body;
+    const { prompt, vertical = false, referenceImageKey } = req.body;
     if (!prompt) return res.status(400).json({ error: "prompt is required" });
 
-    const base64 = await generateImage(prompt, !!vertical);
+    let base64;
+    if (referenceImageKey) {
+      const imageBuffer = await downloadFromS3(referenceImageKey);
+      base64 = await generateImageWithReference(imageBuffer, prompt, !!vertical);
+    } else {
+      base64 = await generateImage(prompt, !!vertical);
+    }
 
     const imageBuffer = Buffer.from(base64, "base64");
     const key = `users/${req.user._id}/images/ai-${Date.now()}.png`;

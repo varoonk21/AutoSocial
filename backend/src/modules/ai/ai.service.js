@@ -111,4 +111,18 @@ async function generateImage(prompt, isVertical = false) {
   return result.data[0].b64_json;
 }
 
-export { generatePosts, generatePostsFromUrl, separatePosts, generateImage };
+async function generateImageWithReference(imageBuffer, prompt, isVertical = false) {
+  const { toFile } = await import("openai");
+
+  const result = await openai.images.edit({
+    model: env.IMAGE_MODEL_NAME,
+    image: await toFile(imageBuffer, "reference.png", { type: "image/png" }),
+    prompt,
+    size: isVertical ? "1024x1792" : "1024x1024",
+    response_format: "b64_json",
+  });
+
+  return result.data[0].b64_json;
+}
+
+export { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference };

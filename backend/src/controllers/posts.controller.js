@@ -51,13 +51,18 @@ async function createPost(req, res) {
       return res.status(400).json({ error: 'A publish date is required for scheduled posts' });
     }
 
-    const integrationIds = [...new Set(rawPosts.map((p) => p.integrationId))];
-    const integrations = await Integration.find({
-      _id: { $in: integrationIds },
-      userId: req.user._id,
-    });
-    if (integrations.length !== integrationIds.length) {
-      return res.status(403).json({ error: 'One or more integrations are invalid' });
+    // Validate integrations only for non-draft posts
+    if (type !== 'draft') {
+      const integrationIds = [...new Set(rawPosts.filter(p => p.integrationId).map((p) => p.integrationId))];
+      if (integrationIds.length > 0) {
+        const integrations = await Integration.find({
+          _id: { $in: integrationIds },
+          userId: req.user._id,
+        });
+        if (integrations.length !== integrationIds.length) {
+          return res.status(403).json({ error: 'One or more integrations are invalid' });
+        }
+      }
     }
 
     const group = makeId(8);
@@ -67,9 +72,8 @@ async function createPost(req, res) {
     let parentPostId = null;
 
     for (const rawPost of rawPosts) {
-      const post = await Post.create({
+      const postData = {
         userId: req.user._id,
-        integrationId: rawPost.integrationId,
         content: rawPost.content || '',
         publishDate: publishDate || new Date(),
         state,
@@ -77,7 +81,12 @@ async function createPost(req, res) {
         settings: JSON.stringify(rawPost.settings || {}),
         image: JSON.stringify(rawPost.media || []),
         parentPostId,
-      });
+      };
+      if (rawPost.integrationId) {
+        postData.integrationId = rawPost.integrationId;
+      }
+
+      const post = await Post.create(postData);
 
       if (!parentPostId) parentPostId = post._id;
       createdPosts.push(post);

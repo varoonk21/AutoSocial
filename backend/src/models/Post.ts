@@ -20,7 +20,7 @@ export interface IPost extends Document {
 const PostSchema = new mongoose.Schema<IPost>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    integrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Integration", required: true },
+    integrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Integration" },
     content: { type: String, required: true },
     publishDate: { type: Date, required: true },
     state: {

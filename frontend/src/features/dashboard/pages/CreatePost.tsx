@@ -191,7 +191,7 @@ export function CreatePost() {
         const { apiPut } = await import("../../../lib/fetcher");
         await apiPut(`/posts/${editingDraftId}`, {
           content: fullContent,
-          media: selectedImage ? [selectedImage.path] : [],
+          media: selectedImage ? [{ path: selectedImage.path }] : [],
         });
       } else if (publishType === "draft") {
         // Create new draft
@@ -209,7 +209,7 @@ export function CreatePost() {
           integrationId,
           content: fullContent,
           settings: {},
-          media: selectedImage ? [selectedImage.path] : [],
+          media: selectedImage ? [{ path: selectedImage.path }] : [],
         }));
         await apiPost("/posts", { type: publishType, posts });
       }

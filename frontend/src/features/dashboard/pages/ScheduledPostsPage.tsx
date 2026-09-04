@@ -633,12 +633,14 @@ export function ScheduledPostsPage() {
                   const platform = getPlatformFromPost(post);
                   const pubDate = new Date(post.publishDate);
                   const mediaItems = JSON.parse(post.image || "[]");
+                  const firstMedia = mediaItems[0];
+                  const mediaUrl = typeof firstMedia === 'string' ? firstMedia : firstMedia?.path;
 
                   return (
                     <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center border border-gray-200">
-                        {mediaItems.length > 0 ? (
-                          <img src={mediaItems[0].path} alt="" className="w-full h-full object-cover" />
+                        {mediaUrl ? (
+                          <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <PlatformIcon platform={platform} size={16} />
                         )}

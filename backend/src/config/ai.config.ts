@@ -4,7 +4,8 @@ const aiEnvSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().optional(),
   models: z.object({
-    chat: z.string().optional().default("gpt-4o"),
+    textToText: z.string().optional().default("gpt-4o"),
+    imageToText: z.string().optional().default("gpt-4o"),
     image: z.string().optional().default("dall-e-3"),
   }),
   defaults: z.object({
@@ -17,7 +18,8 @@ const parsed = aiEnvSchema.safeParse({
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   models: {
-    chat: process.env.CHAT_MODEL_NAME,
+    textToText: process.env.TEXT_TO_TEXT_MODEL_NAME,
+    imageToText: process.env.IMAGE_TO_TEXT_MODEL_NAME,
     image: process.env.IMAGE_MODEL_NAME,
   },
   defaults: {

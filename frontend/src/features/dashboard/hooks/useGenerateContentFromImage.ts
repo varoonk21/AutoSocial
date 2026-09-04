@@ -5,14 +5,15 @@ interface GenerateContentFromImageParams {
   imageUrl: string;
 }
 
-interface GenerateContentFromImageResult {
-  suggestions: Array<Array<{ post: string }>>;
+interface ImageContent {
+  description: string;
+  hashtags: string;
 }
 
 export function useGenerateContentFromImage() {
   return useMutation({
     mutationFn: async ({ imageUrl }: GenerateContentFromImageParams) => {
-      const data = await apiPost<GenerateContentFromImageResult>("/ai/generate-content-from-image", {
+      const data = await apiPost<ImageContent>("/ai/generate-content-from-image", {
         imageUrl,
       });
       return data;

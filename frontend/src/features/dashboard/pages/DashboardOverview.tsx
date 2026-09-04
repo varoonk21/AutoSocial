@@ -3,7 +3,7 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 
 const MOCK_POSTS = [
   {
@@ -83,13 +83,7 @@ export function DashboardOverview() {
           <h1 className="text-2xl  font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Welcome back. Here's a snapshot of your content engine.</p>
         </div>
-        <Avatar>
-          <AvatarImage
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
-            alt="User"
-          />
-          <AvatarFallback>JD</AvatarFallback>
-        </Avatar>
+
       </div>
 
       <div className="grid grid-cols-3 gap-6">

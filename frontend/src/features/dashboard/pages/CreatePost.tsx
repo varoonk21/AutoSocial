@@ -80,7 +80,9 @@ export function CreatePost() {
         setIntegrations(list);
       })
       .catch(() => {});
+  }, []);
 
+  useEffect(() => {
     // If editing a draft, fetch it by ID
     if (draftId) {
       apiGet(`/posts/${draftId}`)
@@ -104,6 +106,12 @@ export function CreatePost() {
           }
         })
         .catch(() => {});
+    } else {
+      // Reset form when creating a new post
+      setEditingDraftId(null);
+      setCaptionText("");
+      setHashtagsText("");
+      setSelectedImage(null);
     }
   }, [draftId]);
 

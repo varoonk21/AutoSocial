@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { signOut, useSession } from "@/lib/auth-client";
-import { Bell, LogOut, User, ChevronDown, Plus } from "lucide-react";
+import { Bell, LogOut, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useImageStore } from "@/store/imageStore";
 import { Avatar, AvatarImage, AvatarFallback, AvatarBadge } from "@/components/ui/avatar";
@@ -38,12 +38,7 @@ export function Header() {
     }
 
     if (path === "/dashboard/scheduled-posts") {
-      return (
-        <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>
-          <Plus className="w-4 h-4" />
-          <span>New Post</span>
-        </Button>
-      );
+      return null;
     }
 
     if (path === "/dashboard/analytics") {

@@ -41,6 +41,10 @@ export function Header() {
       return null;
     }
 
+    if (path === "/dashboard/drafts") {
+      return null;
+    }
+
     if (path === "/dashboard/analytics") {
       return null;
     }

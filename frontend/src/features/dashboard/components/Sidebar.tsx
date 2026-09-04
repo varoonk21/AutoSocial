@@ -1,5 +1,6 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutGrid, PlusSquare, Calendar, Image, BarChart3, Palette, Share2, Settings, HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { LayoutGrid, PlusSquare, Calendar, Image, BarChart3, Palette, Share2, Settings, HelpCircle, ChevronDown, FileText, Clock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,17 +13,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
 const NAV_ITEMS = [
   { to: "/dashboard", icon: "home", label: "Dashboard" },
-  { to: "/dashboard/create-post", icon: "create", label: "Create Post" },
-  { to: "/dashboard/scheduled-posts", icon: "calendar", label: "Scheduled Posts" },
   { to: "/dashboard/media-library", icon: "media", label: "Media Library" },
   { to: "/dashboard/analytics", icon: "analytics", label: "Analytics" },
   { to: "/dashboard/brand-kit", icon: "brand-kit", label: "Brand Kit" },
   { to: "/dashboard/connected-accounts", icon: "accounts", label: "Connected Accounts" },
   { to: "/dashboard/settings", icon: "settings", label: "Settings" },
+];
+
+const POST_SUBMENU = [
+  { to: "/dashboard/drafts", icon: "draft", label: "Draft" },
+  { to: "/dashboard/create-post", icon: "create", label: "Create" },
+  { to: "/dashboard/scheduled-posts", icon: "scheduled", label: "Scheduled Post" },
 ];
 
 const ICONS = {
@@ -34,10 +42,22 @@ const ICONS = {
   "brand-kit": <Palette className="w-5 h-5" />,
   accounts: <Share2 className="w-5 h-5" />,
   settings: <Settings className="w-5 h-5" />,
+  draft: <FileText className="w-4 h-4" />,
+  scheduled: <Clock className="w-4 h-4" />,
 };
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isPostMenuOpen, setIsPostMenuOpen] = useState(() => {
+    return location.pathname.startsWith("/dashboard/create-post") ||
+           location.pathname.startsWith("/dashboard/scheduled-posts") ||
+           location.pathname.startsWith("/dashboard/drafts");
+  });
+
+  const isPostMenuActive = location.pathname.startsWith("/dashboard/create-post") ||
+                           location.pathname.startsWith("/dashboard/scheduled-posts") ||
+                           location.pathname.startsWith("/dashboard/drafts");
 
   return (
     <Sidebar>
@@ -58,6 +78,38 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Post Menu Item with Submenu */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isPostMenuActive}
+                  onClick={() => setIsPostMenuOpen(!isPostMenuOpen)}
+                >
+                  <PlusSquare className="w-5 h-5" />
+                  <span>Post</span>
+                  <ChevronDown
+                    className={`w-4 h-4 ml-auto transition-transform duration-200 ${
+                      isPostMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </SidebarMenuButton>
+                {isPostMenuOpen && (
+                  <SidebarMenuSub>
+                    {POST_SUBMENU.map((item) => (
+                      <SidebarMenuSubItem key={item.to}>
+                        <SidebarMenuSubButton
+                          render={<NavLink to={item.to} />}
+                          isActive={location.pathname === item.to}
+                        >
+                          {ICONS[item.icon]}
+                          <span>{item.label}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+
+              {/* Other Nav Items */}
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton

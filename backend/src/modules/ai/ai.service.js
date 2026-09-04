@@ -1,6 +1,17 @@
 import env from "../../config/env.config.js";
 import openai from "../../lib/openai.js";
 import * as aiRepository from "./ai.repository.js";
+import {
+  getGenerateSinglePostPrompt,
+  getGenerateThreadPrompt,
+  getExtractContentPrompt,
+  getSeparatePostsPrompt,
+  getGenerateSinglePostFromImagePrompt,
+  getGenerateThreadFromImagePrompt,
+  getEnhanceCaptionPrompt,
+  getEnhanceHashtagsPrompt,
+  getEnhanceGeneralPrompt,
+} from "./prompts/index.js";
 
 function buildBrandContext(brandKit) {
   if (!brandKit) return "";
@@ -36,10 +47,7 @@ async function generatePosts(content, userId) {
     openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        {
-          role: "system",
-          content: `Generate a social media post from the content without emojis in the following JSON format: [{ "post": string }] with one element.${brandContext}`,
-        },
+        { role: "system", content: getGenerateSinglePostPrompt(brandContext) },
         { role: "user", content },
       ],
       n: 3,
@@ -48,10 +56,7 @@ async function generatePosts(content, userId) {
     openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        {
-          role: "system",
-          content: `Generate a thread for social media in the following JSON format: Array<{ "post": string }> without emojis.${brandContext}`,
-        },
+        { role: "system", content: getGenerateThreadPrompt(brandContext) },
         { role: "user", content },
       ],
       n: 3,
@@ -74,7 +79,7 @@ async function generatePostsFromUrl(url, userId) {
   const extracted = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
-      { role: "system", content: "Extract only the article content from this webpage text. Remove navigation, ads, and boilerplate." },
+      { role: "system", content: getExtractContentPrompt() },
       { role: "user", content: plainText },
     ],
   });
@@ -92,12 +97,7 @@ async function separatePosts(content, len) {
   const result = await openai.chat.completions.parse({
     model: "gpt-4o",
     messages: [
-      {
-        role: "system",
-        content: `You are an assistant that takes a social media post and breaks it into a thread. 
-Each post must be minimum ${len - 10} and maximum ${len} characters. 
-Keep the exact wording and line breaks, but split based on context.`,
-      },
+      { role: "system", content: getSeparatePostsPrompt(len) },
       { role: "user", content },
     ],
     response_format: zodResponseFormat(schema, "separatePosts"),
@@ -139,7 +139,7 @@ async function generateContentFromImage(imageUrl, userId) {
       messages: [
         {
           role: "system",
-          content: `You are a social media content creator. Analyze the image provided and generate a engaging social media post based on what you see. Describe the image, capture its mood, and create compelling caption text. Return the result in the following JSON format: [{ "post": string }] with one element.${brandContext}`,
+          content: getGenerateSinglePostFromImagePrompt(brandContext),
         },
         {
           role: "user",
@@ -157,7 +157,7 @@ async function generateContentFromImage(imageUrl, userId) {
       messages: [
         {
           role: "system",
-          content: `You are a social media content creator. Analyze the image provided and generate a social media thread (multiple posts) based on what you see. Each post should cover a different aspect of the image. Return the result in the following JSON format: Array<{ "post": string }> without emojis.${brandContext}`,
+          content: getGenerateThreadFromImagePrompt(brandContext),
         },
         {
           role: "user",
@@ -180,13 +180,12 @@ async function enhanceContent(content, enhanceType, userId) {
   const brandContext = buildBrandContext(brandKit);
 
   let systemPrompt;
-
   if (enhanceType === "caption") {
-    systemPrompt = `You are a social media caption expert. Improve the given caption to make it more engaging, professional, and compelling. Keep the core message but enhance the wording, flow, and impact. Return the result in the following JSON format: [{ "post": string }] with one element.${brandContext}`;
+    systemPrompt = getEnhanceCaptionPrompt(brandContext);
   } else if (enhanceType === "hashtags") {
-    systemPrompt = `You are a social media hashtag strategist. Generate relevant, trending, and effective hashtags for the given post content. Include a mix of popular and niche hashtags. Return the result in the following JSON format: [{ "post": string }] with one element containing only hashtags.${brandContext}`;
+    systemPrompt = getEnhanceHashtagsPrompt(brandContext);
   } else {
-    systemPrompt = `You are a social media content expert. Enhance the given content to make it more engaging and professional. Return the result in the following JSON format: [{ "post": string }] with one element.${brandContext}`;
+    systemPrompt = getEnhanceGeneralPrompt(brandContext);
   }
 
   const result = await openai.chat.completions.create({
@@ -202,12 +201,4 @@ async function enhanceContent(content, enhanceType, userId) {
   return parseSuggestions(result.choices);
 }
 
-export {
-  generatePosts,
-  generatePostsFromUrl,
-  separatePosts,
-  generateImage,
-  generateImageWithReference,
-  generateContentFromImage,
-  enhanceContent,
-};
+export { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference, generateContentFromImage, enhanceContent };

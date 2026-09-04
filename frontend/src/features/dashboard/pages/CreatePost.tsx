@@ -46,7 +46,8 @@ export function CreatePost() {
 
   // AI hooks
   const generateContentFromImage = useGenerateContentFromImage();
-  const enhanceWithAI = useEnhanceWithAI();
+  const enhanceCaption = useEnhanceWithAI();
+  const enhanceHashtags = useEnhanceWithAI();
 
   // Media state
   const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
@@ -103,24 +104,10 @@ export function CreatePost() {
       { imageUrl: selectedImage.path },
       {
         onSuccess: (data) => {
-          if (data.suggestions && data.suggestions.length > 0) {
-            const first = data.suggestions[0];
-            const text = Array.isArray(first) ? first[0]?.post : first?.post;
-            if (text) {
-              const lines = text.split("\n").filter((l: string) => l.trim());
-              const hashtagLine = lines.find((l: string) => l.includes("#"));
-              const captionLines = lines.filter((l: string) => !l.includes("#"));
-              setCaptionText(captionLines.join("\n").trim() || text);
-              setHashtagsText(hashtagLine || "");
-            }
-          } else {
-            setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
-            setHashtagsText("#NewPost #SocialMedia #ContentCreation");
+          if (data.description) {
+            setCaptionText(data.description);
+            setHashtagsText(data.hashtags || "");
           }
-        },
-        onError: () => {
-          setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
-          setHashtagsText("#NewPost #SocialMedia #ContentCreation");
         },
       }
     );
@@ -128,18 +115,14 @@ export function CreatePost() {
 
   const handleImproveCaption = async () => {
     if (!captionText.trim()) return;
-    enhanceWithAI.mutate(
+    enhanceCaption.mutate(
       { content: captionText, enhanceType: "caption" },
       {
         onSuccess: (data) => {
-          if (data.suggestions && data.suggestions.length > 0) {
-            const first = data.suggestions[0];
-            const text = Array.isArray(first) ? first[0]?.post : first?.post;
-            if (text) {
-              const lines = text.split("\n").filter((l: string) => l.trim());
-              const nonHashtag = lines.filter((l: string) => !l.includes("#"));
-              setCaptionText(nonHashtag.join("\n").trim() || text);
-            }
+          if (data.post) {
+            const lines = data.post.split("\n").filter((l: string) => l.trim());
+            const nonHashtag = lines.filter((l: string) => !l.includes("#"));
+            setCaptionText(nonHashtag.join("\n").trim() || data.post);
           }
         },
       }
@@ -148,17 +131,13 @@ export function CreatePost() {
 
   const handleImproveHashtags = async () => {
     if (!hashtagsText.trim() && !captionText.trim()) return;
-    enhanceWithAI.mutate(
+    enhanceHashtags.mutate(
       { content: captionText || hashtagsText, enhanceType: "hashtags" },
       {
         onSuccess: (data) => {
-          if (data.suggestions && data.suggestions.length > 0) {
-            const first = data.suggestions[0];
-            const text = Array.isArray(first) ? first[0]?.post : first?.post;
-            if (text) {
-              const hashtagLine = text.split("\n").find((l: string) => l.includes("#"));
-              setHashtagsText(hashtagLine || text);
-            }
+          if (data.post) {
+            const hashtagLine = data.post.split("\n").find((l: string) => l.includes("#"));
+            setHashtagsText(hashtagLine || data.post);
           }
         },
       }
@@ -392,9 +371,9 @@ export function CreatePost() {
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
                   onClick={handleImproveCaption}
-                  disabled={enhanceWithAI.isPending || !captionText.trim()}
+                  disabled={enhanceCaption.isPending || !captionText.trim()}
                 >
-                  {enhanceWithAI.isPending ? (
+                  {enhanceCaption.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />
@@ -422,9 +401,9 @@ export function CreatePost() {
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
                   onClick={handleImproveHashtags}
-                  disabled={enhanceWithAI.isPending || (!captionText.trim() && !hashtagsText.trim())}
+                  disabled={enhanceHashtags.isPending || (!captionText.trim() && !hashtagsText.trim())}
                 >
-                  {enhanceWithAI.isPending ? (
+                  {enhanceHashtags.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />

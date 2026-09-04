@@ -3,27 +3,10 @@ import * as aiService from "./ai.service.js";
 import { uploadToS3 } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
 import { sendSuccess } from "../../utils/response.util.js";
-import type { GeneratePostsInput, SeparatePostsInput, GenerateImageInput, GenerateContentFromImageInput, EnhanceContentInput } from "./ai.validation.js";
+import type { GenerateImageInput, GenerateContentFromImageInput, EnhanceContentInput } from "./ai.validation.js";
 
-interface AuthRequest extends Request {
-  user?: { _id: string };
-}
 
-async function generatePostsHandler(req: AuthRequest, res: Response) {
-  const { content, url } = req.body as GeneratePostsInput;
-  const suggestions = url
-    ? await aiService.generatePostsFromUrl(url, req.user!._id)
-    : await aiService.generatePosts(content!, req.user!._id);
-  sendSuccess(res, { suggestions });
-}
-
-async function separatePostsHandler(req: AuthRequest, res: Response) {
-  const { content, len } = req.body as SeparatePostsInput;
-  const result = await aiService.separatePosts(content, len);
-  sendSuccess(res, result);
-}
-
-async function generateImageHandler(req: AuthRequest, res: Response) {
+async function generateImageHandler(req: Request, res: Response) {
   const { prompt, vertical, referenceImageUrl } = req.body as GenerateImageInput;
 
   let base64: string;
@@ -52,21 +35,19 @@ async function generateImageHandler(req: AuthRequest, res: Response) {
   sendSuccess(res, { media: media.toObject() });
 }
 
-async function generateContentFromImageHandler(req: AuthRequest, res: Response) {
+async function generateContentFromImageHandler(req: Request, res: Response) {
   const { imageUrl } = req.body as GenerateContentFromImageInput;
-  const suggestions = await aiService.generateContentFromImage(imageUrl, req.user!._id);
-  sendSuccess(res, { suggestions });
+  const content = await aiService.generateContentFromImage(imageUrl, req.user!._id);
+  sendSuccess(res, content);
 }
 
-async function enhanceContentHandler(req: AuthRequest, res: Response) {
+async function enhanceContentHandler(req: Request, res: Response) {
   const { content, enhanceType } = req.body as EnhanceContentInput;
-  const suggestions = await aiService.enhanceContent(content, enhanceType, req.user!._id);
-  sendSuccess(res, { suggestions });
+  const suggestion = await aiService.enhanceContent(content, enhanceType, req.user!._id);
+  sendSuccess(res, suggestion);
 }
 
 export {
-  generatePostsHandler,
-  separatePostsHandler,
   generateImageHandler,
   generateContentFromImageHandler,
   enhanceContentHandler,

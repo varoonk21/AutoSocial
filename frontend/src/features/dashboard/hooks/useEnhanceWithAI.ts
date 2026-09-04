@@ -9,7 +9,7 @@ interface EnhanceWithAIParams {
 }
 
 interface EnhanceWithAIResult {
-  suggestions: Array<Array<{ post: string }>>;
+  post: string;
 }
 
 export function useEnhanceWithAI() {

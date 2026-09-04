@@ -1,16 +1,11 @@
-/**
- * Database connection helper.
- * Connects to MongoDB using the DATABASE_URL env variable.
- */
-
 import mongoose from "mongoose";
-import env from "./env.config.js";
+import env from "../config/env.config.js";
 import { logger } from "../utils/logger.util.js";
 import dns from "node:dns";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-export async function connectDB() {
+export async function connectDB(): Promise<void> {
   try {
     await mongoose.connect(env.DATABASE_URL, {
       serverSelectionTimeoutMS: 10000,

@@ -1,6 +1,23 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const PostSchema = new mongoose.Schema(
+export interface IPost extends Document {
+  userId: mongoose.Types.ObjectId;
+  integrationId: mongoose.Types.ObjectId;
+  content: string;
+  publishDate: Date;
+  state: "QUEUE" | "SCHEDULED" | "PUBLISHED" | "ERROR" | "DRAFT";
+  group: string;
+  settings: string;
+  image: string;
+  releaseURL?: string;
+  postId?: string;
+  error?: string;
+  parentPostId?: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const PostSchema = new mongoose.Schema<IPost>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     integrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Integration", required: true },
@@ -27,6 +44,6 @@ PostSchema.index({ userId: 1 });
 PostSchema.index({ group: 1 });
 PostSchema.index({ integrationId: 1 });
 
-const Post = mongoose.model("Post", PostSchema);
+const Post = mongoose.model<IPost>("Post", PostSchema);
 
 export default Post;

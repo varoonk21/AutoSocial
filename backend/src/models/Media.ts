@@ -1,6 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const MediaSchema = new mongoose.Schema(
+export interface IMedia extends Document {
+  userId: mongoose.Types.ObjectId;
+  name: string;
+  originalName?: string;
+  type: "image" | "video";
+  source: "user" | "ai";
+  fileSize: number;
+  key: string;
+  thumbnail?: string;
+  alt?: string;
+  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const MediaSchema = new mongoose.Schema<IMedia>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
@@ -18,6 +33,6 @@ const MediaSchema = new mongoose.Schema(
 
 MediaSchema.index({ userId: 1 });
 
-const Media = mongoose.model("Media", MediaSchema);
+const Media = mongoose.model<IMedia>("Media", MediaSchema);
 
 export default Media;

@@ -21,7 +21,7 @@ import {
   MoreHorizontal,
   Globe,
 } from "lucide-react";
-import { apiGet } from "../../../lib/fetcher";
+import { apiGet, apiPost } from "../../../lib/fetcher";
 import { useEnhanceWithAI } from "../hooks/useEnhanceWithAI";
 import { useGenerateContentFromImage } from "../hooks/useGenerateContentFromImage";
 import { Button } from "@/components/ui/button";
@@ -158,18 +158,22 @@ export function CreatePost() {
     const fullContent = `${captionText}\n\n${hashtagsText}`.trim();
     if (!fullContent && !selectedImage) return;
 
+    const postIntegrations = publishType === "now" ? selectedIntegrations : integrations.map((i) => i._id);
+    if (postIntegrations.length === 0) {
+      setSuccess("Please connect at least one social account first.");
+      setTimeout(() => setSuccess(""), 3000);
+      return;
+    }
+
     setLoading(true);
     try {
-      const postIntegrations = publishType === "now" ? selectedIntegrations : integrations.map((i) => i._id);
-      if (postIntegrations.length > 0) {
-        const posts = postIntegrations.map((integrationId) => ({
-          integrationId,
-          content: fullContent,
-          settings: {},
-          media: selectedImage ? [selectedImage.path] : [],
-        }));
-        await apiPost("/posts", { type: publishType, posts });
-      }
+      const posts = postIntegrations.map((integrationId) => ({
+        integrationId,
+        content: fullContent,
+        settings: {},
+        media: selectedImage ? [selectedImage.path] : [],
+      }));
+      await apiPost("/posts", { type: publishType, posts });
       setSuccess(publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post published!" : "Post scheduled!");
       setTimeout(() => setSuccess(""), 3000);
     } catch {

@@ -1,6 +1,6 @@
 import { Post, Integration } from '../models/index.js';
 import { makeId } from '../utils/makeId.js';
-import { publishGroup } from '../services/scheduler.service.js';
+import { schedulePost, removeScheduledJobs } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
 
 async function listPosts(req, res) {
@@ -93,10 +93,11 @@ async function createPost(req, res) {
     }
 
     if (type === 'now') {
-      const populated = await Post.find({ group }).populate('integrationId');
-      publishGroup(populated).catch((err) =>
-        logger.error({ err }, 'Immediate post failed')
-      );
+      // Schedule for immediate execution
+      await schedulePost(group, new Date());
+    } else if (type === 'schedule' && publishDate) {
+      // Schedule for future execution
+      await schedulePost(group, publishDate);
     }
 
     res.status(201).json({ posts: createdPosts, group });
@@ -123,6 +124,13 @@ async function updatePost(req, res) {
     if (req.body.state !== undefined) updates.state = req.body.state;
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
+
+    // If rescheduling (changing date on a QUEUE post), update the Agenda job
+    if (date && post.state === 'QUEUE') {
+      await removeScheduledJobs(post.group);
+      await schedulePost(post.group, new Date(date));
+    }
+
     res.json({ post: updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -133,6 +141,11 @@ async function deletePost(req, res) {
   try {
     const post = await Post.findOne({ _id: req.params.id, userId: req.user._id });
     if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    // Remove any scheduled Agenda jobs for this group
+    if (post.state === 'QUEUE') {
+      await removeScheduledJobs(post.group);
+    }
 
     await Post.deleteMany({ group: post.group, userId: req.user._id });
     res.json({ success: true });

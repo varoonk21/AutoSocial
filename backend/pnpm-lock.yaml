@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@agendajs/mongo-backend':
+        specifier: ^4.0.3
+        version: 4.0.3(agenda@6.2.6)(mongodb@7.6.0)
       '@aws-sdk/client-s3':
         specifier: ^3.1123.0
         version: 3.1123.0
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1123.0
         version: 3.1123.0
+      agenda:
+        specifier: ^6.2.6
+        version: 6.2.6
       better-auth:
         specifier: ^1.6.26
         version: 1.6.26(mongodb@7.6.0)
@@ -69,6 +75,13 @@ importers:
   ../frontend: {}
 
 packages:
+
+  '@agendajs/mongo-backend@4.0.3':
+    resolution: {integrity: sha512-8bR62tl8a27cIheBgz4v2aUkPCA9PykHEghOdMbNKcmhmU4d/OYb+WjSvAAVl5uUt4Uf+Jh7hn95WMUwmThmpQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      agenda: 6.2.6
+      mongodb: ^6.0.0 || ^7.0.0
 
   '@aws-sdk/checksums@3.1000.29':
     resolution: {integrity: sha512-Dtu0gr4dnATZAPwEYbpCsG+MpLM7OAliy2gTepEFQwl1vZ6DL3QMH2FveMa3HLvPsOdhJsPRB3KtxVhph9T75A==}
@@ -440,6 +453,10 @@ packages:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
 
+  agenda@6.2.6:
+    resolution: {integrity: sha512-FlLauHnm0Zxn+y2n8pwFLZd7LiYNTDNnChMwPLo1OuAi9QPFe3a29godrpVluEEdhZFuFu0H+4ichW08BULUBA==}
+    engines: {node: '>=18.0.0'}
+
   ansi-regex@6.3.0:
     resolution: {integrity: sha512-WpDfL7NO6j7tH88IDBNVdUJxDh9nmCteAVW9dsep846XdwF4naCBK+/tGLX3KJgcpgMRXCFlTM2hKGoK9FsdrQ==}
     engines: {node: '>=12'}
@@ -588,11 +605,26 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
+  cron-parser@5.10.0:
+    resolution: {integrity: sha512-izNAxJyRWUP8ljBoDSub5WyrVOUlT4SLGShswE7eoRBpp6QUsSycYxLBMJlbshgPBMcPT/nrfgjNY2918ayv2A==}
+    engines: {node: '>=18'}
+
+  date.js@0.3.3:
+    resolution: {integrity: sha512-HgigOS3h3k6HnW011nAb43c5xx5rBXk8P2v/WIT9Zv4koIaVXiH2BURguI78VVp+5Qc076T7OR378JViCnZtBw==}
+
   dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
 
   dayjs@1.11.23:
     resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
+
+  debug@3.1.0:
+    resolution: {integrity: sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -714,6 +746,9 @@ packages:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
 
+  human-interval@2.0.1:
+    resolution: {integrity: sha512-r4Aotzf+OtKIGQCB3odUowy4GfUDTy3aTWTfLd7ZF2gBCy3XW3v/dJLRefZnOFFnjqs5B1TypvS8WarpBkYUNQ==}
+
   iconv-lite@0.7.3:
     resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
     engines: {node: '>=0.10.0'}
@@ -745,6 +780,10 @@ packages:
   kysely@0.29.5:
     resolution: {integrity: sha512-ooa+eSbBNPTo3MycPEuW5jdrxQdQwdtB3LC3h43FiXQbIry5tR0C5lDG7eealK0E4D7XjrnOP5DIUg/LyjRMYQ==}
     engines: {node: '>=22.0.0'}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -842,6 +881,9 @@ packages:
     resolution: {integrity: sha512-b2KQNsmgtkscfeDgkYMcWGn9vZI9YoXh802VDEwE6qc50zxBFQ0Oo8ROkawbPAsXCY1/Z1yp0MagqsZStPWJjw==}
     engines: {node: '>=20.19.0'}
 
+  ms@2.0.0:
+    resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -852,6 +894,9 @@ packages:
   negotiator@1.1.0:
     resolution: {integrity: sha512-NMPBRMJgiQHjbd8phG3Vebdx4kZ1H121rbl5IkMqeOsahptB9BKo/d7oJ3zTXqTgagn2bWlNSXkh0QUGM31RYg==}
     engines: {node: '>=18'}
+
+  numbered@1.1.0:
+    resolution: {integrity: sha512-pv/ue2Odr7IfYOO0byC1KgBI10wo5YDauLhxY6/saNzAdAs0r1SotGCPzzCLNPL0xtrAwWRialLu23AAu9xO1g==}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -1121,6 +1166,14 @@ packages:
     resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
 
 snapshots:
+
+  '@agendajs/mongo-backend@4.0.3(agenda@6.2.6)(mongodb@7.6.0)':
+    dependencies:
+      agenda: 6.2.6
+      debug: 4.4.3
+      mongodb: 7.6.0
+    transitivePeerDependencies:
+      - supports-color
 
   '@aws-sdk/checksums@3.1000.29':
     dependencies:
@@ -1519,6 +1572,16 @@ snapshots:
       mime-types: 3.0.2
       negotiator: 1.1.0
 
+  agenda@6.2.6:
+    dependencies:
+      cron-parser: 5.10.0
+      date.js: 0.3.3
+      debug: 4.4.3
+      human-interval: 2.0.1
+      luxon: 3.7.2
+    transitivePeerDependencies:
+      - supports-color
+
   ansi-regex@6.3.0: {}
 
   ansi-styles@6.2.3: {}
@@ -1623,9 +1686,23 @@ snapshots:
 
   cookie@0.7.2: {}
 
+  cron-parser@5.10.0:
+    dependencies:
+      luxon: 3.7.2
+
+  date.js@0.3.3:
+    dependencies:
+      debug: 3.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   dateformat@4.6.3: {}
 
   dayjs@1.11.23: {}
+
+  debug@3.1.0:
+    dependencies:
+      ms: 2.0.0
 
   debug@4.4.3:
     dependencies:
@@ -1768,6 +1845,10 @@ snapshots:
       statuses: 2.0.2
       toidentifier: 1.0.1
 
+  human-interval@2.0.1:
+    dependencies:
+      numbered: 1.1.0
+
   iconv-lite@0.7.3:
     dependencies:
       safer-buffer: 2.1.2
@@ -1787,6 +1868,8 @@ snapshots:
   kareem@3.3.0: {}
 
   kysely@0.29.5: {}
+
+  luxon@3.7.2: {}
 
   math-intrinsics@1.1.0: {}
 
@@ -1820,7 +1903,6 @@ snapshots:
       '@mongodb-js/saslprep': 1.5.0
       bson: 7.3.2
       mongodb-connection-string-url: 7.0.2
-    optional: true
 
   mongoose@9.9.4:
     dependencies:
@@ -1844,6 +1926,8 @@ snapshots:
 
   mquery@6.0.0: {}
 
+  ms@2.0.0: {}
+
   ms@2.1.3: {}
 
   nanostores@1.5.2: {}
@@ -1851,6 +1935,8 @@ snapshots:
   negotiator@1.1.0:
     dependencies:
       content-type: 2.1.0
+
+  numbered@1.1.0: {}
 
   object-inspect@1.13.4: {}
 

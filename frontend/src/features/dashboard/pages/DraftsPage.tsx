@@ -69,11 +69,11 @@ export function DraftsPage() {
         <Card>
           <CardContent className="p-0 divide-y divide-gray-100">
             {posts.map((post) => {
-              const integration = post.integrationId || integrations.find((i) => i._id === post.integrationId)
+              const integration = integrations.find((i) => i._id === post.integrationId)
               const publishDate = new Date(post.publishDate)
               const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT
               const mediaItems = JSON.parse(post.image || '[]')
-              const platform = integration?.providerIdentifier || 'x'
+              const platform = integration?.providerIdentifier || null
 
               return (
                 <div key={post._id} className="p-5 hover:bg-gray-50/50 transition-colors">
@@ -91,12 +91,14 @@ export function DraftsPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 line-clamp-2">{post.content}</p>
                       <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-4 h-4 flex items-center justify-center">
-                            <PlatformIcon platform={platform} size={12} />
+                        {platform && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-4 h-4 flex items-center justify-center">
+                              <PlatformIcon platform={platform} size={12} />
+                            </div>
+                            <span className="text-xs text-gray-500 capitalize">{platform}</span>
                           </div>
-                          <span className="text-xs text-gray-500 capitalize">{platform}</span>
-                        </div>
+                        )}
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}>
                           {statusConf.label}
                         </span>

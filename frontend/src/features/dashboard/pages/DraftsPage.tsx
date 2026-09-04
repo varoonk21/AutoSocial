@@ -55,7 +55,7 @@ export function DraftsPage() {
   }
 
   const handleEdit = (post) => {
-    navigate('/dashboard/create-post', { state: { draft: post } })
+    navigate('/dashboard/create-post/' + post._id)
   }
 
   return (

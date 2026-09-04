@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Upload,
   Sparkles,
@@ -42,8 +42,7 @@ const PLATFORMS = [
 
 export function CreatePost() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const draftData = (location.state as any)?.draft;
+  const { id: draftId } = useParams();
 
   // AI hooks
   const generateContentFromImage = useGenerateContentFromImage();
@@ -51,32 +50,13 @@ export function CreatePost() {
   const enhanceHashtags = useEnhanceWithAI();
 
   // Media state
-  const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(
-    draftData?.image ? (() => {
-      try {
-        const media = JSON.parse(draftData.image || '[]');
-        return media[0] ? { path: typeof media[0] === 'string' ? media[0] : media[0].path, type: 'image' } : null;
-      } catch { return null; }
-    })() : null
-  );
+  const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
-  // Content state - pre-fill from draft if editing
-  const [captionText, setCaptionText] = useState(() => {
-    if (draftData?.content) {
-      // Split content: everything before the last double newline is caption, rest is hashtags
-      const parts = (draftData.content || '').split(/\n\n#/);
-      return parts[0]?.replace(/\n#$/, '') || draftData.content || '';
-    }
-    return "";
-  });
-  const [hashtagsText, setHashtagsText] = useState(() => {
-    if (draftData?.content) {
-      const parts = (draftData.content || '').split(/\n\n#/);
-      return parts[1] ? '#' + parts[1] : '';
-    }
-    return "";
-  });
+  // Content state
+  const [captionText, setCaptionText] = useState("");
+  const [hashtagsText, setHashtagsText] = useState("");
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
 
   // Preview state
   const [activePlatform, setActivePlatform] = useState("instagram");
@@ -100,7 +80,32 @@ export function CreatePost() {
         setIntegrations(list);
       })
       .catch(() => {});
-  }, []);
+
+    // If editing a draft, fetch it by ID
+    if (draftId) {
+      apiGet(`/posts/${draftId}`)
+        .then((data: any) => {
+          const draft = data.post;
+          if (draft) {
+            setEditingDraftId(draft._id);
+            // Parse content: everything before \n\n# is caption, rest is hashtags
+            const content = draft.content || '';
+            const parts = content.split(/\n\n#/);
+            setCaptionText(parts[0]?.replace(/\n#$/, '') || content);
+            setHashtagsText(parts[1] ? '#' + parts[1] : '');
+            // Parse media
+            try {
+              const media = JSON.parse(draft.image || '[]');
+              if (media[0]) {
+                const path = typeof media[0] === 'string' ? media[0] : media[0].path;
+                if (path) setSelectedImage({ path, type: 'image' });
+              }
+            } catch {}
+          }
+        })
+        .catch(() => {});
+    }
+  }, [draftId]);
 
   const handleSelectImage = (image: { path: string; type: string }) => {
     setSelectedImage(image);
@@ -173,7 +178,15 @@ export function CreatePost() {
 
     setLoading(true);
     try {
-      if (publishType === "draft") {
+      if (publishType === "draft" && editingDraftId) {
+        // Update existing draft
+        const { apiPut } = await import("../../../lib/fetcher");
+        await apiPut(`/posts/${editingDraftId}`, {
+          content: fullContent,
+          media: selectedImage ? [selectedImage.path] : [],
+        });
+      } else if (publishType === "draft") {
+        // Create new draft
         const posts = [{ content: fullContent, settings: {}, media: selectedImage ? [selectedImage.path] : [] }];
         await apiPost("/posts", { type: publishType, posts });
       } else {
@@ -196,7 +209,8 @@ export function CreatePost() {
       setCaptionText("");
       setHashtagsText("");
       setSelectedImage(null);
-      const msg = publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post queued for publishing!" : "Post scheduled!";
+      setEditingDraftId(null);
+      const msg = publishType === "draft" ? (editingDraftId ? "Draft updated!" : "Saved as draft!") : publishType === "now" ? "Post queued for publishing!" : "Post scheduled!";
       setSuccess(msg);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {

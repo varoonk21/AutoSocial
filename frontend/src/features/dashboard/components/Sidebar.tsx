@@ -78,6 +78,17 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Dashboard - First Item */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<NavLink to="/dashboard" end />}
+                  isActive={location.pathname === "/dashboard"}
+                >
+                  {ICONS.home}
+                  <span>Dashboard</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {/* Post Menu Item with Submenu */}
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -110,7 +121,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
 
               {/* Other Nav Items */}
-              {NAV_ITEMS.map((item) => (
+              {NAV_ITEMS.filter(item => item.to !== "/dashboard").map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     render={<NavLink to={item.to} end={item.to === "/"} />}

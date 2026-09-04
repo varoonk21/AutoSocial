@@ -1,9 +1,9 @@
 import OpenAI from "openai";
-import env from "../config/env.config.js";
+import aiEnv from "../config/ai.config.js";
 
 const openai = new OpenAI({
-  baseURL: env.OPENAI_BASE_URL,
-  apiKey: env.OPENAI_API_KEY,
+  baseURL: aiEnv.OPENAI_BASE_URL,
+  apiKey: aiEnv.OPENAI_API_KEY,
 });
 
 export default openai;

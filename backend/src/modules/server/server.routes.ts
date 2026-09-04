@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { getHealth, getConfig } from "./server.controller.js";
 
-const router = express.Router();
+const router = Router();
 
 router.get("/health", getHealth);
 router.get("/config", getConfig);

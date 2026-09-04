@@ -1,5 +1,5 @@
 import type { ChatCompletion } from "openai/resources/chat/completions";
-import env from "../../config/env.config.js";
+import aiEnv from "../../config/ai.config.js";
 import openai from "../../lib/openai.js";
 import { findByUserId } from "../brandkit/brandkit.repository.js";
 import {
@@ -58,22 +58,22 @@ async function generatePosts(content: string, userId: string): Promise<Suggestio
 
   const [singlePosts, threads] = await Promise.all([
     openai.chat.completions.create({
-      model: "gpt-4o",
+      model: aiEnv.models.chat,
       messages: [
         { role: "system", content: getGenerateSinglePostPrompt(brandContext) },
         { role: "user", content },
       ],
       n: 3,
-      temperature: 1,
+      temperature: aiEnv.defaults.temperature,
     }),
     openai.chat.completions.create({
-      model: "gpt-4o",
+      model: aiEnv.models.chat,
       messages: [
         { role: "system", content: getGenerateThreadPrompt(brandContext) },
         { role: "user", content },
       ],
       n: 3,
-      temperature: 1,
+      temperature: aiEnv.defaults.temperature,
     }),
   ]);
 
@@ -90,7 +90,7 @@ async function generatePostsFromUrl(url: string, userId: string): Promise<Sugges
     .slice(0, 8000);
 
   const extracted = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: aiEnv.models.chat,
     messages: [
       { role: "system", content: getExtractContentPrompt() },
       { role: "user", content: plainText },
@@ -108,7 +108,7 @@ async function separatePosts(content: string, len: number): Promise<{ posts: str
   const schema = z.object({ posts: z.array(z.string()) });
 
   const result = await openai.chat.completions.parse({
-    model: "gpt-4o",
+    model: aiEnv.models.chat,
     messages: [
       { role: "system", content: getSeparatePostsPrompt(len) },
       { role: "user", content },
@@ -122,7 +122,7 @@ async function separatePosts(content: string, len: number): Promise<{ posts: str
 async function generateImage(prompt: string, isVertical: boolean = false): Promise<string> {
   const result = await openai.images.generate({
     prompt,
-    model: env.IMAGE_MODEL_NAME,
+    model: aiEnv.models.image,
     size: isVertical ? "1024x1792" : "1024x1024",
     response_format: "b64_json",
   });
@@ -132,7 +132,7 @@ async function generateImage(prompt: string, isVertical: boolean = false): Promi
 
 async function generateImageWithReference(imageUrl: string, prompt: string, isVertical: boolean = false): Promise<string> {
   const result = await openai.images.edit({
-    model: env.IMAGE_MODEL_NAME,
+    model: aiEnv.models.image,
     image: imageUrl as unknown as File,
     prompt,
     size: isVertical ? "1024x1792" : "1024x1024",
@@ -148,7 +148,7 @@ async function generateContentFromImage(imageUrl: string, userId: string): Promi
 
   const [singlePosts, threads] = await Promise.all([
     openai.chat.completions.create({
-      model: "gpt-4o",
+      model: aiEnv.models.chat,
       messages: [
         {
           role: "system",
@@ -163,10 +163,10 @@ async function generateContentFromImage(imageUrl: string, userId: string): Promi
         },
       ],
       n: 3,
-      temperature: 1,
+      temperature: aiEnv.defaults.temperature,
     }),
     openai.chat.completions.create({
-      model: "gpt-4o",
+      model: aiEnv.models.chat,
       messages: [
         {
           role: "system",
@@ -181,7 +181,7 @@ async function generateContentFromImage(imageUrl: string, userId: string): Promi
         },
       ],
       n: 3,
-      temperature: 1,
+      temperature: aiEnv.defaults.temperature,
     }),
   ]);
 
@@ -202,13 +202,13 @@ async function enhanceContent(content: string, enhanceType: string, userId: stri
   }
 
   const result = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: aiEnv.models.chat,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content },
     ],
     n: 3,
-    temperature: 1,
+    temperature: aiEnv.defaults.temperature,
   });
 
   return parseSuggestions(result.choices);

@@ -7,19 +7,6 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
-  FACEBOOK_APP_ID: z.string().optional(),
-  FACEBOOK_APP_SECRET: z.string().optional(),
-  X_API_KEY: z.string().optional(),
-  X_API_SECRET: z.string().optional(),
-  X_URL: z.string().optional(),
-  LINKEDIN_CLIENT_ID: z.string().optional(),
-  LINKEDIN_CLIENT_SECRET: z.string().optional(),
-  AWS_REGION: z.string().optional().default("auto"),
-  AWS_S3_BUCKET: z.string().optional(),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  S3_ENDPOINT: z.string().optional(),
-  S3_PUBLIC_URL: z.string().optional(),
   LOG_LEVEL: z
     .string()
     .optional()
@@ -28,10 +15,6 @@ const envSchema = z.object({
     .refine((v) => ["trace", "debug", "info", "warn", "error", "fatal"].includes(v), {
       message: "Invalid log level. Use trace/debug/info/warn/error/fatal",
     }),
-
-  OPENAI_API_KEY: z.string().optional(),
-  OPENAI_BASE_URL: z.string().optional(),
-  IMAGE_MODEL_NAME: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

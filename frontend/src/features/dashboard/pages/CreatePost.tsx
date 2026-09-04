@@ -27,7 +27,6 @@ import { useGenerateContentFromImage } from "../hooks/useGenerateContentFromImag
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { MediaLibraryModal } from "../components/MediaLibraryModal";
@@ -254,21 +253,33 @@ export function CreatePost() {
               {integrations.length === 0 ? (
                 <p className="text-xs text-gray-400 py-4 text-center">No connected accounts found.</p>
               ) : (
-                integrations.map((acc) => (
-                  <div
-                    key={acc._id}
-                    className="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name} alt="" className="w-8 h-8 rounded-full" />
-                      <div>
-                        <span className="text-sm font-semibold text-gray-800">{acc.name}</span>
-                        <span className="block text-[11px] text-gray-400 capitalize">{acc.providerIdentifier}</span>
+                integrations.map((acc) => {
+                  const isSelected = selectedIntegrations.includes(acc._id);
+                  return (
+                    <div
+                      key={acc._id}
+                      onClick={() => toggleIntegration(acc._id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
+                        isSelected ? 'border-[#243746] bg-[#243746]/5' : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <img src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name} alt="" className="w-8 h-8 rounded-full" />
+                        <div>
+                          <span className="text-sm font-semibold text-gray-800">{acc.name}</span>
+                          <span className="block text-[11px] text-gray-400 capitalize">{acc.providerIdentifier}</span>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                        isSelected ? 'border-[#243746] bg-[#243746]' : 'border-gray-300'
+                      }`}>
+                        {isSelected && (
+                          <Check className="w-3 h-3 text-white" />
+                        )}
                       </div>
                     </div>
-                    <Checkbox checked={selectedIntegrations.includes(acc._id)} onCheckedChange={() => toggleIntegration(acc._id)} />
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 

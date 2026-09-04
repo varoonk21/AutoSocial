@@ -26,3 +26,9 @@ export const enhanceContentSchema = z.object({
   content: z.string().min(1, "Content is required"),
   enhanceType: z.enum(["caption", "hashtags", "general"]).optional().default("general"),
 });
+
+export type GeneratePostsInput = z.infer<typeof generatePostsSchema>;
+export type SeparatePostsInput = z.infer<typeof separatePostsSchema>;
+export type GenerateImageInput = z.infer<typeof generateImageSchema>;
+export type GenerateContentFromImageInput = z.infer<typeof generateContentFromImageSchema>;
+export type EnhanceContentInput = z.infer<typeof enhanceContentSchema>;

@@ -1,31 +1,38 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Package,
-  Sparkles,
-  CloudUpload,
   Upload,
+  Sparkles,
   Monitor,
   Smartphone,
   Heart,
   MessageCircle,
   Send,
   Bookmark,
-  UserPlus,
-  Calendar,
-  Settings,
-  ChevronDown,
-  ChevronRight,
   X,
+  Image as ImageIcon,
+  Calendar,
+  Check,
+  Eraser,
+  Eye,
+  ChevronDown,
+  ThumbsUp,
+  MessageSquare,
+  Share2,
+  Repeat,
+  BarChart2,
+  MoreHorizontal,
+  Globe,
 } from "lucide-react";
-import { apiGet, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
+import { apiGet, apiPost } from "../../../lib/fetcher";
+import { useImageStore } from "../../../store/imageStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { MediaLibraryModal } from "../components/MediaLibraryModal";
 
 const DEFAULT_PREVIEW_IMAGE = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800&h=600";
 
@@ -37,610 +44,761 @@ const PLATFORMS = [
 ];
 
 export function CreatePost() {
-  // Integrations state
-  const [integrations, setIntegrations] = useState([]);
-  const [selectedIntegrations, setSelectedIntegrations] = useState([]);
+  const navigate = useNavigate();
+  const getImageUrl = useImageStore((s) => s.getImageUrl);
 
-  // Form State
-  const [contentSource, setContentSource] = useState("product"); // "product", "prompt", "upload"
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [customPrompt, setCustomPrompt] = useState("");
+  // Media state
+  const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
-  // Media State
-  const [media, setMedia] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  // Content state
+  const [captionText, setCaptionText] = useState("");
+  const [hashtagsText, setHashtagsText] = useState("");
+  const [previewActive, setPreviewActive] = useState(false);
 
-  // AI Options State
-  const [aiOptions, setAiOptions] = useState({
-    caption: true,
-    hashtags: true,
-    image: true,
-    shortVideo: false,
-  });
-  const [tone, setTone] = useState("Professional");
-  const [language, setLanguage] = useState("English (US)");
+  // AI state
   const [aiLoading, setAiLoading] = useState(false);
-  const [captionText, setCaptionText] = useState(
-    "Experience premium sound and comfort with our Wireless Headphones. Built for your lifestyle. 🎧 ✨",
-  );
-  const [hashtagsText, setHashtagsText] = useState("#WirelessHeadphones #MusicEverywhere #TechEssentials #SoundOnPoint #LifestyleUpgrade");
+  const [captionAiLoading, setCaptionAiLoading] = useState(false);
+  const [hashtagsAiLoading, setHashtagsAiLoading] = useState(false);
 
-  // Preview & Settings State
+  // Preview state
   const [activePlatform, setActivePlatform] = useState("instagram");
-  const [viewMode, setViewMode] = useState("desktop"); // "desktop" | "mobile"
-  const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [accountSelectOpen, setAccountSelectOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
 
-  // Status State
+  // Integrations state
+  const [integrations, setIntegrations] = useState<any[]>([]);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
+
+  // Post Now modal
+  const [postNowOpen, setPostNowOpen] = useState(false);
+
+  // Status
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
     apiGet("/integrations/list")
-      .then((d) => {
+      .then((d: any) => {
         const list = d.integrations || [];
         setIntegrations(list);
-        if (list.length > 0) {
-          setSelectedIntegrations(list.map((i) => i._id));
-        }
       })
       .catch(() => {});
 
-    const handleHeaderAction = (e) => {
+    const handleHeaderAction = (e: any) => {
       if (e.detail?.action === "save-draft") {
         handleSubmitPost("draft");
-      } else if (e.detail?.action === "publish-post") {
-        handleSubmitPost(isScheduled ? "schedule" : "now");
       }
     };
-
     window.addEventListener("header-action", handleHeaderAction);
     return () => window.removeEventListener("header-action", handleHeaderAction);
-  }, [isScheduled]);
+  }, []);
 
-  const toggleIntegration = (id) => {
-    setSelectedIntegrations((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  const handleSelectImage = (image: { path: string; type: string }) => {
+    setSelectedImage(image);
+    setPreviewActive(true);
   };
 
-  const handleMediaUpload = async (files) => {
-    if (!files || !files.length) return;
-    setUploading(true);
-    try {
-      const uploaded = await Promise.all(
-        Array.from(files).map(async (file) => {
-          const formData = new FormData();
-          formData.append("file", file);
-          const data = await apiPost("/media/upload", formData);
-          return { path: data.media.path, type: data.media.type, alt: "" };
-        }),
-      );
-      setMedia((prev) => [...prev, ...uploaded]);
-    } catch (err) {
-      const localUrl = URL.createObjectURL(files[0]);
-      setMedia((prev) => [...prev, { path: localUrl, type: "image", alt: "" }]);
-    } finally {
-      setUploading(false);
-    }
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setPreviewActive(false);
   };
 
-  const handleAiGenerate = async () => {
+  const handleAiGenerateContent = async () => {
     setAiLoading(true);
-    setError("");
-    setSuccess("");
     try {
-      const sourceText = contentSource === "product" ? `${productName}: ${productDescription}` : customPrompt;
-
-      if (!sourceText.trim()) {
-        setError("Please enter details or prompt before generating");
-        setAiLoading(false);
-        return;
-      }
-
+      const imageDesc = selectedImage ? "Based on the selected image" : "Create engaging social media content";
       const data = await apiPost("/posts/ai/generate", {
-        content: sourceText,
-        tone,
-        language,
+        content: imageDesc,
+        tone: "Professional",
+        language: "English (US)",
       });
 
       if (data.suggestions && data.suggestions.length > 0) {
         const first = data.suggestions[0];
         const text = Array.isArray(first) ? first[0]?.post : first?.post;
-        if (text) setCaptionText(text);
+        if (text) {
+          const lines = text.split("\n").filter((l: string) => l.trim());
+          const hashtagLine = lines.find((l: string) => l.includes("#"));
+          const captionLines = lines.filter((l: string) => !l.includes("#"));
+          setCaptionText(captionLines.join("\n").trim() || text);
+          setHashtagsText(hashtagLine || "");
+        }
       } else {
-        setCaptionText(`Introducing ${productName || "our latest creation"}! Engineered for elegance and performance. ${productDescription}`);
+        setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
+        setHashtagsText("#NewPost #SocialMedia #ContentCreation");
       }
-      setSuccess("AI Content generated successfully!");
-    } catch (err) {
-      if (productName) {
-        setCaptionText(`Experience ultimate quality with ${productName}. ${productDescription || "Designed to elevate your everyday routine."} ✨`);
-      } else if (customPrompt) {
-        setCaptionText(`${customPrompt} 🚀✨`);
-      }
-      setSuccess("Content generated!");
-    } finally {
-      setAiLoading(false);
+      setPreviewActive(true);
+    } catch {
+      setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
+      setHashtagsText("#NewPost #SocialMedia #ContentCreation");
+      setPreviewActive(true);
     }
+    setAiLoading(false);
   };
 
-  const handleSubmitPost = async (publishType = "schedule") => {
-    setError("");
-    setSuccess("");
+  const handleImproveCaption = async () => {
+    if (!captionText.trim()) return;
+    setCaptionAiLoading(true);
+    try {
+      const data = await apiPost("/posts/ai/generate", {
+        content: `Improve this caption: ${captionText}`,
+        tone: "Professional",
+        language: "English (US)",
+      });
+      if (data.suggestions && data.suggestions.length > 0) {
+        const first = data.suggestions[0];
+        const text = Array.isArray(first) ? first[0]?.post : first?.post;
+        if (text) {
+          const lines = text.split("\n").filter((l: string) => l.trim());
+          const nonHashtag = lines.filter((l: string) => !l.includes("#"));
+          setCaptionText(nonHashtag.join("\n").trim() || text);
+        }
+      }
+    } catch {}
+    setCaptionAiLoading(false);
+  };
 
-    const fullPostContent = `${captionText}\n\n${hashtagsText}`;
+  const handleImproveHashtags = async () => {
+    if (!hashtagsText.trim() && !captionText.trim()) return;
+    setHashtagsAiLoading(true);
+    try {
+      const data = await apiPost("/posts/ai/generate", {
+        content: `Generate hashtags for: ${captionText || hashtagsText}`,
+        tone: "Professional",
+        language: "English (US)",
+      });
+      if (data.suggestions && data.suggestions.length > 0) {
+        const first = data.suggestions[0];
+        const text = Array.isArray(first) ? first[0]?.post : first?.post;
+        if (text) {
+          const hashtagLine = text.split("\n").find((l: string) => l.includes("#"));
+          setHashtagsText(hashtagLine || text);
+        }
+      }
+    } catch {}
+    setHashtagsAiLoading(false);
+  };
 
-    if (!fullPostContent.trim() && media.length === 0) {
-      return setError("Post must contain text or media");
-    }
+  const handleClear = () => {
+    setCaptionText("");
+    setHashtagsText("");
+    setSelectedImage(null);
+    setPreviewActive(false);
+  };
+
+  const handlePreview = () => {
+    setPreviewActive(true);
+  };
+
+  const toggleIntegration = (id: string) => {
+    setSelectedIntegrations((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  };
+
+  const handleSubmitPost = async (publishType: string = "draft") => {
+    const fullContent = `${captionText}\n\n${hashtagsText}`.trim();
+    if (!fullContent && !selectedImage) return;
 
     setLoading(true);
     try {
-      if (selectedIntegrations.length > 0) {
-        const posts = selectedIntegrations.map((integrationId) => ({
+      const postIntegrations = publishType === "now" ? selectedIntegrations : integrations.map((i) => i._id);
+      if (postIntegrations.length > 0) {
+        const posts = postIntegrations.map((integrationId) => ({
           integrationId,
-          content: fullPostContent.trim(),
+          content: fullContent,
           settings: {},
-          media: media.map((m) => m.path),
+          media: selectedImage ? [selectedImage.path] : [],
         }));
-
-        await apiPost("/posts", {
-          type: publishType,
-          date: isScheduled && scheduleDate ? scheduleDate : undefined,
-          posts,
-        });
+        await apiPost("/posts", { type: publishType, posts });
       }
-
-      setSuccess(
-        publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post published successfully!" : "Post scheduled successfully!",
-      );
-    } catch (err) {
-      setSuccess("Post created successfully!");
-    } finally {
-      setLoading(false);
+      setSuccess(publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post published!" : "Post scheduled!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch {
+      setSuccess("Post created!");
+      setTimeout(() => setSuccess(""), 3000);
     }
+    setLoading(false);
   };
 
-  const previewMediaUrl = media.length > 0 ? media[0].path : DEFAULT_PREVIEW_IMAGE;
+  const handlePostNow = () => {
+    setPostNowOpen(true);
+  };
+
+  const handleConfirmPostNow = async () => {
+    setPostNowOpen(false);
+    await handleSubmitPost("now");
+  };
+
+  const handleSchedulePost = () => {
+    navigate("/dashboard/scheduled-posts", {
+      state: {
+        fromCreate: true,
+        caption: captionText,
+        hashtags: hashtagsText,
+        image: selectedImage,
+      },
+    });
+  };
+
+  const previewImageUrl = selectedImage?.path || DEFAULT_PREVIEW_IMAGE;
+  const hasContent = captionText.trim() || hashtagsText.trim() || selectedImage;
 
   return (
-    <div className="max-w-[1320px] mx-auto space-y-6  text-neutral-900 pb-12 select-none">
-      {/* Page Title Header */}
+    <div className="max-w-[1320px] mx-auto space-y-6 text-neutral-900 pb-12 select-none">
+      {/* Media Library Modal */}
+      <MediaLibraryModal open={mediaLibraryOpen} onOpenChange={setMediaLibraryOpen} onSelect={handleSelectImage} />
+
+      {/* Post Now Confirmation Modal */}
+      <Dialog open={postNowOpen} onOpenChange={setPostNowOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-[#243746]/10 text-[#243746]">
+                <Send className="w-5 h-5" />
+              </div>
+              Confirm Post
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">Select the social media account(s) to post to:</p>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {integrations.length === 0 ? (
+                <p className="text-xs text-gray-400 py-4 text-center">No connected accounts found.</p>
+              ) : (
+                integrations.map((acc) => (
+                  <div
+                    key={acc._id}
+                    onClick={() => toggleIntegration(acc._id)}
+                    className="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name} alt="" className="w-8 h-8 rounded-full" />
+                      <div>
+                        <span className="text-sm font-semibold text-gray-800">{acc.name}</span>
+                        <span className="block text-[11px] text-gray-400 capitalize">{acc.providerIdentifier}</span>
+                      </div>
+                    </div>
+                    <Checkbox checked={selectedIntegrations.includes(acc._id)} onCheckedChange={() => toggleIntegration(acc._id)} />
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Post Summary */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Post Preview</h4>
+              {selectedImage && <img src={selectedImage.path} alt="" className="w-full h-32 object-cover rounded-lg" />}
+              {captionText && <p className="text-xs text-gray-700 line-clamp-2">{captionText}</p>}
+              {hashtagsText && <p className="text-[11px] text-gray-600 font-medium">{hashtagsText}</p>}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setPostNowOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleConfirmPostNow} disabled={loading || selectedIntegrations.length === 0}>
+              <Send className="w-4 h-4" />
+              <span>Post Now</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Toast */}
+      {success && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{success}</span>
+        </div>
+      )}
+
+      {/* Page Title */}
       <div className="pb-2 border-b border-gray-200/80">
         <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Create Post</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Generate, customize and publish content across multiple platforms.</p>
+        <p className="text-sm text-gray-500 mt-0.5">Design and publish content across your social platforms.</p>
       </div>
 
-      {/* Notifications / Feedback */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center justify-between">
-          <span>{error}</span>
-          <Button variant="ghost" size="icon-xs" onClick={() => setError("")}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-      {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl flex items-center justify-between">
-          <span>{success}</span>
-          <Button variant="ghost" size="icon-xs" onClick={() => setSuccess("")}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Main Grid: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* LEFT COLUMN: Content Creation Form (7 cols) */}
-        <Card className="lg:col-span-7">
-          <CardContent className="space-y-6 pt-6">
-            {/* Content Source Selection */}
-            <div className="space-y-3">
-              <label className="block text-sm font-bold text-[#1c2b36]">Content Source</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Product / Service Card */}
-                <div
-                  onClick={() => setContentSource("product")}
-                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    contentSource === "product" ? "border-[#243746] bg-[#243746]/[0.02]" : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`p-2 rounded-lg ${contentSource === "product" ? "bg-[#243746]/10 text-[#243746]" : "bg-gray-100 text-gray-600"}`}>
-                      <Package className="w-5 h-5" />
-                    </div>
-                    {contentSource === "product" && (
-                      <span className="w-4 h-4 rounded-full bg-[#243746] flex items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="font-bold text-xs text-[#1c2b36]">Product / Service</h4>
-                  <p className="text-[11px] text-gray-500 mt-1 leading-tight">Create post about your product or service</p>
-                </div>
-
-                {/* Custom Prompt Card */}
-                <div
-                  onClick={() => setContentSource("prompt")}
-                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    contentSource === "prompt" ? "border-[#243746] bg-[#243746]/[0.02]" : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`p-2 rounded-lg ${contentSource === "prompt" ? "bg-[#243746]/10 text-[#243746]" : "bg-gray-100 text-gray-600"}`}>
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                    {contentSource === "prompt" && (
-                      <span className="w-4 h-4 rounded-full bg-[#243746] flex items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="font-bold text-xs text-[#1c2b36]">Custom Prompt</h4>
-                  <p className="text-[11px] text-gray-500 mt-1 leading-tight">Write your own prompt for AI</p>
-                </div>
-
-                {/* Upload Media Card */}
-                <div
-                  onClick={() => setContentSource("upload")}
-                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    contentSource === "upload" ? "border-[#243746] bg-[#243746]/[0.02]" : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`p-2 rounded-lg ${contentSource === "upload" ? "bg-[#243746]/10 text-[#243746]" : "bg-gray-100 text-gray-600"}`}>
-                      <CloudUpload className="w-5 h-5" />
-                    </div>
-                    {contentSource === "upload" && (
-                      <span className="w-4 h-4 rounded-full bg-[#243746] flex items-center justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="font-bold text-xs text-[#1c2b36]">Upload Media</h4>
-                  <p className="text-[11px] text-gray-500 mt-1 leading-tight">Upload your own image or video</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Product / Service Details */}
-            {contentSource === "product" && (
-              <div className="space-y-4 pt-2">
-                <h3 className="text-sm font-bold text-[#1c2b36]">Product / Service Details</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Product / Service Name</label>
-                    <Input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Wireless Headphones" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-gray-700">Description</label>
-                      <span className="text-[11px] text-gray-400">{productDescription.length}/500</span>
-                    </div>
-                    <Textarea
-                      rows={3}
-                      maxLength={500}
-                      value={productDescription}
-                      onChange={(e) => setProductDescription(e.target.value)}
-                      placeholder="Describe your product or service..."
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Custom Prompt Input */}
-            {contentSource === "prompt" && (
-              <div className="space-y-2 pt-2">
-                <label className="block text-xs font-semibold text-gray-700">AI Prompt</label>
-                <Textarea
-                  rows={3}
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder="Write a creative post about eco-friendly wireless headphones launching next week..."
-                />
-              </div>
-            )}
-
-            {/* Media Section */}
-            <div className="space-y-3 pt-2">
-              <label className="block text-sm font-bold text-[#1c2b36]">Media</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Dotted Upload Box */}
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-[#243746]/30 bg-[#243746]/[0.02] hover:bg-[#243746]/[0.05] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white text-[#243746] shadow-2xs flex items-center justify-center mb-2">
-                    <Upload className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs font-bold text-[#243746]">{uploading ? "Uploading..." : "Upload Image"}</span>
-                  <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG up to 10MB</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleMediaUpload(e.target.files)}
-                  />
-                </div>
-
-                {/* Uploaded Thumbnail List / Default Headphones Preview */}
-                <div className="relative group rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center min-h-[120px]">
-                  <img src={previewMediaUrl} alt="Media Preview" className="w-full h-32 object-cover" />
-                  {media.length > 0 && (
-                    <Button variant="destructive" size="icon-xs" onClick={() => setMedia([])} className="absolute top-2 right-2">
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* AI Generation Options */}
-            <div className="space-y-4 pt-2 border-t border-gray-100">
-              <h3 className="text-sm font-bold text-[#1c2b36]">AI Generation</h3>
-              <p className="text-xs text-gray-500 -mt-2">What do you want to generate?</p>
-
-              {/* Checkboxes Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { id: "caption", label: "Caption" },
-                  { id: "hashtags", label: "Hashtags" },
-                  { id: "image", label: "Image" },
-                  { id: "shortVideo", label: "Short Video" },
-                ].map((opt) => (
-                  <label key={opt.id} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <Checkbox checked={aiOptions[opt.id]} onCheckedChange={(checked) => setAiOptions({ ...aiOptions, [opt.id]: checked })} />
-                    <span className="text-xs font-semibold text-gray-700">{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-
-              {/* Dropdowns Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tone of Voice</label>
-                  <Select value={tone} onValueChange={setTone}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Professional">Professional</SelectItem>
-                      <SelectItem value="Casual">Casual</SelectItem>
-                      <SelectItem value="Excited">Excited</SelectItem>
-                      <SelectItem value="Informative">Informative</SelectItem>
-                      <SelectItem value="Urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Language</label>
-                  <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="English (US)">English (US)</SelectItem>
-                      <SelectItem value="English (UK)">English (UK)</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Generate Button */}
-              <Button size="sm" onClick={handleAiGenerate} disabled={aiLoading} className="w-full">
-                {aiLoading ? (
-                  <span>Generating with AI...</span>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Generate Content</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* RIGHT COLUMN: Live Preview & Post Settings (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Live Mock Post Preview */}
-          <Card>
-            <CardContent className="space-y-4 pt-6">
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* LEFT COLUMN — Creation Controls */}
+        <div className="lg:col-span-7 space-y-3.5">
+          {/* Upload Image Card */}
+          <Card className="py-0">
+            <CardContent className="p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#1c2b36]">Preview</h3>
-
-                {/* Desktop / Mobile view toggle icons */}
-                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value)} variant="outline" size="sm">
-                  <ToggleGroupItem value="desktop" title="Desktop View">
-                    <Monitor className="w-4 h-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="mobile" title="Mobile View">
-                    <Smartphone className="w-4 h-4" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <label className="text-xs font-bold text-[#1c2b36]">Media Asset</label>
+                {hasContent && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-6 px-2 text-[11px]"
+                    onClick={handleClear}
+                  >
+                    <Eraser className="w-3 h-3 text-red-600" />
+                    <span className="font-semibold">Clear</span>
+                  </Button>
+                )}
               </div>
 
-              {/* Mock Post Card Container */}
-              <div className={`mx-auto transition-all ${viewMode === "mobile" ? "max-w-[310px]" : "w-full"}`}>
-                <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
-                  {/* Platform Selector Tabs */}
-                  <div className="flex items-center justify-around py-3 px-4 border-b border-gray-100 bg-gray-50/50">
-                    {PLATFORMS.map((p) => (
-                      <Button
-                        key={p.id}
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setActivePlatform(p.id)}
-                        className={`rounded-full ${
-                          activePlatform === p.id ? "ring-2 ring-[#243746] bg-white shadow-2xs scale-110" : "opacity-60 hover:opacity-100"
-                        }`}
-                        title={p.name}
-                      >
-                        {p.id === "facebook" && <span className="font-bold text-[#1877F2] text-sm">f</span>}
-                        {p.id === "instagram" && <span className="text-sm">📷</span>}
-                        {p.id === "linkedin" && <span className="font-bold text-[#0A66C2] text-xs">in</span>}
-                        {p.id === "x" && <span className="font-bold text-black text-xs">𝕏</span>}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Media Container */}
-                  <div className="bg-gray-100 relative overflow-hidden">
-                    <img src={previewMediaUrl} alt="Post Preview" className="w-full h-64 object-cover" />
-                  </div>
-
-                  {/* Post Text & Hashtags */}
-                  <div className="p-4 space-y-3">
-                    <p className="text-xs text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">{captionText}</p>
-                    <p className="text-[11px] text-[#243746] font-semibold leading-relaxed">{hashtagsText}</p>
-
-                    {/* Social Action Bar with Lucide Icons */}
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-gray-500">
-                      <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon-xs" className="hover:text-red-500">
-                          <Heart className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon-xs" className="hover:text-blue-500">
-                          <MessageCircle className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon-xs" className="hover:text-emerald-500">
-                          <Send className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <Button variant="ghost" size="icon-xs" className="hover:text-gray-800">
-                        <Bookmark className="w-4 h-4" />
-                      </Button>
-                    </div>
+              {selectedImage ? (
+                <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center p-2 min-h-[160px] max-h-[300px]">
+                  <img src={selectedImage.path} alt="Selected" className="max-h-[280px] w-auto max-w-full object-contain rounded-lg shadow-2xs" />
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+                    <Button
+                      variant="secondary"
+                      size="xs"
+                      className="bg-white/90 hover:bg-white text-gray-800 shadow-sm text-[11px] h-6 px-2"
+                      onClick={() => setMediaLibraryOpen(true)}
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Change</span>
+                    </Button>
+                    <Button variant="destructive" size="icon-xs" className="shadow-sm" onClick={handleRemoveImage}>
+                      <X className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full border-dashed border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50/80 h-auto py-3.5"
+                  onClick={() => setMediaLibraryOpen(true)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="p-2 rounded-xl bg-gray-100 text-gray-700">
+                      <Upload className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-gray-800 block">Upload Image</span>
+                      <span className="text-[10px] text-gray-400">Choose from your media library</span>
+                    </div>
+                  </div>
+                </Button>
+              )}
             </CardContent>
           </Card>
 
-          {/* Post Settings Card */}
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-              <h3 className="text-sm font-bold text-[#1c2b36]">Post Settings</h3>
-
-              {/* Select Accounts Row */}
-              <div className="border border-gray-200 rounded-xl p-3.5 relative">
-                <div onClick={() => setAccountSelectOpen(!accountSelectOpen)} className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gray-100 text-gray-700">
-                      <UserPlus className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-[#1c2b36]">Select Accounts</h4>
-                      <p className="text-[11px] text-gray-400">
-                        {selectedIntegrations.length > 0 ? `${selectedIntegrations.length} platforms selected` : "No platform selected"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
-                        className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                        alt=""
-                      />
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=80&h=80"
-                        className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                        alt=""
-                      />
-                      <span className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 flex items-center justify-center">
-                        +3
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${accountSelectOpen ? "rotate-180" : ""}`} />
-                  </div>
+          {/* AI Generate Content Button — Only shown when an image is uploaded */}
+          {selectedImage && (
+            <Button
+              className="w-full bg-[#243746] hover:bg-[#1c2b36] text-white shadow-md shadow-gray-200 h-8 text-xs font-medium"
+              onClick={handleAiGenerateContent}
+              disabled={aiLoading}
+            >
+              {aiLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating...</span>
                 </div>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generate Content with AI</span>
+                </>
+              )}
+            </Button>
+          )}
 
-                {/* Connected accounts toggle dropdown */}
-                {accountSelectOpen && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                    {integrations.length === 0 ? (
-                      <p className="text-xs text-gray-400">No connected accounts found.</p>
-                    ) : (
-                      integrations.map((acc) => (
-                        <div
-                          key={acc._id}
-                          onClick={() => toggleIntegration(acc._id)}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2">
-                            <img src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name} alt="" className="w-5 h-5 rounded-full" />
-                            <span className="text-xs font-semibold text-gray-700">{acc.name}</span>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={selectedIntegrations.includes(acc._id)}
-                            onChange={() => {}}
-                            className="accent-[#243746] rounded"
-                          />
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Schedule Post Toggle Row */}
-              <div className="border border-gray-200 rounded-xl p-3.5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gray-100 text-gray-700">
-                      <Calendar className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-[#1c2b36]">Schedule Post</h4>
-                      <p className="text-[11px] text-gray-400">Pick date & time</p>
-                    </div>
-                  </div>
-
-                  {/* Toggle switch */}
-                  <Switch checked={isScheduled} onCheckedChange={setIsScheduled} />
-                </div>
-
-                {isScheduled && (
-                  <div className="pt-2 border-t border-gray-100">
-                    <Input type="datetime-local" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
-                  </div>
-                )}
-              </div>
-
-              {/* Advanced Settings Row */}
-              <div className="border border-gray-200 rounded-xl p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-gray-100 text-gray-700">
-                    <Settings className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-[#1c2b36]">Advanced Settings</h4>
-                    <p className="text-[11px] text-gray-400">Add first comment, location, more</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-              </div>
-
-              {/* Bottom Actions Row */}
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <Button variant="outline" size="sm" type="button" onClick={() => handleSubmitPost("draft")}>
-                  Save as Draft
+          {/* Caption / Description Field */}
+          <Card className="py-0">
+            <CardContent className="p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1c2b36]">Caption / Description</label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
+                  onClick={handleImproveCaption}
+                  disabled={captionAiLoading || !captionText.trim()}
+                >
+                  {captionAiLoading ? (
+                    <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3" />
+                  )}
+                  <span>Improve with AI</span>
                 </Button>
+              </div>
+              <Textarea
+                rows={3}
+                value={captionText}
+                onChange={(e) => setCaptionText(e.target.value)}
+                placeholder="Write your caption or let AI generate one for you..."
+                className="resize-none border-gray-200 focus:border-gray-400 focus:ring-gray-200 text-xs leading-relaxed p-2.5"
+              />
+            </CardContent>
+          </Card>
 
-                <Button size="sm" type="button" onClick={() => handleSubmitPost(isScheduled ? "schedule" : "now")} disabled={loading}>
+          {/* Hashtags Field */}
+          <Card className="py-0">
+            <CardContent className="p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1c2b36]">Hashtags</label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
+                  onClick={handleImproveHashtags}
+                  disabled={hashtagsAiLoading || (!captionText.trim() && !hashtagsText.trim())}
+                >
+                  {hashtagsAiLoading ? (
+                    <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3" />
+                  )}
+                  <span>Improve with AI</span>
+                </Button>
+              </div>
+              <Textarea
+                rows={2}
+                value={hashtagsText}
+                onChange={(e) => setHashtagsText(e.target.value)}
+                placeholder="#hashtag1 #hashtag2 #hashtag3"
+                className="resize-none border-gray-200 focus:border-gray-400 focus:ring-gray-200 text-xs leading-relaxed p-2.5"
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* RIGHT COLUMN — Live Device Preview & Action Bar */}
+        <div className="lg:col-span-5">
+          <Card className="sticky top-20 py-0">
+            <CardContent className="p-4 space-y-3.5">
+              {/* Preview Card Header & Platform Tabs */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#1c2b36]">Post Preview</h3>
+                  <ToggleGroup
+                    type="single"
+                    value={viewMode}
+                    onValueChange={(value) => value && setViewMode(value as "desktop" | "mobile")}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <ToggleGroupItem value="desktop" title="Desktop View">
+                      <Monitor className="w-3.5 h-3.5" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="mobile" title="Mobile View">
+                      <Smartphone className="w-3.5 h-3.5" />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+
+                {/* Platform Tabs Bar (Matching Reference) */}
+                <div className="flex items-center gap-6 border-b border-gray-100 px-1 pb-0">
+                  {PLATFORMS.map((p) => {
+                    const isActive = activePlatform === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setActivePlatform(p.id)}
+                        className={`flex items-center gap-1.5 pb-2 text-xs font-semibold transition-all cursor-pointer relative ${
+                          isActive ? "text-[#1c2b36]" : "text-gray-400 hover:text-gray-600"
+                        }`}
+                      >
+                        {p.id === "instagram" && <span className="text-sm leading-none">📷</span>}
+                        {p.id === "facebook" && <span className="font-bold text-[#1877F2] text-sm leading-none">f</span>}
+                        {p.id === "linkedin" && <span className="font-bold text-[#0A66C2] text-xs leading-none">in</span>}
+                        {p.id === "x" && <span className="font-bold text-black text-xs leading-none">𝕏</span>}
+                        <span>{p.name}</span>
+                        {isActive && (
+                          <div
+                            className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${
+                              p.id === "instagram"
+                                ? "bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"
+                                : p.id === "facebook"
+                                  ? "bg-[#1877F2]"
+                                  : p.id === "linkedin"
+                                    ? "bg-[#0A66C2]"
+                                    : "bg-black"
+                            }`}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Platform Specific Realistic Mockup Container */}
+              <div className={`mx-auto transition-all ${viewMode === "mobile" ? "max-w-[310px]" : "w-full"}`}>
+                <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+                  {activePlatform === "instagram" && (
+                    /* INSTAGRAM PREVIEW — Matching Screenshot 1 */
+                    <div>
+                      {/* Instagram Header */}
+                      <div className="flex items-center justify-between px-3.5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-[1px]">
+                              <div className="w-full h-full rounded-full bg-[#243746] flex items-center justify-center text-white text-[10px] font-bold">
+                                A
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-bold text-gray-900">AutoSocial</span>
+                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-500 cursor-pointer" />
+                      </div>
+
+                      {/* Instagram Image */}
+                      <div className="bg-gray-50 relative overflow-hidden flex items-center justify-center min-h-[220px]">
+                        <img src={previewImageUrl} alt="Post Preview" className="w-full h-64 object-contain" />
+                        {!selectedImage && (
+                          <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] text-gray-500 font-medium">
+                              Default preview image
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Instagram Actions & Caption */}
+                      <div className="p-3.5 space-y-2.5">
+                        <div className="flex items-center justify-between text-gray-800">
+                          <div className="flex items-center gap-3.5">
+                            <Heart className="w-5 h-5 hover:text-red-500 cursor-pointer transition-colors" />
+                            <MessageCircle className="w-5 h-5 hover:text-gray-600 cursor-pointer transition-colors" />
+                            <Send className="w-5 h-5 hover:text-gray-600 cursor-pointer transition-colors" />
+                          </div>
+                          <Bookmark className="w-5 h-5 hover:text-gray-600 cursor-pointer transition-colors" />
+                        </div>
+
+                        <div className="text-xs leading-relaxed text-gray-900">
+                          <span className="font-bold mr-1.5">autosocial_app</span>
+                          {captionText ? (
+                            <span className="whitespace-pre-wrap">{captionText}</span>
+                          ) : (
+                            <span className="text-gray-300 italic">Your caption will appear here...</span>
+                          )}
+                          {hashtagsText && (
+                            <p className="text-[11px] text-indigo-600 font-medium mt-1">{hashtagsText}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activePlatform === "facebook" && (
+                    /* FACEBOOK PREVIEW — Matching Screenshot 2 */
+                    <div>
+                      {/* Facebook Header */}
+                      <div className="flex items-center justify-between px-3.5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-xs">
+                            AS
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-[#1877F2] leading-tight">AutoSocial</p>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                              <span>Today at 19:33</span>
+                              <span>•</span>
+                              <Globe className="w-2.5 h-2.5 text-gray-400" />
+                            </div>
+                          </div>
+                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-500 cursor-pointer" />
+                      </div>
+
+                      {/* Facebook Text (ABOVE Image!) */}
+                      <div className="px-3.5 pb-3 space-y-1">
+                        {captionText ? (
+                          <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-wrap">{captionText}</p>
+                        ) : (
+                          <p className="text-xs text-gray-300 italic">Write your post caption...</p>
+                        )}
+                        {hashtagsText && (
+                          <p className="text-[11px] text-[#1877F2] font-medium">{hashtagsText}</p>
+                        )}
+                        <span className="text-[10px] text-[#1877F2] hover:underline cursor-pointer block pt-0.5 font-medium">See translation</span>
+                      </div>
+
+                      {/* Facebook Image */}
+                      <div className="bg-gray-50 relative overflow-hidden flex items-center justify-center min-h-[200px]">
+                        <img src={previewImageUrl} alt="Post Preview" className="w-full h-64 object-contain" />
+                        {!selectedImage && (
+                          <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] text-gray-500 font-medium">
+                              Default preview image
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Facebook Action Bar */}
+                      <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-around text-xs text-gray-600 font-medium">
+                        <button type="button" className="flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1 rounded-md transition-colors cursor-pointer">
+                          <ThumbsUp className="w-4 h-4 text-gray-500" />
+                          <span>Like</span>
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1 rounded-md transition-colors cursor-pointer">
+                          <MessageSquare className="w-4 h-4 text-gray-500" />
+                          <span>Comment</span>
+                        </button>
+                        <button type="button" className="flex items-center gap-1.5 hover:bg-gray-50 px-3 py-1 rounded-md transition-colors cursor-pointer">
+                          <Share2 className="w-4 h-4 text-gray-500" />
+                          <span>Share</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {activePlatform === "linkedin" && (
+                    /* LINKEDIN PREVIEW */
+                    <div>
+                      {/* LinkedIn Header */}
+                      <div className="flex items-center justify-between px-3.5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center font-bold text-xs">
+                            in
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-900 leading-tight">AutoSocial</p>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                              <span>12,480 followers</span>
+                              <span>•</span>
+                              <span>1h</span>
+                              <span>•</span>
+                              <Globe className="w-2.5 h-2.5" />
+                            </div>
+                          </div>
+                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-500 cursor-pointer" />
+                      </div>
+
+                      {/* LinkedIn Text (ABOVE Image!) */}
+                      <div className="px-3.5 pb-3 space-y-1">
+                        {captionText ? (
+                          <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-wrap">{captionText}</p>
+                        ) : (
+                          <p className="text-xs text-gray-300 italic">Write your professional post...</p>
+                        )}
+                        {hashtagsText && (
+                          <p className="text-[11px] text-[#0A66C2] font-semibold">{hashtagsText}</p>
+                        )}
+                      </div>
+
+                      {/* LinkedIn Image */}
+                      <div className="bg-gray-50 relative overflow-hidden flex items-center justify-center min-h-[200px]">
+                        <img src={previewImageUrl} alt="Post Preview" className="w-full h-64 object-contain" />
+                        {!selectedImage && (
+                          <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] text-gray-500 font-medium">
+                              Default preview image
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* LinkedIn Action Bar */}
+                      <div className="px-2 py-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600 font-medium">
+                        <button type="button" className="flex items-center gap-1 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer">
+                          <ThumbsUp className="w-3.5 h-3.5 text-gray-500" />
+                          <span>Like</span>
+                        </button>
+                        <button type="button" className="flex items-center gap-1 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer">
+                          <MessageSquare className="w-3.5 h-3.5 text-gray-500" />
+                          <span>Comment</span>
+                        </button>
+                        <button type="button" className="flex items-center gap-1 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer">
+                          <Repeat className="w-3.5 h-3.5 text-gray-500" />
+                          <span>Repost</span>
+                        </button>
+                        <button type="button" className="flex items-center gap-1 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer">
+                          <Send className="w-3.5 h-3.5 text-gray-500" />
+                          <span>Send</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {activePlatform === "x" && (
+                    /* X / TWITTER PREVIEW */
+                    <div>
+                      {/* X Header */}
+                      <div className="flex items-center justify-between px-3.5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs">
+                            𝕏
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <span className="font-bold text-gray-900">AutoSocial</span>
+                              <span className="text-gray-400">@autosocial</span>
+                              <span className="text-gray-400">• 1h</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="font-bold text-black text-xs">𝕏</span>
+                      </div>
+
+                      {/* X Tweet Text (ABOVE Image!) */}
+                      <div className="px-3.5 pb-3 space-y-1">
+                        {captionText ? (
+                          <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-wrap">{captionText}</p>
+                        ) : (
+                          <p className="text-xs text-gray-300 italic">What's happening?</p>
+                        )}
+                        {hashtagsText && (
+                          <p className="text-[11px] text-blue-500 font-medium">{hashtagsText}</p>
+                        )}
+                      </div>
+
+                      {/* X Media (Rounded container) */}
+                      <div className="px-3.5 pb-3">
+                        <div className="rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 relative min-h-[180px] flex items-center justify-center">
+                          <img src={previewImageUrl} alt="Tweet Media" className="w-full h-56 object-contain" />
+                          {!selectedImage && (
+                            <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
+                              <div className="bg-white/80 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] text-gray-500 font-medium">
+                                Default preview image
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* X Engagement Bar */}
+                      <div className="px-3.5 py-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+                        <span className="flex items-center gap-1 hover:text-blue-500 cursor-pointer">
+                          <MessageSquare className="w-3.5 h-3.5" /> 12
+                        </span>
+                        <span className="flex items-center gap-1 hover:text-emerald-500 cursor-pointer">
+                          <Repeat className="w-3.5 h-3.5" /> 5
+                        </span>
+                        <span className="flex items-center gap-1 hover:text-pink-500 cursor-pointer">
+                          <Heart className="w-3.5 h-3.5" /> 48
+                        </span>
+                        <span className="flex items-center gap-1 hover:text-blue-500 cursor-pointer">
+                          <BarChart2 className="w-3.5 h-3.5" /> 1.2K
+                        </span>
+                        <Bookmark className="w-3.5 h-3.5 hover:text-gray-700 cursor-pointer" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons Below Preview Card */}
+              <div className="flex items-center gap-3 pt-3 border-t border-gray-200/80">
+                <Button variant="outline" className="flex-1" onClick={() => handleSubmitPost("draft")} disabled={!hasContent}>
+                  Save Draft
+                </Button>
+                <Button className="flex-1 bg-[#243746] hover:bg-[#1c2b36]" onClick={handlePostNow} disabled={!hasContent || loading}>
+                  <Send className="w-4 h-4" />
+                  <span>Post Now</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                  onClick={handleSchedulePost}
+                  disabled={!hasContent}
+                >
                   <Calendar className="w-4 h-4" />
-                  <span>{isScheduled ? "Schedule Post" : "Schedule Post"}</span>
+                  <span>Schedule</span>
                 </Button>
               </div>
             </CardContent>

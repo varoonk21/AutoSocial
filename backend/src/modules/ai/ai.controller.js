@@ -1,38 +1,30 @@
-import { BrandKit } from "../../models/index.js";
-import { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference } from "./ai.service.js";
+import * as aiService from "./ai.service.js";
 import { uploadToS3 } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
+import { sendSuccess } from "../../utils/response.util.js";
 
 async function generatePostsHandler(req, res) {
   const { content, url } = req.body;
-
-  if (!content && !url) {
-    return res.status(400).json({ error: "Provide either content text or a URL" });
-  }
-
-  const brandKit = await BrandKit.findOne({ userId: req.user._id });
-  const suggestions = url ? await generatePostsFromUrl(url, brandKit) : await generatePosts(content, brandKit);
-
-  res.json({ suggestions });
+  const suggestions = url
+    ? await aiService.generatePostsFromUrl(url, req.user._id)
+    : await aiService.generatePosts(content, req.user._id);
+  sendSuccess(res, { suggestions });
 }
 
 async function separatePostsHandler(req, res) {
-  const { content, len = 280 } = req.body;
-  if (!content) return res.status(400).json({ error: "content is required" });
-
-  const result = await separatePosts(content, Number(len));
-  res.json(result);
+  const { content, len } = req.body;
+  const result = await aiService.separatePosts(content, len);
+  sendSuccess(res, result);
 }
 
 async function generateImageHandler(req, res) {
-  const { prompt, vertical = false, referenceImageUrl } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+  const { prompt, vertical, referenceImageUrl } = req.body;
 
   let base64;
   if (referenceImageUrl) {
-    base64 = await generateImageWithReference(referenceImageUrl, prompt, !!vertical);
+    base64 = await aiService.generateImageWithReference(referenceImageUrl, prompt, vertical);
   } else {
-    base64 = await generateImage(prompt, !!vertical);
+    base64 = await aiService.generateImage(prompt, vertical);
   }
 
   const imageBuffer = Buffer.from(base64, "base64");
@@ -51,7 +43,25 @@ async function generateImageHandler(req, res) {
     source: "ai",
   });
 
-  res.json({ media: media.toObject() });
+  sendSuccess(res, { media: media.toObject() });
 }
 
-export { generatePostsHandler, separatePostsHandler, generateImageHandler };
+async function generateContentFromImageHandler(req, res) {
+  const { imageUrl } = req.body;
+  const suggestions = await aiService.generateContentFromImage(imageUrl, req.user._id);
+  sendSuccess(res, { suggestions });
+}
+
+async function enhanceContentHandler(req, res) {
+  const { content, enhanceType } = req.body;
+  const suggestions = await aiService.enhanceContent(content, enhanceType, req.user._id);
+  sendSuccess(res, { suggestions });
+}
+
+export {
+  generatePostsHandler,
+  separatePostsHandler,
+  generateImageHandler,
+  generateContentFromImageHandler,
+  enhanceContentHandler,
+};

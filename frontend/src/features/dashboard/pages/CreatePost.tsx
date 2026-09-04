@@ -10,12 +10,9 @@ import {
   Send,
   Bookmark,
   X,
-  Image as ImageIcon,
   Calendar,
   Check,
   Eraser,
-  Eye,
-  ChevronDown,
   ThumbsUp,
   MessageSquare,
   Share2,
@@ -24,8 +21,9 @@ import {
   MoreHorizontal,
   Globe,
 } from "lucide-react";
-import { apiGet, apiPost } from "../../../lib/fetcher";
-import { useImageStore } from "../../../store/imageStore";
+import { apiGet } from "../../../lib/fetcher";
+import { useEnhanceWithAI } from "../hooks/useEnhanceWithAI";
+import { useGenerateContentFromImage } from "../hooks/useGenerateContentFromImage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +43,10 @@ const PLATFORMS = [
 
 export function CreatePost() {
   const navigate = useNavigate();
-  const getImageUrl = useImageStore((s) => s.getImageUrl);
+
+  // AI hooks
+  const generateContentFromImage = useGenerateContentFromImage();
+  const enhanceWithAI = useEnhanceWithAI();
 
   // Media state
   const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
@@ -54,12 +55,6 @@ export function CreatePost() {
   // Content state
   const [captionText, setCaptionText] = useState("");
   const [hashtagsText, setHashtagsText] = useState("");
-  const [previewActive, setPreviewActive] = useState(false);
-
-  // AI state
-  const [aiLoading, setAiLoading] = useState(false);
-  const [captionAiLoading, setCaptionAiLoading] = useState(false);
-  const [hashtagsAiLoading, setHashtagsAiLoading] = useState(false);
 
   // Preview state
   const [activePlatform, setActivePlatform] = useState("instagram");
@@ -95,99 +90,85 @@ export function CreatePost() {
 
   const handleSelectImage = (image: { path: string; type: string }) => {
     setSelectedImage(image);
-    setPreviewActive(true);
   };
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
-    setPreviewActive(false);
   };
 
   const handleAiGenerateContent = async () => {
-    setAiLoading(true);
-    try {
-      const imageDesc = selectedImage ? "Based on the selected image" : "Create engaging social media content";
-      const data = await apiPost("/posts/ai/generate", {
-        content: imageDesc,
-        tone: "Professional",
-        language: "English (US)",
-      });
+    if (!selectedImage?.path) return;
 
-      if (data.suggestions && data.suggestions.length > 0) {
-        const first = data.suggestions[0];
-        const text = Array.isArray(first) ? first[0]?.post : first?.post;
-        if (text) {
-          const lines = text.split("\n").filter((l: string) => l.trim());
-          const hashtagLine = lines.find((l: string) => l.includes("#"));
-          const captionLines = lines.filter((l: string) => !l.includes("#"));
-          setCaptionText(captionLines.join("\n").trim() || text);
-          setHashtagsText(hashtagLine || "");
-        }
-      } else {
-        setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
-        setHashtagsText("#NewPost #SocialMedia #ContentCreation");
+    generateContentFromImage.mutate(
+      { imageUrl: selectedImage.path },
+      {
+        onSuccess: (data) => {
+          if (data.suggestions && data.suggestions.length > 0) {
+            const first = data.suggestions[0];
+            const text = Array.isArray(first) ? first[0]?.post : first?.post;
+            if (text) {
+              const lines = text.split("\n").filter((l: string) => l.trim());
+              const hashtagLine = lines.find((l: string) => l.includes("#"));
+              const captionLines = lines.filter((l: string) => !l.includes("#"));
+              setCaptionText(captionLines.join("\n").trim() || text);
+              setHashtagsText(hashtagLine || "");
+            }
+          } else {
+            setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
+            setHashtagsText("#NewPost #SocialMedia #ContentCreation");
+          }
+        },
+        onError: () => {
+          setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
+          setHashtagsText("#NewPost #SocialMedia #ContentCreation");
+        },
       }
-      setPreviewActive(true);
-    } catch {
-      setCaptionText("Discover something amazing today. Crafted with care, designed for you. ✨");
-      setHashtagsText("#NewPost #SocialMedia #ContentCreation");
-      setPreviewActive(true);
-    }
-    setAiLoading(false);
+    );
   };
 
   const handleImproveCaption = async () => {
     if (!captionText.trim()) return;
-    setCaptionAiLoading(true);
-    try {
-      const data = await apiPost("/posts/ai/generate", {
-        content: `Improve this caption: ${captionText}`,
-        tone: "Professional",
-        language: "English (US)",
-      });
-      if (data.suggestions && data.suggestions.length > 0) {
-        const first = data.suggestions[0];
-        const text = Array.isArray(first) ? first[0]?.post : first?.post;
-        if (text) {
-          const lines = text.split("\n").filter((l: string) => l.trim());
-          const nonHashtag = lines.filter((l: string) => !l.includes("#"));
-          setCaptionText(nonHashtag.join("\n").trim() || text);
-        }
+    enhanceWithAI.mutate(
+      { content: captionText, enhanceType: "caption" },
+      {
+        onSuccess: (data) => {
+          if (data.suggestions && data.suggestions.length > 0) {
+            const first = data.suggestions[0];
+            const text = Array.isArray(first) ? first[0]?.post : first?.post;
+            if (text) {
+              const lines = text.split("\n").filter((l: string) => l.trim());
+              const nonHashtag = lines.filter((l: string) => !l.includes("#"));
+              setCaptionText(nonHashtag.join("\n").trim() || text);
+            }
+          }
+        },
       }
-    } catch {}
-    setCaptionAiLoading(false);
+    );
   };
 
   const handleImproveHashtags = async () => {
     if (!hashtagsText.trim() && !captionText.trim()) return;
-    setHashtagsAiLoading(true);
-    try {
-      const data = await apiPost("/posts/ai/generate", {
-        content: `Generate hashtags for: ${captionText || hashtagsText}`,
-        tone: "Professional",
-        language: "English (US)",
-      });
-      if (data.suggestions && data.suggestions.length > 0) {
-        const first = data.suggestions[0];
-        const text = Array.isArray(first) ? first[0]?.post : first?.post;
-        if (text) {
-          const hashtagLine = text.split("\n").find((l: string) => l.includes("#"));
-          setHashtagsText(hashtagLine || text);
-        }
+    enhanceWithAI.mutate(
+      { content: captionText || hashtagsText, enhanceType: "hashtags" },
+      {
+        onSuccess: (data) => {
+          if (data.suggestions && data.suggestions.length > 0) {
+            const first = data.suggestions[0];
+            const text = Array.isArray(first) ? first[0]?.post : first?.post;
+            if (text) {
+              const hashtagLine = text.split("\n").find((l: string) => l.includes("#"));
+              setHashtagsText(hashtagLine || text);
+            }
+          }
+        },
       }
-    } catch {}
-    setHashtagsAiLoading(false);
+    );
   };
 
   const handleClear = () => {
     setCaptionText("");
     setHashtagsText("");
     setSelectedImage(null);
-    setPreviewActive(false);
-  };
-
-  const handlePreview = () => {
-    setPreviewActive(true);
   };
 
   const toggleIntegration = (id: string) => {
@@ -385,9 +366,9 @@ export function CreatePost() {
             <Button
               className="w-full bg-[#243746] hover:bg-[#1c2b36] text-white shadow-md shadow-gray-200 h-8 text-xs font-medium"
               onClick={handleAiGenerateContent}
-              disabled={aiLoading}
+              disabled={generateContentFromImage.isPending}
             >
-              {aiLoading ? (
+              {generateContentFromImage.isPending ? (
                 <div className="flex items-center gap-2">
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Generating...</span>
@@ -411,9 +392,9 @@ export function CreatePost() {
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
                   onClick={handleImproveCaption}
-                  disabled={captionAiLoading || !captionText.trim()}
+                  disabled={enhanceWithAI.isPending || !captionText.trim()}
                 >
-                  {captionAiLoading ? (
+                  {enhanceWithAI.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />
@@ -441,9 +422,9 @@ export function CreatePost() {
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
                   onClick={handleImproveHashtags}
-                  disabled={hashtagsAiLoading || (!captionText.trim() && !hashtagsText.trim())}
+                  disabled={enhanceWithAI.isPending || (!captionText.trim() && !hashtagsText.trim())}
                 >
-                  {hashtagsAiLoading ? (
+                  {enhanceWithAI.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />

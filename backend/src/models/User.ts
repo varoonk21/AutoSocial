@@ -1,6 +1,23 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const UserSchema = new mongoose.Schema(
+export interface INotifications {
+  postPublished: boolean;
+  postFailed: boolean;
+  tokenExpiring: boolean;
+}
+
+export interface IUser extends Document {
+  email: string;
+  name?: string;
+  picture?: string;
+  activated: boolean;
+  isSuperAdmin: boolean;
+  notifications: INotifications;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const UserSchema = new mongoose.Schema<IUser>(
   {
     email: { type: String, required: true, lowercase: true, trim: true },
     name: { type: String },
@@ -18,6 +35,6 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.index({ email: 1 }, { unique: true });
 
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model<IUser>("User", UserSchema);
 
 export default User;

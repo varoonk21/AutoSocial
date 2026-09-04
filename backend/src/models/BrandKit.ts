@@ -1,6 +1,20 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-const BrandKitSchema = new mongoose.Schema(
+export interface IBrandKit extends Document {
+  userId: mongoose.Types.ObjectId;
+  primaryLogo?: mongoose.Types.ObjectId | null;
+  watermarkLogo?: mongoose.Types.ObjectId | null;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fonts?: string[];
+  tones?: string[];
+  styleNotes?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const BrandKitSchema = new mongoose.Schema<IBrandKit>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     primaryLogo: { type: mongoose.Schema.Types.ObjectId, ref: "Media", default: null },
@@ -15,6 +29,6 @@ const BrandKitSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const BrandKit = mongoose.model("BrandKit", BrandKitSchema);
+const BrandKit = mongoose.model<IBrandKit>("BrandKit", BrandKitSchema);
 
 export default BrandKit;

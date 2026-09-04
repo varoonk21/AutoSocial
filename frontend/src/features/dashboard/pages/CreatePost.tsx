@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Upload,
@@ -72,6 +72,12 @@ export function CreatePost() {
   // Status
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  // Auto-save refs
+  const lastSavedContentRef = useRef("");
+  const hasChangesRef = useRef(false);
 
   useEffect(() => {
     apiGet("/integrations/list")
@@ -114,6 +120,78 @@ export function CreatePost() {
       setSelectedImage(null);
     }
   }, [draftId]);
+
+  // Track content changes for auto-save
+  const currentContent = `${captionText}\n\n${hashtagsText}`.trim();
+  const currentMediaPath = selectedImage?.path || "";
+  const currentSignature = `${currentContent}|||${currentMediaPath}`;
+
+  useEffect(() => {
+    if (currentSignature !== lastSavedContentRef.current && currentContent) {
+      hasChangesRef.current = true;
+    }
+  }, [currentSignature, currentContent]);
+
+  // Auto-save function
+  const autoSave = useCallback(async () => {
+    if (!hasChangesRef.current || !currentContent) return;
+
+    setIsSaving(true);
+    try {
+      const { apiPut, apiPost } = await import("../../../lib/fetcher");
+      const postData = {
+        content: currentContent,
+        media: selectedImage ? [{ path: selectedImage.path }] : [],
+      };
+
+      if (editingDraftId) {
+        await apiPut(`/posts/${editingDraftId}`, postData);
+      } else {
+        // Create new draft
+        const result = await apiPost("/posts", {
+          type: "draft",
+          posts: [{ content: currentContent, settings: {}, media: selectedImage ? [{ path: selectedImage.path }] : [] }],
+        });
+        if (result?.posts?.[0]?._id) {
+          setEditingDraftId(result.posts[0]._id);
+          // Update URL without reloading
+          window.history.replaceState(null, "", `/dashboard/create-post/${result.posts[0]._id}`);
+        }
+      }
+
+      lastSavedContentRef.current = currentSignature;
+      hasChangesRef.current = false;
+      setLastSaved(new Date());
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [currentContent, currentSignature, selectedImage, editingDraftId]);
+
+  // Auto-save every 5 seconds if there are changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasChangesRef.current) {
+        autoSave();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [autoSave]);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChangesRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   const handleSelectImage = (image: { path: string; type: string }) => {
     setSelectedImage(image);
@@ -218,6 +296,8 @@ export function CreatePost() {
       setHashtagsText("");
       setSelectedImage(null);
       setEditingDraftId(null);
+      lastSavedContentRef.current = "";
+      hasChangesRef.current = false;
       const msg = publishType === "draft" ? (editingDraftId ? "Draft updated!" : "Saved as draft!") : publishType === "now" ? "Post queued for publishing!" : "Post scheduled!";
       setSuccess(msg);
       setTimeout(() => setSuccess(""), 3000);
@@ -335,9 +415,25 @@ export function CreatePost() {
       )}
 
       {/* Page Title */}
-      <div className="pb-2 border-b border-gray-200/80">
-        <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Create Post</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Design and publish content across your social platforms.</p>
+      <div className="pb-2 border-b border-gray-200/80 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">
+            {editingDraftId ? "Edit Draft" : "Create Post"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">Design and publish content across your social platforms.</p>
+        </div>
+        {isSaving && (
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="w-3 h-3 border-2 border-gray-300 border-t-[#243746] rounded-full animate-spin" />
+            <span>Saving...</span>
+          </div>
+        )}
+        {!isSaving && lastSaved && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <Check className="w-3 h-3 text-emerald-500" />
+            <span>Saved {lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
+        )}
       </div>
 
       {/* Two Column Layout */}
@@ -805,7 +901,7 @@ export function CreatePost() {
               {/* Action Buttons Below Preview Card */}
               <div className="flex items-center gap-3 pt-3 border-t border-gray-200/80">
                 <Button variant="outline" className="flex-1" onClick={() => handleSubmitPost("draft")} disabled={!hasContent}>
-                  Save Draft
+                  {isSaving ? "Saving..." : editingDraftId ? "Update Draft" : "Save Draft"}
                 </Button>
                 <Button className="flex-1 bg-[#243746] hover:bg-[#1c2b36]" onClick={handlePostNow} disabled={!hasContent || loading}>
                   <Send className="w-4 h-4" />

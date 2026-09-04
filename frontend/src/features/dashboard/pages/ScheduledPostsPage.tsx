@@ -289,6 +289,11 @@ export function ScheduledPostsPage() {
     .sort((a: Post, b: Post) => new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime())
     .slice(0, 4);
 
+  const recentPublished = posts
+    .filter((p: Post) => p.state === "PUBLISHED")
+    .sort((a: Post, b: Post) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+    .slice(0, 4);
+
   const getPlatformFromPost = (post: Post) => {
     const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i._id === post.integrationId);
     return (integration?.providerIdentifier || "x") as keyof typeof PLATFORM_COLORS;
@@ -657,6 +662,60 @@ export function ScheduledPostsPage() {
                       <Button variant="ghost" size="icon-xs" onClick={() => handleDelete(post._id)}>
                         <MoreVertical className="w-3.5 h-3.5 text-gray-400" />
                       </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+
+          {/* Recent Published */}
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-[#1c2b36] text-sm">Recent Published</h3>
+              <span className="text-xs font-semibold text-gray-400">
+                {publishedCount} total
+              </span>
+            </div>
+            {recentPublished.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-4">No published posts yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentPublished.map((post: Post) => {
+                  const platform = getPlatformFromPost(post);
+                  const pubDate = new Date(post.publishDate);
+                  const mediaItems = JSON.parse(post.image || "[]");
+                  const firstMedia = mediaItems[0];
+                  const mediaUrl = typeof firstMedia === 'string' ? firstMedia : firstMedia?.path;
+
+                  return (
+                    <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center border border-gray-200">
+                        {mediaUrl ? (
+                          <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <PlatformIcon platform={platform} size={16} />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-[#1c2b36] truncate">{post.content || "Published Post"}</p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
+                          <PlatformIcon platform={platform} size={10} />
+                          <span>
+                            {pubDate.toLocaleDateString([], { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      </div>
+                      {post.releaseURL && (
+                        <a
+                          href={post.releaseURL}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                        >
+                          View ↗
+                        </a>
+                      )}
                     </div>
                   );
                 })}

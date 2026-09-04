@@ -106,26 +106,6 @@ export function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
             <div className="flex items-center gap-5">
               <div className="relative">
-                <Avatar className="w-16 h-16">
-                  <AvatarImage
-                    src={
-                      session?.user?.image
-                        ? getImageUrl(session.user.image)
-                        : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
-                    }
-                    alt="Profile Picture"
-                  />
-                  <AvatarFallback>
-                    {name?.slice(0, 2).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                {uploading && (
-                  <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-full">
-                    <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1">
                 <input
                   type="file"
                   ref={inputRef}
@@ -136,10 +116,36 @@ export function SettingsPage() {
                     if (file) upload(file);
                   }}
                 />
-                <Button variant="outline" size="sm" onClick={openPicker} disabled={uploading}>
-                  <Camera className="w-4 h-4 mr-2" />
-                  Change Picture
-                </Button>
+                <button
+                  type="button"
+                  onClick={openPicker}
+                  disabled={uploading}
+                  className="relative group cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                >
+                  <Avatar size="lg" className="w-20 h-20">
+                    <AvatarImage
+                      src={
+                        session?.user?.image
+                          ? getImageUrl(session.user.image)
+                          : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
+                      }
+                      alt="Profile Picture"
+                    />
+                    <AvatarFallback className="text-lg">
+                      {name?.slice(0, 2).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="w-5 h-5 text-white" />
+                  </div>
+                  {uploading && (
+                    <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-full">
+                      <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </button>
+              </div>
+              <div className="space-y-1">
                 <p className="text-xs text-gray-500">JPG, GIF or PNG. Max size of 10MB.</p>
               </div>
             </div>

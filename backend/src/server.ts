@@ -1,5 +1,5 @@
 import app from "./app.js";
-import { connectDB } from "./config/db.js";
+import { connectDB } from "./lib/mongoose.js";
 import env from "./config/env.config.js";
 import { logger } from "./utils/logger.util.js";
 import { startScheduler } from "./services/scheduler.service.js";

@@ -15,7 +15,7 @@ const s3Client = new S3Client({
 const BUCKET = env.AWS_S3_BUCKET;
 const PRESIGNED_URL_EXPIRY = 300;
 
-export async function getPresignedUploadUrl(key, contentType) {
+export async function getPresignedUploadUrl(key: string, contentType: string): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: BUCKET,
     Key: key,
@@ -25,7 +25,7 @@ export async function getPresignedUploadUrl(key, contentType) {
   return getSignedUrl(s3Client, command, { expiresIn: PRESIGNED_URL_EXPIRY });
 }
 
-export async function getS3Url(key) {
+export async function getS3Url(key: string): Promise<string> {
   if (env.S3_PUBLIC_URL) {
     return `${env.S3_PUBLIC_URL}/${key}`;
   }
@@ -33,12 +33,12 @@ export async function getS3Url(key) {
   return getSignedUrl(s3Client, command, { expiresIn: PRESIGNED_URL_EXPIRY });
 }
 
-export async function deleteS3Object(key) {
+export async function deleteS3Object(key: string): Promise<void> {
   const command = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
   await s3Client.send(command);
 }
 
-export async function uploadToS3(key, body, contentType) {
+export async function uploadToS3(key: string, body: Buffer | Uint8Array | string, contentType: string): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: BUCKET,
     Key: key,

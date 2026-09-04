@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 const POST_SUBMENU = [
   { to: "/dashboard/drafts", icon: "draft", label: "Draft" },
   { to: "/dashboard/create-post", icon: "create", label: "Create" },
-  { to: "/dashboard/scheduled-posts", icon: "scheduled", label: "Scheduled Post" },
+  { to: "/dashboard/scheduled-posts", icon: "scheduled", label: "Scheduled Posts" },
 ];
 
 const ICONS = {

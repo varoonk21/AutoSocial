@@ -18,6 +18,7 @@ export default function DashboardRoutes() {
         <Route index element={<DashboardOverview />} />
         <Route path="create-post" element={<CreatePost />} />
         <Route path="scheduled-posts" element={<ScheduledPostsPage />} />
+        <Route path="calendar" element={<ScheduledPostsPage />} />
         <Route path="drafts" element={<DraftsPage />} />
         <Route path="media-library" element={<MediaLibraryPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />

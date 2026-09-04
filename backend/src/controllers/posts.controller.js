@@ -111,6 +111,7 @@ async function updatePost(req, res) {
     if (date) updates.publishDate = new Date(date);
     if (settings !== undefined) updates.settings = JSON.stringify(settings);
     if (media !== undefined) updates.image = JSON.stringify(media);
+    if (req.body.state !== undefined) updates.state = req.body.state;
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
     res.json({ post: updated });

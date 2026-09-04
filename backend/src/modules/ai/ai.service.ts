@@ -5,13 +5,7 @@ import openai from "../../lib/openai.js";
 import { findByUserId } from "../brandkit/brandkit.repository.js";
 import { getGenerateSinglePostFromImagePrompt, getEnhanceCaptionPrompt, getEnhanceHashtagsPrompt, getEnhanceGeneralPrompt } from "./prompts/index.js";
 
-interface BrandKit {
-  tones?: string[];
-  fonts?: string[];
-  styleNotes?: string;
-  primaryColor?: string;
-  accentColor?: string;
-}
+import { type IBrandKit } from "../../models/index.js";
 
 const suggestionSchema = z.object({
   post: z.string(),
@@ -25,7 +19,7 @@ const imageContentSchema = z.object({
 type Suggestion = z.infer<typeof suggestionSchema>;
 type ImageContent = z.infer<typeof imageContentSchema>;
 
-function buildBrandContext(brandKit: BrandKit | null): string {
+function buildBrandContext(brandKit: IBrandKit | null): string {
   if (!brandKit) return "";
   const parts: string[] = [];
   if (brandKit.tones?.length) parts.push(`Tone/Voice: ${brandKit.tones.join(", ")}`);
@@ -61,7 +55,7 @@ export async function generateImageWithReference(imageUrl: string, prompt: strin
 
 export async function generateContentFromImage(imageUrl: string, userId: string): Promise<ImageContent | null> {
   const brandKit = await findByUserId(userId);
-  const brandContext = buildBrandContext(brandKit as BrandKit | null);
+  const brandContext = buildBrandContext(brandKit as IBrandKit | null);
 
   const result = await openai.chat.completions.parse({
     model: aiEnv.models.imageToText,
@@ -88,7 +82,7 @@ export async function generateContentFromImage(imageUrl: string, userId: string)
 
 export async function enhanceContent(content: string, enhanceType: string, userId: string): Promise<Suggestion | null> {
   const brandKit = await findByUserId(userId);
-  const brandContext = buildBrandContext(brandKit as BrandKit | null);
+  const brandContext = buildBrandContext(brandKit as IBrandKit | null);
 
   let systemPrompt: string;
   if (enhanceType === "caption") {

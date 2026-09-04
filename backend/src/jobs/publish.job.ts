@@ -26,31 +26,48 @@ export function definePublishJob(agenda: Agenda): void {
         return;
       }
 
-      await publishGroup(posts);
+      // Group posts by integration (each integration gets its own publish call)
+      const postsByIntegration = new Map<string, any[]>();
+      for (const post of posts) {
+        const integrationId = post.integrationId?._id?.toString() || post.integrationId?.toString();
+        if (!integrationId) continue;
+        if (!postsByIntegration.has(integrationId)) {
+          postsByIntegration.set(integrationId, []);
+        }
+        postsByIntegration.get(integrationId)!.push(post);
+      }
+
+      // Publish each integration's posts independently
+      await Promise.allSettled(
+        Array.from(postsByIntegration.entries()).map(([integrationId, integrationPosts]) =>
+          publishToIntegration(integrationPosts)
+        )
+      );
     },
-    { concurrency: 3, lockLifetime: 120000 }
+    { concurrency: 5, lockLifetime: 120000 }
   );
 }
 
-async function publishGroup(posts: any[]): Promise<void> {
+async function publishToIntegration(posts: any[]): Promise<void> {
+  const firstPost = posts[0];
+  const integration = firstPost.integrationId;
+
+  if (!integration) {
+    await markPostsError(posts, "Integration not found");
+    return;
+  }
+
+  if (integration.disabled) {
+    await markPostsError(posts, "This social channel is disabled");
+    return;
+  }
+
+  // Sort: parent first, then children
   const sorted = posts.sort((a: any, b: any) => {
     if (!a.parentPostId) return -1;
     if (!b.parentPostId) return 1;
     return 0;
   });
-
-  const firstPost = sorted[0];
-  const integration = firstPost.integrationId;
-
-  if (!integration) {
-    await markPostsError(sorted, "Integration not found");
-    return;
-  }
-
-  if (integration.disabled) {
-    await markPostsError(sorted, "This social channel is disabled");
-    return;
-  }
 
   const postDetails = sorted.map((p: any) => ({
     id: p._id.toString(),
@@ -83,12 +100,12 @@ async function publishGroup(posts: any[]): Promise<void> {
           }
         } catch (refreshErr) {
           await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-          await markPostsError(sorted, "Access token expired - please reconnect your social account");
+          await markPostsError(posts, "Access token expired - please reconnect your social account");
           return;
         }
       } else {
         await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-        await markPostsError(sorted, "Access token expired - please reconnect your social account");
+        await markPostsError(posts, "Access token expired - please reconnect your social account");
         return;
       }
     }
@@ -109,18 +126,18 @@ async function publishGroup(posts: any[]): Promise<void> {
       });
     }
 
-    logger.info(`Published ${results.length} post(s) for group ${firstPost.group} via ${integration.providerIdentifier}`);
+    logger.info(`Published ${results.length} post(s) to ${integration.providerIdentifier}`);
   } catch (err: any) {
     const isRefreshError = err instanceof RefreshTokenError || err.name === "RefreshTokenError";
 
     if (isRefreshError) {
       await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-      await markPostsError(sorted, "Access token expired - please reconnect your social account");
+      await markPostsError(posts, "Access token expired - please reconnect your social account");
       logger.error({ err }, `Token refresh needed for integration ${integration._id}`);
     } else {
       const errorMsg = err.message || "Unknown error while publishing";
-      await markPostsError(sorted, errorMsg);
-      logger.error({ err }, `Failed to publish group ${firstPost.group}`);
+      await markPostsError(posts, errorMsg);
+      logger.error({ err }, `Failed to publish to ${integration.providerIdentifier}`);
     }
   }
 }
@@ -136,4 +153,4 @@ async function markPostsError(posts: any[], errorMessage: string): Promise<void>
   );
 }
 
-export { publishGroup, JOB_NAME };
+export { publishToIntegration as publishGroup, JOB_NAME };

@@ -125,10 +125,10 @@ async function updatePost(req, res) {
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
 
-    // If rescheduling (changing date on a QUEUE post), update the Agenda job
-    if (date && post.state === 'QUEUE') {
+    // If scheduling (changing state to QUEUE with a date), create an Agenda job
+    if (updated.state === 'QUEUE' && updated.publishDate) {
       await removeScheduledJobs(post.group);
-      await schedulePost(post.group, new Date(date));
+      await schedulePost(post.group, new Date(updated.publishDate));
     }
 
     res.json({ post: updated });

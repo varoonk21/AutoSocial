@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Upload,
   Sparkles,
@@ -43,6 +43,8 @@ const PLATFORMS = [
 
 export function CreatePost() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const draftData = (location.state as any)?.draft;
 
   // AI hooks
   const generateContentFromImage = useGenerateContentFromImage();
@@ -50,12 +52,32 @@ export function CreatePost() {
   const enhanceHashtags = useEnhanceWithAI();
 
   // Media state
-  const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(
+    draftData?.image ? (() => {
+      try {
+        const media = JSON.parse(draftData.image || '[]');
+        return media[0] ? { path: typeof media[0] === 'string' ? media[0] : media[0].path, type: 'image' } : null;
+      } catch { return null; }
+    })() : null
+  );
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
-  // Content state
-  const [captionText, setCaptionText] = useState("");
-  const [hashtagsText, setHashtagsText] = useState("");
+  // Content state - pre-fill from draft if editing
+  const [captionText, setCaptionText] = useState(() => {
+    if (draftData?.content) {
+      // Split content: everything before the last double newline is caption, rest is hashtags
+      const parts = (draftData.content || '').split(/\n\n#/);
+      return parts[0]?.replace(/\n#$/, '') || draftData.content || '';
+    }
+    return "";
+  });
+  const [hashtagsText, setHashtagsText] = useState(() => {
+    if (draftData?.content) {
+      const parts = (draftData.content || '').split(/\n\n#/);
+      return parts[1] ? '#' + parts[1] : '';
+    }
+    return "";
+  });
 
   // Preview state
   const [activePlatform, setActivePlatform] = useState("instagram");
@@ -79,14 +101,6 @@ export function CreatePost() {
         setIntegrations(list);
       })
       .catch(() => {});
-
-    const handleHeaderAction = (e: any) => {
-      if (e.detail?.action === "save-draft") {
-        handleSubmitPost("draft");
-      }
-    };
-    window.addEventListener("header-action", handleHeaderAction);
-    return () => window.removeEventListener("header-action", handleHeaderAction);
   }, []);
 
   const handleSelectImage = (image: { path: string; type: string }) => {
@@ -179,10 +193,15 @@ export function CreatePost() {
         }));
         await apiPost("/posts", { type: publishType, posts });
       }
-      setSuccess(publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post published!" : "Post scheduled!");
+      // Reset form
+      setCaptionText("");
+      setHashtagsText("");
+      setSelectedImage(null);
+      const msg = publishType === "draft" ? "Saved as draft!" : publishType === "now" ? "Post queued for publishing!" : "Post scheduled!";
+      setSuccess(msg);
       setTimeout(() => setSuccess(""), 3000);
-    } catch {
-      setSuccess("Post created!");
+    } catch (err: any) {
+      setSuccess(err?.message || "Failed to create post. Please try again.");
       setTimeout(() => setSuccess(""), 3000);
     }
     setLoading(false);
@@ -238,7 +257,6 @@ export function CreatePost() {
                 integrations.map((acc) => (
                   <div
                     key={acc._id}
-                    onClick={() => toggleIntegration(acc._id)}
                     className="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-3">

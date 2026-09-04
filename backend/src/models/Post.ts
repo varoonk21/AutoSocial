@@ -5,7 +5,7 @@ export interface IPost extends Document {
   integrationId: mongoose.Types.ObjectId;
   content: string;
   publishDate: Date;
-  state: "QUEUE" | "SCHEDULED" | "PUBLISHED" | "ERROR" | "DRAFT";
+  state: "QUEUE" | "PUBLISHED" | "ERROR" | "DRAFT";
   group: string;
   settings: string;
   image: string;
@@ -25,7 +25,7 @@ const PostSchema = new mongoose.Schema<IPost>(
     publishDate: { type: Date, required: true },
     state: {
       type: String,
-      enum: ["QUEUE", "SCHEDULED", "PUBLISHED", "ERROR", "DRAFT"],
+      enum: ["QUEUE", "PUBLISHED", "ERROR", "DRAFT"],
       default: "QUEUE",
     },
     group: { type: String, required: true },

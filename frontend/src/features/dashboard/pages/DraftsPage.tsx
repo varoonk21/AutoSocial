@@ -5,12 +5,15 @@ import { STATUS_CONFIG } from '@/constants/platforms'
 import { PlatformIcon } from '../components/PlatformIcon'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 export function DraftsPage() {
   const navigate = useNavigate()
   const [posts, setPosts] = useState([])
   const [integrations, setIntegrations] = useState([])
   const [deleting, setDeleting] = useState(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   useEffect(() => {
     loadIntegrations()
@@ -31,14 +34,23 @@ export function DraftsPage() {
     } catch {}
   }
 
-  const handleDelete = async (postId) => {
-    if (!confirm('Delete this draft?')) return
-    setDeleting(postId)
+  const handleDeleteClick = (postId) => {
+    setDeleteTarget(postId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return
+    setDeleting(deleteTarget)
     try {
-      await apiDelete(`/posts/${postId}`)
-      loadPosts()
+      await apiDelete(`/posts/${deleteTarget}`)
+      setPosts(posts.filter(p => p._id !== deleteTarget))
+    } catch (err) {
+      console.error('Failed to delete draft:', err)
     } finally {
       setDeleting(null)
+      setDeleteDialogOpen(false)
+      setDeleteTarget(null)
     }
   }
 
@@ -69,18 +81,24 @@ export function DraftsPage() {
         <Card>
           <CardContent className="p-0 divide-y divide-gray-100">
             {posts.map((post) => {
-              const integration = integrations.find((i) => i._id === post.integrationId)
+              // Handle both populated object and string for integrationId
+              const integration = typeof post.integrationId === 'object' && post.integrationId !== null
+                ? post.integrationId
+                : integrations.find((i) => i._id === post.integrationId)
               const publishDate = new Date(post.publishDate)
               const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT
               const mediaItems = JSON.parse(post.image || '[]')
+              // Handle both string paths and object {path} formats
+              const firstMedia = mediaItems[0]
+              const mediaUrl = typeof firstMedia === 'string' ? firstMedia : firstMedia?.path
               const platform = integration?.providerIdentifier || null
 
               return (
                 <div key={post._id} className="p-5 hover:bg-gray-50/50 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                      {mediaItems.length > 0 ? (
-                        <img src={mediaItems[0].path} alt="" className="w-full h-full object-cover" />
+                      {mediaUrl ? (
+                        <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
                           <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
@@ -120,7 +138,7 @@ export function DraftsPage() {
                         variant="destructive"
                         size="sm"
                         disabled={deleting === post._id}
-                        onClick={() => handleDelete(post._id)}
+                        onClick={() => handleDeleteClick(post._id)}
                       >
                         Delete
                       </Button>
@@ -132,6 +150,22 @@ export function DraftsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Draft</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500">Are you sure you want to delete this draft? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" size="sm" onClick={handleDeleteConfirm} disabled={!!deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

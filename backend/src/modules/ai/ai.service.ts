@@ -1,6 +1,7 @@
+import type { ChatCompletion } from "openai/resources/chat/completions";
 import env from "../../config/env.config.js";
 import openai from "../../lib/openai.js";
-import * as aiRepository from "./ai.repository.js";
+import { findByUserId } from "../brandkit/brandkit.repository.js";
 import {
   getGenerateSinglePostPrompt,
   getGenerateThreadPrompt,
@@ -13,9 +14,21 @@ import {
   getEnhanceGeneralPrompt,
 } from "./prompts/index.js";
 
-function buildBrandContext(brandKit) {
+interface BrandKit {
+  tones?: string[];
+  fonts?: string[];
+  styleNotes?: string;
+  primaryColor?: string;
+  accentColor?: string;
+}
+
+interface Suggestion {
+  post: string;
+}
+
+function buildBrandContext(brandKit: BrandKit | null): string {
   if (!brandKit) return "";
-  const parts = [];
+  const parts: string[] = [];
   if (brandKit.tones?.length) parts.push(`Tone/Voice: ${brandKit.tones.join(", ")}`);
   if (brandKit.fonts?.length) parts.push(`Preferred fonts: ${brandKit.fonts.join(", ")}`);
   if (brandKit.styleNotes) parts.push(`Style notes: ${brandKit.styleNotes}`);
@@ -24,14 +37,14 @@ function buildBrandContext(brandKit) {
   return parts.length ? `\nBrand guidelines: ${parts.join(". ")}.` : "";
 }
 
-function parseSuggestions(choices) {
+function parseSuggestions(choices: ChatCompletion.Choice[]): Suggestion[][] {
   return choices
     .map((choice) => {
       const text = choice.message.content || "";
       const start = text.indexOf("[");
       const end = text.lastIndexOf("]");
       try {
-        return JSON.parse(text.slice(start, end + 1));
+        return JSON.parse(text.slice(start, end + 1)) as Suggestion[];
       } catch {
         return [];
       }
@@ -39,9 +52,9 @@ function parseSuggestions(choices) {
     .sort(() => Math.random() - 0.5);
 }
 
-async function generatePosts(content, userId) {
-  const brandKit = await aiRepository.findBrandKitByUserId(userId);
-  const brandContext = buildBrandContext(brandKit);
+async function generatePosts(content: string, userId: string): Promise<Suggestion[][]> {
+  const brandKit = await findByUserId(userId);
+  const brandContext = buildBrandContext(brandKit as BrandKit | null);
 
   const [singlePosts, threads] = await Promise.all([
     openai.chat.completions.create({
@@ -67,7 +80,7 @@ async function generatePosts(content, userId) {
   return parseSuggestions([...singlePosts.choices, ...threads.choices]);
 }
 
-async function generatePostsFromUrl(url, userId) {
+async function generatePostsFromUrl(url: string, userId: string): Promise<Suggestion[][]> {
   const response = await fetch(url);
   const html = await response.text();
   const plainText = html
@@ -88,7 +101,7 @@ async function generatePostsFromUrl(url, userId) {
   return generatePosts(articleContent, userId);
 }
 
-async function separatePosts(content, len) {
+async function separatePosts(content: string, len: number): Promise<{ posts: string[] }> {
   const { zodResponseFormat } = await import("openai/helpers/zod");
   const { z } = await import("zod");
 
@@ -106,7 +119,7 @@ async function separatePosts(content, len) {
   return { posts: result.choices[0].message.parsed?.posts || [] };
 }
 
-async function generateImage(prompt, isVertical = false) {
+async function generateImage(prompt: string, isVertical: boolean = false): Promise<string> {
   const result = await openai.images.generate({
     prompt,
     model: env.IMAGE_MODEL_NAME,
@@ -117,10 +130,10 @@ async function generateImage(prompt, isVertical = false) {
   return result.data[0].b64_json;
 }
 
-async function generateImageWithReference(imageUrl, prompt, isVertical = false) {
+async function generateImageWithReference(imageUrl: string, prompt: string, isVertical: boolean = false): Promise<string> {
   const result = await openai.images.edit({
     model: env.IMAGE_MODEL_NAME,
-    image: imageUrl,
+    image: imageUrl as unknown as File,
     prompt,
     size: isVertical ? "1024x1792" : "1024x1024",
     response_format: "b64_json",
@@ -129,9 +142,9 @@ async function generateImageWithReference(imageUrl, prompt, isVertical = false) 
   return result.data[0].b64_json;
 }
 
-async function generateContentFromImage(imageUrl, userId) {
-  const brandKit = await aiRepository.findBrandKitByUserId(userId);
-  const brandContext = buildBrandContext(brandKit);
+async function generateContentFromImage(imageUrl: string, userId: string): Promise<Suggestion[][]> {
+  const brandKit = await findByUserId(userId);
+  const brandContext = buildBrandContext(brandKit as BrandKit | null);
 
   const [singlePosts, threads] = await Promise.all([
     openai.chat.completions.create({
@@ -175,11 +188,11 @@ async function generateContentFromImage(imageUrl, userId) {
   return parseSuggestions([...singlePosts.choices, ...threads.choices]);
 }
 
-async function enhanceContent(content, enhanceType, userId) {
-  const brandKit = await aiRepository.findBrandKitByUserId(userId);
-  const brandContext = buildBrandContext(brandKit);
+async function enhanceContent(content: string, enhanceType: string, userId: string): Promise<Suggestion[][]> {
+  const brandKit = await findByUserId(userId);
+  const brandContext = buildBrandContext(brandKit as BrandKit | null);
 
-  let systemPrompt;
+  let systemPrompt: string;
   if (enhanceType === "caption") {
     systemPrompt = getEnhanceCaptionPrompt(brandContext);
   } else if (enhanceType === "hashtags") {
@@ -201,4 +214,12 @@ async function enhanceContent(content, enhanceType, userId) {
   return parseSuggestions(result.choices);
 }
 
-export { generatePosts, generatePostsFromUrl, separatePosts, generateImage, generateImageWithReference, generateContentFromImage, enhanceContent };
+export {
+  generatePosts,
+  generatePostsFromUrl,
+  separatePosts,
+  generateImage,
+  generateImageWithReference,
+  generateContentFromImage,
+  enhanceContent,
+};

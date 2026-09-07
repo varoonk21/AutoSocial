@@ -530,9 +530,12 @@ export function ScheduledPostsPage() {
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
           <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(value) => value && setViewMode(value as "month" | "week")}
+            value={[viewMode]}
+            onValueChange={(values) => {
+              if (values && values.length > 0) {
+                setViewMode(values[values.length - 1] as "month" | "week");
+              }
+            }}
             variant="outline"
             size="sm"
           >

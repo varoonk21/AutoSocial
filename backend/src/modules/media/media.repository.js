@@ -20,9 +20,14 @@ async function deleteMediaById(mediaId) {
   return await Media.findByIdAndDelete(mediaId);
 }
 
+async function updateMediaById(mediaId, userId, updates) {
+  return await Media.findOneAndUpdate({ _id: mediaId, userId }, updates, { new: true });
+}
+
 export {
   findMedia,
   createMedia,
   findMediaByIdAndUser,
   deleteMediaById,
+  updateMediaById,
 };

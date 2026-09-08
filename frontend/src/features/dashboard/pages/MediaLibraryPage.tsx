@@ -18,6 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ImagePlus,
+  Pencil,
+  Save,
 } from "lucide-react";
 import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
 import { uploadToS3Only } from "../../../api/index";
@@ -67,6 +69,8 @@ export function MediaLibraryPage() {
   const [aiReferencePreview, setAiReferencePreview] = useState(null);
   const [aiReferenceUploading, setAiReferenceUploading] = useState(false);
   const aiReferenceInputRef = useRef(null);
+  const [renamingId, setRenamingId] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
 
   // Load from backend & listen to Header custom actions
   useEffect(() => {
@@ -99,10 +103,10 @@ export function MediaLibraryPage() {
       if (sortBy === "newest") params.append("sort", "createdAt:desc");
       else if (sortBy === "oldest") params.append("sort", "createdAt:asc");
       else if (sortBy === "name") params.append("sort", "originalName:asc");
-      
+
       const queryString = params.toString();
       const { items, meta } = await apiGetPaginated(`/media${queryString ? `?${queryString}` : ""}`);
-      
+
       if (items) {
         const backendItems = items.map((item) => ({
           _id: item._id,
@@ -162,11 +166,11 @@ export function MediaLibraryPage() {
         body.referenceImageUrl = getImageUrl(aiReferenceImage.key);
       }
       const res = await apiPost("/ai/generate-image", body);
-      
+
       if (res.media) {
         setMediaList((prev) => [{ ...res.media, path: getImageUrl(res.media.key) }, ...prev]);
       }
-      
+
       setAiModalOpen(false);
       setAiPrompt("");
       setAiReferenceImage(null);
@@ -242,6 +246,26 @@ export function MediaLibraryPage() {
     setTimeout(() => setToastMsg(""), 3000);
   };
 
+  const handleRename = async (id) => {
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === selectedAsset?.name) {
+      setRenamingId(null);
+      return;
+    }
+    try {
+      await apiPut(`/media/${id}`, { originalName: trimmed });
+      setMediaList((prev) => prev.map((item) => (item._id === id ? { ...item, name: trimmed } : item)));
+      if (selectedAsset?._id === id) {
+        setSelectedAsset((prev) => ({ ...prev, name: trimmed }));
+      }
+      showToast("File renamed successfully!");
+    } catch {
+      showToast("Failed to rename file");
+    } finally {
+      setRenamingId(null);
+    }
+  };
+
   // Filtered List (filtering done on backend)
   const filteredMedia = mediaList;
 
@@ -280,18 +304,11 @@ export function MediaLibraryPage() {
           <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAiModalOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setAiModalOpen(true)}>
             <Sparkles className="w-4 h-4" />
             <span>AI Generator</span>
           </Button>
-          <Button
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
+          <Button size="sm" onClick={() => fileInputRef.current?.click()}>
             <Upload className="w-4 h-4" />
             <span>Upload Media</span>
           </Button>
@@ -323,13 +340,7 @@ export function MediaLibraryPage() {
 
           {/* Middle Source Filters (User Uploads / AI Generated) */}
           <div className="flex items-center gap-2">
-            <ToggleGroup
-              type="single"
-              value={sourceFilter}
-              onValueChange={(value) => value && setSourceFilter(value)}
-              variant="outline"
-              size="sm"
-            >
+            <ToggleGroup type="single" value={sourceFilter} onValueChange={(value) => value && setSourceFilter(value)} variant="outline" size="sm">
               <ToggleGroupItem value="user">
                 <Sparkles className="w-4 h-4 text-[#243746]" />
                 <span>User Uploads</span>
@@ -519,20 +530,26 @@ export function MediaLibraryPage() {
             <Pagination className="justify-start">
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
-                    href="#" 
-                    onClick={(e) => { e.preventDefault(); setCurrentPage(Math.max(1, currentPage - 1)); }} 
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(Math.max(1, currentPage - 1));
+                    }}
                   />
                 </PaginationItem>
-                
+
                 {Array.from({ length: Math.min(5, paginationMeta.pageCount) }).map((_, i) => {
                   const pageNum = i + 1;
                   return (
                     <PaginationItem key={pageNum}>
-                      <PaginationLink 
-                        href="#" 
+                      <PaginationLink
+                        href="#"
                         isActive={currentPage === pageNum}
-                        onClick={(e) => { e.preventDefault(); setCurrentPage(pageNum); }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(pageNum);
+                        }}
                       >
                         {pageNum}
                       </PaginationLink>
@@ -546,10 +563,13 @@ export function MediaLibraryPage() {
                       <PaginationEllipsis />
                     </PaginationItem>
                     <PaginationItem>
-                      <PaginationLink 
-                        href="#" 
+                      <PaginationLink
+                        href="#"
                         isActive={currentPage === paginationMeta.pageCount}
-                        onClick={(e) => { e.preventDefault(); setCurrentPage(paginationMeta.pageCount); }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(paginationMeta.pageCount);
+                        }}
                       >
                         {paginationMeta.pageCount}
                       </PaginationLink>
@@ -558,18 +578,22 @@ export function MediaLibraryPage() {
                 )}
 
                 <PaginationItem>
-                  <PaginationNext 
-                    href="#" 
-                    onClick={(e) => { e.preventDefault(); setCurrentPage(Math.min(paginationMeta.pageCount, currentPage + 1)); }} 
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(Math.min(paginationMeta.pageCount, currentPage + 1));
+                    }}
                   />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
           )}
         </div>
-        
+
         <span className="text-xs text-gray-400 font-medium text-center sm:text-right shrink-0">
-          Showing {mediaList.length > 0 ? (currentPage - 1) * paginationMeta.pageSize + 1 : 0} to {Math.min(currentPage * paginationMeta.pageSize, paginationMeta.total)} of {paginationMeta.total}
+          Showing {mediaList.length > 0 ? (currentPage - 1) * paginationMeta.pageSize + 1 : 0} to{" "}
+          {Math.min(currentPage * paginationMeta.pageSize, paginationMeta.total)} of {paginationMeta.total}
         </span>
       </div>
 
@@ -577,10 +601,95 @@ export function MediaLibraryPage() {
       {selectedAsset && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#1c2b36] truncate">{selectedAsset.name}</h3>
-              <Button variant="ghost" size="icon-sm" onClick={() => setSelectedAsset(null)}>
-                <X className="w-5 h-5" />
+            <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between gap-3">
+              {renamingId === selectedAsset._id ? (
+                <div className="flex items-center gap-2 flex-1 min-w-0 mr-1">
+                  <div className="p-1.5 rounded-xl bg-[#243746]/10 text-[#243746] shrink-0">
+                    {selectedAsset.type === "video" ? (
+                      <Video className="w-4 h-4" />
+                    ) : selectedAsset.type === "document" ? (
+                      <FileText className="w-4 h-4" />
+                    ) : (
+                      <ImageIcon className="w-4 h-4" />
+                    )}
+                  </div>
+                  <Input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRename(selectedAsset._id);
+                      if (e.key === "Escape") setRenamingId(null);
+                    }}
+                    autoFocus
+                    placeholder="Enter file name..."
+                    className="h-8 text-sm font-semibold text-[#1c2b36] bg-white border border-gray-300 focus-visible:border-[#243746] focus-visible:ring-2 focus-visible:ring-[#243746]/20 rounded-xl px-3 flex-1 min-w-0"
+                  />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      size="xs"
+                      onClick={() => handleRename(selectedAsset._id)}
+                      className="bg-[#243746] hover:bg-[#1c2b36] text-white gap-1 rounded-xl px-2.5 font-medium shadow-2xs h-8 text-xs"
+                    >
+                      <span>Save</span>
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => setRenamingId(null)}
+                      className="text-gray-500 hover:text-gray-800 rounded-xl px-2.5 h-8 text-xs font-medium"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="p-1.5 rounded-xl bg-gray-100 text-gray-500 shrink-0">
+                    {selectedAsset.type === "video" ? (
+                      <Video className="w-4 h-4" />
+                    ) : selectedAsset.type === "document" ? (
+                      <FileText className="w-4 h-4" />
+                    ) : (
+                      <ImageIcon className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div
+                    className="flex items-center gap-2 min-w-0 group cursor-pointer"
+                    onClick={() => {
+                      setRenamingId(selectedAsset._id);
+                      setRenameValue(selectedAsset.name);
+                    }}
+                  >
+                    <h3 className="text-sm font-bold text-[#1c2b36] truncate group-hover:text-[#243746] transition-colors" title="Click to rename">
+                      {selectedAsset.name}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenamingId(selectedAsset._id);
+                        setRenameValue(selectedAsset.name);
+                      }}
+                      className="text-gray-400 group-hover:text-gray-600 hover:bg-gray-100 rounded-lg shrink-0"
+                      title="Rename file"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => {
+                  setRenamingId(null);
+                  setSelectedAsset(null);
+                }}
+                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl shrink-0"
+                title="Close modal"
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
 
@@ -644,13 +753,16 @@ export function MediaLibraryPage() {
       )}
 
       {/* AI GENERATOR MODAL */}
-      <Dialog open={aiModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setAiReferenceImage(null);
-          setAiReferencePreview(null);
-        }
-        setAiModalOpen(open);
-      }}>
+      <Dialog
+        open={aiModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAiReferenceImage(null);
+            setAiReferencePreview(null);
+          }
+          setAiModalOpen(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -676,33 +788,18 @@ export function MediaLibraryPage() {
           <div className="space-y-2">
             <label className="block text-xs font-bold text-gray-700">Reference Image (Optional)</label>
             <p className="text-[11px] text-gray-400">Upload a reference image to guide the AI generation.</p>
-            
-            <input
-              ref={aiReferenceInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleReferenceImageSelect}
-            />
+
+            <input ref={aiReferenceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReferenceImageSelect} />
 
             {aiReferencePreview ? (
               <div className="relative inline-block">
-                <img
-                  src={aiReferencePreview}
-                  alt="Reference"
-                  className="w-24 h-24 object-cover rounded-xl border border-gray-200"
-                />
+                <img src={aiReferencePreview} alt="Reference" className="w-24 h-24 object-cover rounded-xl border border-gray-200" />
                 {aiReferenceUploading && (
                   <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
-                <Button
-                  variant="destructive"
-                  size="icon-xs"
-                  className="absolute -top-2 -right-2"
-                  onClick={handleRemoveReferenceImage}
-                >
+                <Button variant="destructive" size="icon-xs" className="absolute -top-2 -right-2" onClick={handleRemoveReferenceImage}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -714,9 +811,7 @@ export function MediaLibraryPage() {
                 className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
               >
                 <ImagePlus className="w-8 h-8 text-gray-400" />
-                <span className="text-xs text-gray-500">
-                  {aiReferenceUploading ? "Uploading..." : "Click to upload reference image"}
-                </span>
+                <span className="text-xs text-gray-500">{aiReferenceUploading ? "Uploading..." : "Click to upload reference image"}</span>
               </button>
             )}
           </div>
@@ -739,9 +834,7 @@ export function MediaLibraryPage() {
           <DialogHeader>
             <DialogTitle>Delete Media</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-600">
-            Are you sure you want to delete this media? This action cannot be undone.
-          </p>
+          <p className="text-sm text-gray-600">Are you sure you want to delete this media? This action cannot be undone.</p>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
               Cancel

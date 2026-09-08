@@ -83,4 +83,14 @@ async function deleteMediaPermanently(userId, mediaId) {
   return media;
 }
 
-export { getMedia, getUploadUrl, saveMediaMetadata, deleteMediaPermanently };
+async function renameMedia(userId, mediaId, originalName) {
+  const media = await mediaRepository.findMediaByIdAndUser(mediaId, userId);
+  if (!media) {
+    throw new Error("Media not found");
+  }
+
+  const updated = await mediaRepository.updateMediaById(mediaId, userId, { originalName });
+  return updated;
+}
+
+export { getMedia, getUploadUrl, saveMediaMetadata, deleteMediaPermanently, renameMedia };

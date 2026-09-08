@@ -3,6 +3,7 @@ import {
   deleteMediaPermanently,
   getUploadUrl,
   saveMediaMetadata,
+  renameMedia,
 } from './media.service.js';
 import { sendSuccess, sendPaginated } from '../../utils/response.util.js';
 import { parseQueryPagination } from '../../utils/pagination.util.js';
@@ -32,9 +33,19 @@ async function deleteMediaHandler(req, res) {
   sendSuccess(res, { success: true });
 }
 
+async function renameMediaHandler(req, res) {
+  const { originalName } = req.body;
+  if (!originalName || !originalName.trim()) {
+    return res.status(400).json({ error: 'originalName is required' });
+  }
+  const updated = await renameMedia(req.user._id, req.params.id, originalName.trim());
+  sendSuccess(res, { media: updated });
+}
+
 export {
   listMedia,
   deleteMediaHandler,
   getUploadUrlHandler,
   saveMetadataHandler,
+  renameMediaHandler,
 };

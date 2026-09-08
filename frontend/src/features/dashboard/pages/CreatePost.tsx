@@ -351,37 +351,77 @@ export function CreatePost() {
           <div className="space-y-4">
             <p className="text-sm text-gray-500">Select the social media account(s) to post to:</p>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {integrations.length === 0 ? (
-                <p className="text-xs text-gray-400 py-4 text-center">No connected accounts found.</p>
-              ) : (
-                integrations.map((acc) => {
-                  const isSelected = selectedIntegrations.includes(acc._id);
-                  return (
-                    <div
-                      key={acc._id}
-                      onClick={() => toggleIntegration(acc._id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                        isSelected ? 'border-[#243746] bg-[#243746]/5' : 'border-gray-200 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <img src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name} alt="" className="w-8 h-8 rounded-full" />
-                        <div>
-                          <span className="text-sm font-semibold text-gray-800">{acc.name}</span>
-                          <span className="block text-[11px] text-gray-400 capitalize">{acc.providerIdentifier}</span>
-                        </div>
-                      </div>
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
-                        isSelected ? 'border-[#243746] bg-[#243746]' : 'border-gray-300'
-                      }`}>
-                        {isSelected && (
-                          <Check className="w-3 h-3 text-white" />
+            <div className="max-h-56 overflow-y-auto space-y-3">
+              {PLATFORMS.map((platform) => {
+                const platformAccounts = integrations.filter(
+                  (acc) => acc.providerIdentifier.toLowerCase() === platform.id
+                );
+                const hasAccounts = platformAccounts.length > 0;
+
+                return (
+                  <div key={platform.id} className={`rounded-xl border overflow-hidden ${!hasAccounts ? 'border-gray-100 bg-gray-50/50' : 'border-gray-200'}`}>
+                    {/* Platform header */}
+                    <div className={`flex items-center justify-between px-3 py-2 ${!hasAccounts ? 'opacity-50' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white"
+                          style={{ backgroundColor: platform.color }}
+                        >
+                          {platform.icon}
+                        </span>
+                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">{platform.name}</span>
+                        {hasAccounts && (
+                          <span className="text-[10px] text-gray-400 font-medium">{platformAccounts.length} account{platformAccounts.length !== 1 ? 's' : ''}</span>
                         )}
                       </div>
+                      {!hasAccounts && (
+                        <span className="text-[10px] text-gray-400 italic">No connected accounts</span>
+                      )}
                     </div>
-                  );
-                })
+
+                    {/* Account rows */}
+                    {hasAccounts ? (
+                      <div className="px-2 pb-2 space-y-1">
+                        {platformAccounts.map((acc) => {
+                          const isSelected = selectedIntegrations.includes(acc._id);
+                          return (
+                            <div
+                              key={acc._id}
+                              onClick={() => toggleIntegration(acc._id)}
+                              className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                                isSelected ? 'border-[#243746] bg-[#243746]/5' : 'border-gray-100 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <img
+                                  src={acc.picture || "https://ui-avatars.com/api/?name=" + acc.name}
+                                  alt=""
+                                  className="w-7 h-7 rounded-full"
+                                />
+                                <span className="text-sm font-medium text-gray-800">{acc.name}</span>
+                              </div>
+                              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                                isSelected ? 'border-[#243746] bg-[#243746]' : 'border-gray-300'
+                              }`}>
+                                {isSelected && (
+                                  <Check className="w-3 h-3 text-white" />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="px-3 pb-2.5">
+                        <p className="text-[11px] text-gray-400">Connect a {platform.name} account in Settings to post here.</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {integrations.length === 0 && (
+                <p className="text-xs text-gray-400 py-4 text-center">No connected accounts found. Connect accounts in Settings first.</p>
               )}
             </div>
 

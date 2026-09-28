@@ -1,6 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { LayoutGrid, PlusSquare, Calendar, Image, BarChart3, Palette, Share2, Settings, HelpCircle, ChevronDown, FileText, Clock } from "lucide-react";
+import {
+  LayoutGrid,
+  Layers,
+  PlusSquare,
+  FolderKanban,
+  Calendar,
+  Image,
+  BarChart3,
+  Palette,
+  Share2,
+  Settings,
+  HelpCircle,
+  ChevronDown,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,44 +33,73 @@ import {
 
 const NAV_ITEMS = [
   { to: "/dashboard", icon: "home", label: "Dashboard" },
+  { to: "/dashboard/brand-kit", icon: "brand-kit", label: "Brand Kit" },
   { to: "/dashboard/media-library", icon: "media", label: "Media Library" },
   { to: "/dashboard/analytics", icon: "analytics", label: "Analytics" },
-  { to: "/dashboard/brand-kit", icon: "brand-kit", label: "Brand Kit" },
   { to: "/dashboard/connected-accounts", icon: "accounts", label: "Connected Accounts" },
   { to: "/dashboard/settings", icon: "settings", label: "Settings" },
 ];
 
-const POST_SUBMENU = [
-  { to: "/dashboard/drafts", icon: "draft", label: "Draft" },
-  { to: "/dashboard/create-post", icon: "create", label: "Create" },
-  { to: "/dashboard/scheduled-posts", icon: "scheduled", label: "Scheduled Posts" },
+const CONTENT_SUBMENU = [
+  {
+    to: "/dashboard/content/create",
+    icon: "create",
+    label: "Create",
+    matchPaths: ["/dashboard/content/create", "/dashboard/create-post"],
+  },
+  {
+    to: "/dashboard/content/manage",
+    icon: "manage",
+    label: "Manage",
+    matchPaths: ["/dashboard/content/manage", "/dashboard/drafts"],
+  },
+  {
+    to: "/dashboard/content/schedule",
+    icon: "schedule",
+    label: "Schedule",
+    matchPaths: ["/dashboard/content/schedule", "/dashboard/scheduled-posts", "/dashboard/calendar"],
+  },
 ];
 
-const ICONS = {
+const ICONS: Record<string, React.ReactNode> = {
   home: <LayoutGrid className="w-5 h-5" />,
-  create: <PlusSquare className="w-5 h-5" />,
-  calendar: <Calendar className="w-5 h-5" />,
+  content: <Layers className="w-5 h-5" />,
+  create: <PlusSquare className="w-4 h-4" />,
+  manage: <FolderKanban className="w-4 h-4" />,
+  schedule: <Calendar className="w-4 h-4" />,
+  "brand-kit": <Palette className="w-5 h-5" />,
   media: <Image className="w-5 h-5" />,
   analytics: <BarChart3 className="w-5 h-5" />,
-  "brand-kit": <Palette className="w-5 h-5" />,
   accounts: <Share2 className="w-5 h-5" />,
   settings: <Settings className="w-5 h-5" />,
-  draft: <FileText className="w-4 h-4" />,
-  scheduled: <Clock className="w-4 h-4" />,
+};
+
+const isContentChildRoute = (path: string) => {
+  return (
+    path.startsWith("/dashboard/content") ||
+    path.startsWith("/dashboard/create-post") ||
+    path.startsWith("/dashboard/scheduled-posts") ||
+    path.startsWith("/dashboard/calendar") ||
+    path.startsWith("/dashboard/drafts")
+  );
 };
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isPostMenuOpen, setIsPostMenuOpen] = useState(() => {
-    return location.pathname.startsWith("/dashboard/create-post") ||
-           location.pathname.startsWith("/dashboard/scheduled-posts") ||
-           location.pathname.startsWith("/dashboard/drafts");
-  });
 
-  const isPostMenuActive = location.pathname.startsWith("/dashboard/create-post") ||
-                           location.pathname.startsWith("/dashboard/scheduled-posts") ||
-                           location.pathname.startsWith("/dashboard/drafts");
+  const isContentActive = isContentChildRoute(location.pathname);
+  const [isContentOpen, setIsContentOpen] = useState(() => isContentChildRoute(location.pathname));
+
+  useEffect(() => {
+    if (isContentChildRoute(location.pathname)) {
+      setIsContentOpen(true);
+    }
+  }, [location.pathname]);
+
+  const isSubItemActive = (matchPaths: string[]) => {
+    return matchPaths.some((p) => location.pathname.startsWith(p));
+  };
 
   return (
     <Sidebar>
@@ -78,7 +120,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Dashboard - First Item */}
+              {/* Dashboard - Item 1 */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<NavLink to="/dashboard" end />}
@@ -89,43 +131,47 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* Post Menu Item with Submenu */}
+              {/* Content Menu Item with Accordion Submenu - Item 2 */}
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  isActive={isPostMenuActive}
-                  onClick={() => setIsPostMenuOpen(!isPostMenuOpen)}
+                  isActive={isContentActive}
+                  onClick={() => setIsContentOpen(!isContentOpen)}
                 >
-                  <PlusSquare className="w-5 h-5" />
-                  <span>Post</span>
+                  {ICONS.content}
+                  <span>Content</span>
                   <ChevronDown
                     className={`w-4 h-4 ml-auto transition-transform duration-200 ${
-                      isPostMenuOpen ? "rotate-180" : ""
+                      isContentOpen ? "rotate-180" : ""
                     }`}
                   />
                 </SidebarMenuButton>
-                {isPostMenuOpen && (
+
+                {isContentOpen && (
                   <SidebarMenuSub>
-                    {POST_SUBMENU.map((item) => (
-                      <SidebarMenuSubItem key={item.to}>
-                        <SidebarMenuSubButton
-                          render={<NavLink to={item.to} />}
-                          isActive={location.pathname === item.to}
-                        >
-                          {ICONS[item.icon]}
-                          <span>{item.label}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {CONTENT_SUBMENU.map((item) => {
+                      const active = isSubItemActive(item.matchPaths);
+                      return (
+                        <SidebarMenuSubItem key={item.to}>
+                          <SidebarMenuSubButton
+                            render={<NavLink to={item.to} />}
+                            isActive={active}
+                          >
+                            {ICONS[item.icon]}
+                            <span>{item.label}</span>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
                   </SidebarMenuSub>
                 )}
               </SidebarMenuItem>
 
-              {/* Other Nav Items */}
-              {NAV_ITEMS.filter(item => item.to !== "/dashboard").map((item) => (
+              {/* Remaining Top-level Nav Items */}
+              {NAV_ITEMS.filter((item) => item.to !== "/dashboard").map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     render={<NavLink to={item.to} end={item.to === "/"} />}
-                    isActive={window.location.pathname === item.to}
+                    isActive={location.pathname === item.to}
                   >
                     {ICONS[item.icon]}
                     <span>{item.label}</span>

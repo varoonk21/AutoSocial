@@ -22,7 +22,7 @@ import {
   Globe,
 } from "lucide-react";
 import { apiGet, apiPost } from "../../../lib/fetcher";
-import { useEnhanceWithAI } from "../hooks/useEnhanceWithAI";
+import { useEnhanceField } from "../hooks/useEnhanceField";
 import { useGenerateContentFromImage } from "../hooks/useGenerateContentFromImage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,8 +46,6 @@ export function CreatePost() {
 
   // AI hooks
   const generateContentFromImage = useGenerateContentFromImage();
-  const enhanceCaption = useEnhanceWithAI();
-  const enhanceHashtags = useEnhanceWithAI();
 
   // Media state
   const [selectedImage, setSelectedImage] = useState<{ path: string; type: string } | null>(null);
@@ -57,6 +55,31 @@ export function CreatePost() {
   const [captionText, setCaptionText] = useState("");
   const [hashtagsText, setHashtagsText] = useState("");
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+
+  // Each field gets its own self-contained hook so both buttons are completely independent
+  // and each one reads/writes only its own field's content.
+  const captionAI = useEnhanceField({
+    enhanceType: "caption",
+    getValue: () => captionText,
+    setValue: setCaptionText,
+    transform: (raw) => {
+      // Strip trailing hashtag lines from the caption response
+      const lines = raw.split("\n").filter((l) => l.trim());
+      const nonHashtag = lines.filter((l) => !l.startsWith("#"));
+      return nonHashtag.join("\n").trim() || raw;
+    },
+  });
+
+  const hashtagsAI = useEnhanceField({
+    enhanceType: "hashtags",
+    getValue: () => hashtagsText || captionText, // fall back to caption for context if hashtags are empty
+    setValue: setHashtagsText,
+    transform: (raw) => {
+      // Extract the first hashtag line from the response
+      const hashtagLine = raw.split("\n").find((l) => l.includes("#"));
+      return hashtagLine || raw;
+    },
+  });
 
   // Preview state
   const [activePlatform, setActivePlatform] = useState("instagram");
@@ -217,36 +240,7 @@ export function CreatePost() {
     );
   };
 
-  const handleImproveCaption = async () => {
-    if (!captionText.trim()) return;
-    enhanceCaption.mutate(
-      { content: captionText, enhanceType: "caption" },
-      {
-        onSuccess: (data) => {
-          if (data.post) {
-            const lines = data.post.split("\n").filter((l: string) => l.trim());
-            const nonHashtag = lines.filter((l: string) => !l.includes("#"));
-            setCaptionText(nonHashtag.join("\n").trim() || data.post);
-          }
-        },
-      }
-    );
-  };
-
-  const handleImproveHashtags = async () => {
-    if (!hashtagsText.trim() && !captionText.trim()) return;
-    enhanceHashtags.mutate(
-      { content: captionText || hashtagsText, enhanceType: "hashtags" },
-      {
-        onSuccess: (data) => {
-          if (data.post) {
-            const hashtagLine = data.post.split("\n").find((l: string) => l.includes("#"));
-            setHashtagsText(hashtagLine || data.post);
-          }
-        },
-      }
-    );
-  };
+  // Handlers are now managed inside useEnhanceField hooks above.
 
   const handleClear = () => {
     setCaptionText("");
@@ -566,10 +560,10 @@ export function CreatePost() {
                   variant="ghost"
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
-                  onClick={handleImproveCaption}
-                  disabled={enhanceCaption.isPending || !captionText.trim()}
+                  onClick={captionAI.improve}
+                  disabled={captionAI.isPending || !captionText.trim()}
                 >
-                  {enhanceCaption.isPending ? (
+                  {captionAI.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />
@@ -596,10 +590,10 @@ export function CreatePost() {
                   variant="ghost"
                   size="sm"
                   className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 h-6 px-2 text-[11px]"
-                  onClick={handleImproveHashtags}
-                  disabled={enhanceHashtags.isPending || (!captionText.trim() && !hashtagsText.trim())}
+                  onClick={hashtagsAI.improve}
+                  disabled={hashtagsAI.isPending || (!captionText.trim() && !hashtagsText.trim())}
                 >
-                  {enhanceHashtags.isPending ? (
+                  {hashtagsAI.isPending ? (
                     <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Sparkles className="w-3 h-3" />

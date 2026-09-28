@@ -33,15 +33,15 @@ export function Header() {
       return null;
     }
 
-    if (path === "/dashboard/create-post") {
+    if (path === "/dashboard/create-post" || path.startsWith("/dashboard/content/create")) {
       return null;
     }
 
-    if (path === "/dashboard/scheduled-posts") {
+    if (path === "/dashboard/scheduled-posts" || path === "/dashboard/content/schedule") {
       return null;
     }
 
-    if (path === "/dashboard/drafts") {
+    if (path === "/dashboard/drafts" || path === "/dashboard/content/manage") {
       return null;
     }
 

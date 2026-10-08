@@ -62,16 +62,16 @@ const CONTENT_SUBMENU = [
 ];
 
 const ICONS: Record<string, React.ReactNode> = {
-  home: <LayoutGrid className="w-5 h-5" />,
-  content: <Layers className="w-5 h-5" />,
+  home: <LayoutGrid className="w-4 h-4" />,
+  content: <Layers className="w-4 h-4" />,
   create: <PlusSquare className="w-4 h-4" />,
   manage: <FolderKanban className="w-4 h-4" />,
   schedule: <Calendar className="w-4 h-4" />,
-  "brand-kit": <Palette className="w-5 h-5" />,
-  media: <Image className="w-5 h-5" />,
-  analytics: <BarChart3 className="w-5 h-5" />,
-  accounts: <Share2 className="w-5 h-5" />,
-  settings: <Settings className="w-5 h-5" />,
+  "brand-kit": <Palette className="w-4 h-4" />,
+  media: <Image className="w-4 h-4" />,
+  analytics: <BarChart3 className="w-4 h-4" />,
+  accounts: <Share2 className="w-4 h-4" />,
+  settings: <Settings className="w-4 h-4" />,
 };
 
 const isContentChildRoute = (path: string) => {
@@ -105,11 +105,11 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div
-          className="flex items-center gap-3 px-3 py-2 cursor-pointer"
+          className="flex items-center gap-2.5 px-3 py-2 cursor-pointer"
           onClick={() => navigate("/dashboard")}
         >
-          <img src="/Icon.png" alt="AutoSocial Icon" className="w-8 h-8 object-contain rounded-md" />
-          <span className="font-bold text-[#1c2b36] text-[20px] tracking-tight">AutoSocial</span>
+          <img src="/Icon.png" alt="AutoSocial Icon" className="w-7 h-7 object-contain rounded-md" />
+          <span className="font-bold text-slate-900 text-lg tracking-tight">AutoSocial</span>
         </div>
       </SidebarHeader>
 
@@ -117,7 +117,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {/* Dashboard - Item 1 */}
@@ -140,7 +140,7 @@ export function AppSidebar() {
                   {ICONS.content}
                   <span>Content</span>
                   <ChevronDown
-                    className={`w-4 h-4 ml-auto transition-transform duration-200 ${
+                    className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${
                       isContentOpen ? "rotate-180" : ""
                     }`}
                   />
@@ -192,7 +192,7 @@ export function AppSidebar() {
               render={<a href="/dashboard/settings" />}
               onClick={() => navigate("/dashboard/settings")}
             >
-              <HelpCircle className="w-5 h-5" />
+              <HelpCircle className="w-4 h-4" />
               <span>Help</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

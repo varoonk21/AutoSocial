@@ -129,8 +129,8 @@ export function DashboardOverview() {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-500">Posts by Platform</span>
-            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A7CFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
               </svg>
             </div>

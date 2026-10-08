@@ -583,12 +583,12 @@ export function ScheduledPostsPage() {
               <span className="text-xs font-semibold text-[#243746] cursor-pointer hover:underline">View Analytics</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-purple-50/60 border border-purple-100 p-3.5 rounded-xl flex items-center justify-between">
+              <div className="bg-blue-50/60 border border-blue-100 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-extrabold text-purple-900">{scheduledCount}</div>
-                  <div className="text-[11px] font-medium text-purple-600 mt-0.5">Scheduled</div>
+                  <div className="text-xl font-extrabold text-blue-900">{scheduledCount}</div>
+                  <div className="text-[11px] font-medium text-blue-600 mt-0.5">Scheduled</div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                   <CalendarIcon className="w-4 h-4" />
                 </div>
               </div>

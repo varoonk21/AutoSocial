@@ -64,7 +64,7 @@ function MediaBlock({ media, platform }: { media: PostMedia[]; platform: Platfor
         <div
           className={`flex flex-col items-center justify-center gap-1.5 bg-gray-50 text-gray-400 ${
             isX
-              ? "min-h-[140px] rounded-2xl border border-dashed border-gray-200"
+              ? "min-h-[140px] rounded-lg border border-dashed border-gray-200"
               : "min-h-[160px] border-y border-gray-100"
           }`}
         >
@@ -148,8 +148,8 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
       <div>
         <div className="flex items-center justify-between px-3.5 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 p-[2px]">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-[1px]">
+            <div className="w-8 h-8 rounded-full border border-gray-200 p-[1px] bg-white">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#243746] flex items-center justify-center text-white text-[10px] font-bold">
                   {account?.picture ? (
                     <img src={account.picture} alt="" className="w-full h-full object-cover" />
@@ -337,7 +337,7 @@ export function PreviewCard({
   ctaLabel,
 }: PreviewCardProps) {
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
       <PreviewBody
         platform={platform}
         account={account}

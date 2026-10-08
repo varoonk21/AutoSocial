@@ -187,10 +187,10 @@ export function AiQuickActions({
   };
 
   return (
-    <div className="space-y-2 p-3 bg-gradient-to-r from-purple-50/70 via-blue-50/50 to-indigo-50/40 rounded-xl border border-purple-100/90 shadow-2xs">
+    <div className="space-y-2 p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-[#1c2b36]">
-          <Wand2 className="w-3.5 h-3.5 text-purple-600" />
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900">
+          <Wand2 className="w-3.5 h-3.5 text-[#0A7CFF]" />
           <span>Write with AI</span>
         </div>
 
@@ -198,7 +198,7 @@ export function AiQuickActions({
           <button
             type="button"
             onClick={onUndo}
-            className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Undo AI rewrite</span>
@@ -221,16 +221,16 @@ export function AiQuickActions({
               size="xs"
               disabled={loadingActionId !== null}
               onClick={() => executeAiAction(action.id, action.label)}
-              className={`h-7 px-2.5 text-[11px] font-semibold rounded-lg cursor-pointer transition-all shadow-2xs ${
+              className={`h-7 px-2.5 text-[11px] font-medium rounded-md cursor-pointer transition-all shadow-2xs ${
                 isPrimary
-                  ? "bg-purple-600 hover:bg-purple-700 text-white border-none"
-                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
+                  ? "bg-[#0A7CFF] hover:bg-[#0066DB] text-white border-none"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
               }`}
             >
               {isLoading ? (
                 <div
                   className={`w-3 h-3 border-2 border-t-transparent rounded-full animate-spin mr-1 ${
-                    isPrimary ? "border-white" : "border-purple-600"
+                    isPrimary ? "border-white" : "border-slate-600"
                   }`}
                 />
               ) : IconComponent ? (
@@ -249,20 +249,20 @@ export function AiQuickActions({
             size="xs"
             disabled={loadingActionId !== null}
             onClick={() => setMoreOpen(!moreOpen)}
-            className="h-7 px-2.5 bg-white hover:bg-gray-50 text-gray-700 text-[11px] font-medium border-gray-200 rounded-lg flex items-center gap-1 cursor-pointer shadow-2xs"
+            className="h-7 px-2.5 bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-medium border-slate-200 rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
           >
             <span>More</span>
-            <ChevronDown className="w-3 h-3 text-gray-400" />
+            <ChevronDown className="w-3 h-3 text-slate-400" />
           </Button>
 
           {moreOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl border border-gray-200 shadow-xl py-1 z-50 animate-in fade-in duration-150">
+            <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
               {MORE_ACTIONS.map((action) => (
                 <button
                   key={action.id}
                   type="button"
                   onClick={() => executeAiAction(action.id, action.label)}
-                  className="w-full px-3 py-1.5 text-left text-[11px] font-medium text-gray-700 hover:bg-purple-50/60 hover:text-purple-700 transition-colors cursor-pointer"
+                  className="w-full px-3 py-1.5 text-left text-[11px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
                 >
                   {action.label}
                 </button>

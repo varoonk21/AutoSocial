@@ -73,37 +73,37 @@ export function CreatePost() {
     accounts[0];
 
   return (
-    <div className="-m-8 p-6 lg:p-8 min-h-screen bg-gradient-to-br from-pink-50/60 via-purple-50/35 to-emerald-50/35 text-gray-900 selection:bg-[#0A7CFF]/20 relative pb-28">
+    <div className="-m-8 p-5 lg:p-6 min-h-screen bg-slate-50/50 text-slate-900 font-sans relative pb-24">
       {/* Toast Notification Container */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#1c2b36] text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="fixed top-16 right-6 z-50 bg-slate-900 text-white text-xs font-medium px-3.5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
           {toastMessage.type === "success" && (
-            <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
+            <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
           )}
           {toastMessage.type === "error" && (
-            <AlertCircle className="w-4 h-4 text-red-400 stroke-[3]" />
+            <AlertCircle className="w-4 h-4 text-red-400 stroke-[2.5]" />
           )}
-          {toastMessage.type === "info" && <Info className="w-4 h-4 text-blue-400 stroke-[3]" />}
+          {toastMessage.type === "info" && <Info className="w-4 h-4 text-blue-400 stroke-[2.5]" />}
           <span>{toastMessage.text}</span>
         </div>
       )}
 
       {/* Main Container */}
-      <div className="max-w-[1360px] mx-auto space-y-5">
+      <div className="max-w-[1360px] mx-auto space-y-4">
         {/* Page Title Header (Above Left Column) */}
-        <div className="pb-1 border-b border-gray-200/60 flex items-center justify-between">
+        <div className="pb-1 border-b border-gray-200/80 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-[#1c2b36] tracking-tight">Create post</h1>
-            <p className="text-xs text-gray-500 font-medium mt-0.5">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Create post</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
               Draft, customize, and publish content across Meta and social networks.
             </p>
           </div>
         </div>
 
         {/* Two Column Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* LEFT COLUMN (~45%): Stack of white rounded cards in independent scroll container */}
-          <div className="lg:col-span-6 space-y-4 max-h-[calc(100vh-170px)] overflow-y-auto pr-1 sm:pr-2 scrollbar-none">
+          <div className="lg:col-span-6 space-y-3.5 max-h-[calc(100vh-150px)] overflow-y-auto pr-1 sm:pr-2 scrollbar-none">
             {/* Card 1: Post to */}
             <AccountSelectCard
               accounts={accounts}
@@ -157,7 +157,7 @@ export function CreatePost() {
           </div>
 
           {/* RIGHT COLUMN (~55%): Fixed/Sticky Live Preview & Action Bar */}
-          <div className="hidden lg:block lg:col-span-6 space-y-4 sticky top-20">
+          <div className="hidden lg:block lg:col-span-6 space-y-3 sticky top-16">
             <PostPreview
               activePlatformId={activePreviewPlatform}
               onSelectPlatform={setActivePreviewPlatform}

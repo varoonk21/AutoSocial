@@ -89,12 +89,12 @@ export function ActionBar({
 
   // Inline Variant (Placed directly under the preview card)
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-xs transition-shadow hover:shadow-sm space-y-3">
+    <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-xs space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Left: Save Status */}
         <div className="flex items-center gap-3">
           {/* Auto-save Draft Status Indicator */}
-          <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
             {isSaving ? (
               <div className="flex items-center gap-1 text-[#0A7CFF]">
                 <div className="w-2.5 h-2.5 border-2 border-[#0A7CFF] border-t-transparent rounded-full animate-spin" />
@@ -117,7 +117,7 @@ export function ActionBar({
             variant="outline"
             size="sm"
             onClick={onCancel}
-            className="h-9 px-3.5 text-xs font-semibold text-gray-700 border-gray-300 hover:bg-gray-100 cursor-pointer rounded-xl"
+            className="h-8 px-3 text-xs font-semibold text-slate-700 border-gray-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
           >
             Cancel
           </Button>
@@ -128,7 +128,7 @@ export function ActionBar({
             variant="outline"
             size="sm"
             onClick={onSaveDraft}
-            className="h-9 px-3.5 text-xs font-semibold text-gray-800 border-gray-300 hover:bg-gray-100 cursor-pointer rounded-xl"
+            className="h-8 px-3 text-xs font-semibold text-slate-800 border-gray-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
           >
             Finish later
           </Button>
@@ -139,10 +139,10 @@ export function ActionBar({
             size="sm"
             onClick={onPublish}
             disabled={!isValid || isSaving}
-            className={`h-9 px-5 text-xs font-bold text-white shadow-md transition-all rounded-xl cursor-pointer ${
+            className={`h-8 px-4 text-xs font-semibold text-white transition-all rounded-lg cursor-pointer ${
               !isValid
-                ? "bg-gray-300 text-gray-500 shadow-none cursor-not-allowed"
-                : "bg-[#0A7CFF] hover:bg-[#0066DB] active:scale-[0.98] shadow-blue-500/20"
+                ? "bg-slate-200 text-slate-400 shadow-none cursor-not-allowed"
+                : "bg-[#0A7CFF] hover:bg-[#0066DB] shadow-xs"
             }`}
           >
             {isScheduleOn ? (

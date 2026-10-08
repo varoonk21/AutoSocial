@@ -97,31 +97,31 @@ export function PostDetailsCard({
 
   return (
     <div ref={cardRef}>
-      <Card className="rounded-[16px] border border-gray-100 bg-white shadow-xs transition-shadow hover:shadow-sm overflow-visible">
-        <CardContent className="p-5 sm:p-6 space-y-4 overflow-visible">
+      <Card className="rounded-xl border border-gray-200 bg-white shadow-xs overflow-visible">
+        <CardContent className="p-4 space-y-3 overflow-visible">
           {/* Section Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-[17px] font-bold text-[#1c2b36] tracking-tight">Post details</h2>
+            <h2 className="text-sm font-semibold text-slate-900 tracking-tight">Post details</h2>
           </div>
 
           {/* Clean Textarea Container */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-800">Text</label>
+            <label className="block text-xs font-semibold text-slate-700">Text</label>
 
             <div
-              className={`rounded-xl border transition-all bg-white ${
+              className={`rounded-lg border transition-all bg-white ${
                 error || isOverLimit
                   ? "border-red-500 ring-2 ring-red-100"
-                  : "border-gray-200 focus-within:border-[#0A7CFF] focus-within:ring-2 focus-within:ring-[#0A7CFF]/10"
+                  : "border-gray-200 focus-within:border-[#0A7CFF] focus-within:ring-2 focus-within:ring-[#0A7CFF]/15"
               }`}
             >
               <textarea
                 ref={textareaRef}
-                rows={6}
+                rows={4}
                 value={text}
                 onChange={(e) => onChangeText(e.target.value)}
                 placeholder="Write your post caption here or click Write with AI options below..."
-                className="w-full p-3.5 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none leading-relaxed border-none rounded-xl"
+                className="w-full p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed border-none rounded-lg"
               />
             </div>
           </div>
@@ -142,13 +142,13 @@ export function PostDetailsCard({
                 type="button"
                 onClick={handleEmojiButtonClick}
                 aria-label="Add feeling or emoji"
-                className="p-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
+                className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <Smile className="w-4 h-4" />
               </button>
 
               {emojiOpen && (
-                <div className="absolute left-0 bottom-full mb-2 w-56 bg-white rounded-xl border border-gray-200 shadow-xl p-2.5 z-50 animate-in fade-in duration-150">
+                <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-white rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
                   <div className="grid grid-cols-7 gap-1 text-center">
                     {EMOJIS.map((emoji) => (
                       <button
@@ -158,7 +158,7 @@ export function PostDetailsCard({
                           insertEmojiAtCursor(emoji);
                           setEmojiOpen(false);
                         }}
-                        className="text-base p-1.5 hover:bg-gray-100 rounded cursor-pointer transition-transform hover:scale-110"
+                        className="text-sm p-1 hover:bg-slate-100 rounded cursor-pointer transition-transform hover:scale-110"
                       >
                         {emoji}
                       </button>
@@ -169,15 +169,15 @@ export function PostDetailsCard({
             </div>
 
             {/* Live Character Counter */}
-            <div className={`text-xs font-semibold ${isOverLimit ? "text-red-600" : "text-gray-400"}`}>
+            <div className={`text-xs font-medium ${isOverLimit ? "text-red-600" : "text-slate-400"}`}>
               <span>{charCount}</span> / <span>{maxCharacters}</span>
-              <span className="ml-1 text-[11px] text-gray-400 font-normal">({platformName})</span>
+              <span className="ml-1 text-[11px] text-slate-400 font-normal">({platformName})</span>
             </div>
           </div>
 
           {/* Validation Error Message */}
           {error && (
-            <div className="flex items-center gap-1.5 text-xs text-red-600 font-semibold pt-1">
+            <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium pt-0.5">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               <span>{error}</span>
             </div>

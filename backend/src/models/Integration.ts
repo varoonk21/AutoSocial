@@ -9,6 +9,7 @@ export interface IIntegration extends Document {
   type: string;
   token: string;
   refreshToken?: string;
+  tokenKeyId?: string;
   tokenExpiration?: Date;
   profile?: string;
   disabled: boolean;
@@ -34,6 +35,7 @@ const IntegrationSchema = new mongoose.Schema<IIntegration>(
     type: { type: String, default: "personal" },
     token: { type: String, required: true },
     refreshToken: { type: String },
+    tokenKeyId: { type: String, default: '' },
     tokenExpiration: { type: Date },
     profile: { type: String },
     disabled: { type: Boolean, default: false },

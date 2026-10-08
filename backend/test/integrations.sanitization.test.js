@@ -127,6 +127,10 @@ const fakeLogger = {
 
 // ─── Mocks — registered before the controller module is loaded ────────────────
 
+// Ensure token service env vars are set for the mock
+process.env.TOKEN_ENCRYPTION_KEY = 'a'.repeat(64);
+process.env.TOKEN_ENCRYPTION_KEY_ID = 'v1';
+
 mock.module('../dist/models/index.js', {
   exports: { Integration: fakeIntegrationModel },
 });
@@ -135,6 +139,24 @@ mock.module('../dist/services/scheduler.service.js', {
 });
 mock.module('../dist/utils/logger.util.js', {
   exports: { logger: fakeLogger },
+});
+// Token service mock: produces opaque ciphertext that doesn't contain the
+// original value but can still be tracked via a lookup map.
+const _tokenVault = new Map();
+let _tokenCounter = 0;
+function mockEncrypt(v) {
+  if (!v) return '';
+  const id = `enc_${++_tokenCounter}`;
+  _tokenVault.set(id, v);
+  return id;
+}
+mock.module('../dist/lib/token.service.js', {
+  exports: {
+    encryptToken: mockEncrypt,
+    decryptToken: (v) => _tokenVault.get(v) ?? v,
+    isEncrypted: (v) => typeof v === 'string' && v.startsWith('enc_'),
+    currentKeyId: () => 'v1',
+  },
 });
 
 const controller = await import('../dist/controllers/integrations.controller.js');
@@ -257,7 +279,11 @@ test('OAuth page-selection flow never exposes tokens', async () => {
 
   // The stored token came from server-side pages, not from the client payload
   assert.equal(calls.create.length, 1);
-  assert.equal(calls.create[0].token, PAGE_SECRET_TOKEN);
+  // DB stores ciphertext — not the raw token
+  assert.notEqual(calls.create[0].token, PAGE_SECRET_TOKEN);
+  assert.ok(calls.create[0].token.startsWith('enc_'), 'stored token must be encrypted');
+  // Only TokenService can recover the plaintext
+  assert.equal(_tokenVault.get(calls.create[0].token), PAGE_SECRET_TOKEN);
 
   // Logs must not carry raw page payloads / tokens either
   assertNoSecretValues(logRecords, 'logs');
@@ -287,7 +313,11 @@ test('direct OAuth callback returns a sanitized IntegrationDTO', async () => {
   assert.equal(res.body.integration.status, 'active');
 
   assert.equal(calls.create.length, 1);
-  assert.equal(calls.create[0].token, USER_SECRET_TOKEN);
+  // DB stores ciphertext — not the raw token
+  assert.notEqual(calls.create[0].token, USER_SECRET_TOKEN);
+  assert.ok(calls.create[0].token.startsWith('enc_'), 'stored token must be encrypted');
+  // Only TokenService can recover the plaintext
+  assert.equal(_tokenVault.get(calls.create[0].token), USER_SECRET_TOKEN);
   assertNoSecretValues(logRecords, 'logs');
 });
 

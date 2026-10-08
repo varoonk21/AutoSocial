@@ -14,6 +14,7 @@ import { getProvider } from '../services/scheduler.service.js';
 import { makeId } from '../utils/makeId.js';
 import { logger } from '../utils/logger.util.js';
 import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
+import { encryptToken, currentKeyId } from '../lib/token.service.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
 // For production with multiple servers, replace with Redis
@@ -248,14 +249,19 @@ async function saveIntegration(userId, provider, authResult, extraData = {}) {
     ? new Date(Date.now() + authResult.expiresIn * 1000)
     : null;
 
+  const encryptedToken = encryptToken(authResult.accessToken);
+  const encryptedRefreshToken = encryptToken(authResult.refreshToken || '');
+  const keyId = currentKeyId();
+
   const existingIntegration = await Integration.findOne({ userId, internalId: authResult.id });
 
   if (existingIntegration) {
     return Integration.findByIdAndUpdate(
       existingIntegration._id,
       {
-        token: authResult.accessToken,
-        refreshToken: authResult.refreshToken || '',
+        token: encryptedToken,
+        refreshToken: encryptedRefreshToken,
+        tokenKeyId: keyId,
         tokenExpiration,
         name: authResult.name,
         picture: authResult.picture,
@@ -273,8 +279,9 @@ async function saveIntegration(userId, provider, authResult, extraData = {}) {
     providerIdentifier: provider,
     name: authResult.name,
     picture: authResult.picture || '',
-    token: authResult.accessToken,
-    refreshToken: authResult.refreshToken || '',
+    token: encryptedToken,
+    refreshToken: encryptedRefreshToken,
+    tokenKeyId: keyId,
     tokenExpiration,
     profile: authResult.username,
     additionalSettings: JSON.stringify(authResult.additionalSettings || []),

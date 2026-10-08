@@ -7,6 +7,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
+  TOKEN_ENCRYPTION_KEY: z.string().length(64).optional(),
+  TOKEN_ENCRYPTION_KEY_ID: z.string().default("v1"),
   LOG_LEVEL: z
     .string()
     .optional()

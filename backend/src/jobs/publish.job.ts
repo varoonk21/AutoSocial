@@ -4,6 +4,7 @@ import { getProvider } from "../services/scheduler.service.js";
 import { RefreshTokenError } from "../social/base/SocialProvider.js";
 import { timer } from "../utils/timer.js";
 import { logger } from "../utils/logger.util.js";
+import { decryptToken, encryptToken, currentKeyId } from "../lib/token.service.js";
 
 const JOB_NAME = "publish-post";
 
@@ -79,16 +80,18 @@ async function publishToIntegration(posts: any[]): Promise<void> {
   const provider = getProvider(integration.providerIdentifier);
 
   try {
-    let { token } = integration;
+    let token = decryptToken(integration.token);
     if (integration.tokenExpiration && new Date(integration.tokenExpiration) <= new Date()) {
       if (integration.refreshToken) {
         try {
-          const refreshed = await provider.refreshToken(integration.refreshToken);
+          const decryptedRefresh = decryptToken(integration.refreshToken);
+          const refreshed = await provider.refreshToken(decryptedRefresh);
           if (refreshed?.accessToken) {
             token = refreshed.accessToken;
             await Integration.findByIdAndUpdate(integration._id, {
-              token: refreshed.accessToken,
-              refreshToken: refreshed.refreshToken || integration.refreshToken,
+              token: encryptToken(refreshed.accessToken),
+              refreshToken: encryptToken(refreshed.refreshToken || decryptedRefresh),
+              tokenKeyId: currentKeyId(),
               tokenExpiration: refreshed.expiresIn
                 ? new Date(Date.now() + refreshed.expiresIn * 1000)
                 : integration.tokenExpiration,

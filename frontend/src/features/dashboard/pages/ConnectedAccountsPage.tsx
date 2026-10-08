@@ -19,7 +19,7 @@ export function ConnectedAccountsPage() {
     } catch {}
   }
 
-  const connectedProviders = integrations.map((i) => i.providerIdentifier);
+  const connectedProviders = integrations.map((i) => i.platform);
 
   const handleDisable = async (id, disabled) => {
     setLoading(id);
@@ -66,34 +66,34 @@ export function ConnectedAccountsPage() {
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
           {integrations.map((integration) => (
-            <div key={integration._id} className="flex items-center gap-4 px-6 py-4">
+            <div key={integration.id} className="flex items-center gap-4 px-6 py-4">
               <img
-                src={integration.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(integration.name)}&background=e5e7eb&color=6b7280`}
+                src={integration.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(integration.name)}&background=e5e7eb&color=6b7280`}
                 alt={integration.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900">{integration.name}</p>
-                <p className="text-xs text-gray-400 capitalize">{integration.providerIdentifier}</p>
+                <p className="text-xs text-gray-400 capitalize">{integration.platform}</p>
               </div>
-              {integration.refreshNeeded && (
+              {integration.status === "reauth_required" && (
                 <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full border border-amber-200">Needs re-auth</span>
               )}
               <span
-                className={`px-2.5 py-1 text-xs font-medium rounded-full ${integration.disabled ? "bg-gray-100 text-gray-500" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}
+                className={`px-2.5 py-1 text-xs font-medium rounded-full ${integration.status === "disabled" ? "bg-gray-100 text-gray-500" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}
               >
-                {integration.disabled ? "Disabled" : "Active"}
+                {integration.status === "disabled" ? "Disabled" : "Active"}
               </span>
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  disabled={loading === integration._id}
-                  onClick={() => handleDisable(integration._id, !integration.disabled)}
+                  disabled={loading === integration.id}
+                  onClick={() => handleDisable(integration.id, integration.status !== "disabled")}
                 >
-                  {integration.disabled ? "Enable" : "Disable"}
+                  {integration.status === "disabled" ? "Enable" : "Disable"}
                 </Button>
-                <Button variant="destructive" size="sm" disabled={loading === integration._id} onClick={() => handleDelete(integration._id)}>
+                <Button variant="destructive" size="sm" disabled={loading === integration.id} onClick={() => handleDelete(integration.id)}>
                   Disconnect
                 </Button>
               </div>

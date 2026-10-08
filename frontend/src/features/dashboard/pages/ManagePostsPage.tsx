@@ -159,14 +159,14 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
               const integration =
                 typeof post.integrationId === "object" && post.integrationId !== null
                   ? post.integrationId
-                  : integrations.find((i) => i._id === post.integrationId);
+                  : integrations.find((i) => i.id === post.integrationId);
 
               const publishDate = post.publishDate ? new Date(post.publishDate) : null;
               const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT;
               const mediaItems = JSON.parse(post.image || "[]");
               const firstMedia = mediaItems[0];
               const mediaUrl = typeof firstMedia === "string" ? firstMedia : firstMedia?.path;
-              const platform = integration?.providerIdentifier || null;
+              const platform = integration?.platform || integration?.providerIdentifier || null;
 
               const isEditable = post.state === "DRAFT" || post.state === "QUEUE";
 

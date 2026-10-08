@@ -13,6 +13,7 @@ import { Integration } from '../models/index.js';
 import { getProvider } from '../services/scheduler.service.js';
 import { makeId } from '../utils/makeId.js';
 import { logger } from '../utils/logger.util.js';
+import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
 // For production with multiple servers, replace with Redis
@@ -35,13 +36,13 @@ function getOAuthState(state) {
   return entry;
 }
 
-// Cleanup expired states every 5 minutes
+// Cleanup expired states every 5 minutes (unref so idle processes / tests can exit)
 setInterval(() => {
   const now = Date.now();
   for (const [key, value] of oauthStateStore.entries()) {
     if (now > value.expiresAt) oauthStateStore.delete(key);
   }
-}, 5 * 60 * 1000);
+}, 5 * 60 * 1000).unref();
 
 // ─── GET /integrations/list ───────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ async function listIntegrations(req, res) {
       userId: req.user._id,
     }).select('-token -refreshToken');
 
-    res.json({ integrations });
+    res.json({ integrations: toIntegrationDTOs(integrations) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -104,7 +105,8 @@ async function oauthCallback(req, res) {
     });
 
     // For providers that require an extra step (e.g., Facebook Page selection),
-    // return the auth result with a flag so the frontend can show the picker
+    // hand back a temporary state so the frontend can show the picker.
+    // Tokens stay server-side in the stored state — never in the response.
     if (socialProvider.isBetweenSteps) {
       // Save a temporary state for the page selection callback
       const tempState = makeId(20);
@@ -113,12 +115,12 @@ async function oauthCallback(req, res) {
         provider,
         authResult,
       });
-      return res.json({ inBetweenSteps: true, tempState, ...authResult });
+      return res.json({ inBetweenSteps: true, tempState });
     }
 
     // Save the integration directly
     const integration = await saveIntegration(stateData.userId, provider, authResult, {});
-    res.json({ success: true, integration });
+    res.json({ success: true, integration: toIntegrationDTO(integration) });
   } catch (err) {
     logger.error({ err, provider }, 'OAuth callback failed');
     res.status(400).json({ error: err.message });
@@ -133,7 +135,7 @@ async function savePage(req, res) {
   try {
     const { tempState, pageData } = req.body;
 
-    logger.info({ provider, tempState, pageData }, 'savePage: received request');
+    logger.info({ provider, tempState, pageId: pageData?.id }, 'savePage: received request');
 
     const stateData = getOAuthState(tempState);
     if (!stateData) {
@@ -143,13 +145,30 @@ async function savePage(req, res) {
 
     oauthStateStore.delete(tempState);
 
+    // Resolve the page token server-side from the pages fetched in getPages —
+    // the client only ever sees token-free pages, so it cannot supply one.
+    const socialProvider = getProvider(provider);
+    const rawPage = (stateData.pages || []).find(
+      (p) => String(p.id) === String(pageData?.id)
+    );
+    let accessToken = rawPage?.access_token;
+    if (!accessToken) {
+      // Providers whose page listing carries no token (e.g. Instagram) resolve
+      // the provider token here; last resort is the OAuth user token.
+      const info = await socialProvider.fetchPageInformation?.(
+        stateData.authResult.accessToken,
+        pageData
+      );
+      accessToken = info?.access_token || stateData.authResult.accessToken;
+    }
+
     const integration = await saveIntegration(
       stateData.userId,
       provider,
       {
         id: pageData.id,
         name: pageData.name,
-        accessToken: pageData.access_token,
+        accessToken,
         picture: pageData.picture?.data?.url || '',
         username: pageData.username || '',
       },
@@ -157,7 +176,7 @@ async function savePage(req, res) {
     );
 
     logger.info({ provider, integrationId: integration._id }, 'savePage: integration saved');
-    res.json({ success: true, integration });
+    res.json({ success: true, integration: toIntegrationDTO(integration) });
   } catch (err) {
     logger.error({ err, provider }, 'savePage failed');
     res.status(400).json({ error: err.message });
@@ -183,8 +202,12 @@ async function getPages(req, res) {
     const socialProvider = getProvider(provider);
     const pages = await socialProvider.pages(stateData.authResult.accessToken);
 
+    // Keep the raw pages (incl. page access tokens) in the state so savePage
+    // can resolve the chosen page's token server-side.
+    setOAuthState(tempState, { ...stateData, pages });
+
     logger.info({ provider, pageCount: pages.length }, 'getPages: returning pages');
-    res.json({ pages });
+    res.json({ pages: sanitizePages(pages) });
   } catch (err) {
     logger.error({ err, provider }, 'getPages failed');
     res.status(400).json({ error: err.message });
@@ -212,7 +235,7 @@ async function toggleDisable(req, res) {
       { disabled: !!disabled },
       { new: true }
     ).select('-token -refreshToken');
-    res.json({ integration });
+    res.json({ integration: toIntegrationDTO(integration) });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

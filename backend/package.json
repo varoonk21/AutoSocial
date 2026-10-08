@@ -1,7 +1,7 @@
 {
-  "name": "postiz-core-backend",
+  "name": "autosocial-backend",
   "version": "1.0.0",
-  "description": "Simplified social media scheduling backend extracted from Postiz",
+  "description": "AutoSocial social media scheduling backend",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -9,7 +9,8 @@
     "predev": "tsc",
     "start": "node --env-file=.env dist/server.js",
     "dev": "concurrently -k -n tsc,node -c blue,green \"tsc --watch --preserveWatchOutput\" \"node --env-file=.env --watch dist/server.js\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc && node --experimental-test-module-mocks --test \"test/**/*.test.js\""
   },
   "dependencies": {
     "@agendajs/mongo-backend": "^4.0.3",

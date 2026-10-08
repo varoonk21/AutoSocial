@@ -145,7 +145,7 @@ export function ScheduledPostsPage() {
   const integrations = intData?.integrations || [];
 
   // Derive default integration from loaded data
-  const defaultIntegrationId = integrations.length > 0 ? integrations[0]._id : "";
+  const defaultIntegrationId = integrations.length > 0 ? integrations[0].id : "";
   const effectiveQuickIntegrationId = quickIntegrationId || defaultIntegrationId;
 
   const showToast = (message: string, type: "success" | "error") => {
@@ -236,8 +236,8 @@ export function ScheduledPostsPage() {
 
   // Filter posts
   const filteredPosts = posts.filter((post: Post) => {
-    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i._id === post.integrationId);
-    const platform = integration?.providerIdentifier || "x";
+    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i.id === post.integrationId);
+    const platform = integration?.platform || integration?.providerIdentifier || "x";
     if (selectedPlatform !== "all" && platform !== selectedPlatform) return false;
     if (selectedStatus !== "all" && post.state !== selectedStatus) return false;
     return true;
@@ -295,8 +295,8 @@ export function ScheduledPostsPage() {
     .slice(0, 4);
 
   const getPlatformFromPost = (post: Post) => {
-    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i._id === post.integrationId);
-    return (integration?.providerIdentifier || "x") as keyof typeof PLATFORM_COLORS;
+    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i.id === post.integrationId);
+    return (integration?.platform || integration?.providerIdentifier || "x") as keyof typeof PLATFORM_COLORS;
   };
 
   const renderCalendarView = () => {
@@ -909,8 +909,8 @@ export function ScheduledPostsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {integrations.map((int: any) => (
-                        <SelectItem key={int._id} value={int._id}>
-                          {int.name || int.providerIdentifier} ({int.providerIdentifier})
+                        <SelectItem key={int.id} value={int.id}>
+                          {int.name || int.platform} ({int.platform})
                         </SelectItem>
                       ))}
                     </SelectContent>

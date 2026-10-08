@@ -102,21 +102,21 @@ export function useCreatePost() {
         const list = data.integrations || [];
         if (list.length > 0) {
           const mapped = list.map((acc: any) => {
-            const provider = (acc.providerIdentifier || "facebook").toLowerCase();
-            let avatarUrl = acc.picture;
-            if (!avatarUrl && acc.internalId && (provider === "facebook" || provider === "instagram")) {
-              avatarUrl = `https://graph.facebook.com/${acc.internalId}/picture?type=large`;
+            const provider = (acc.platform || "facebook").toLowerCase();
+            let avatarUrl = acc.avatar;
+            if (!avatarUrl && acc.targetId && (provider === "facebook" || provider === "instagram")) {
+              avatarUrl = `https://graph.facebook.com/${acc.targetId}/picture?type=large`;
             }
             if (!avatarUrl) {
               avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(acc.name || "User")}&background=0A7CFF&color=fff`;
             }
 
             return {
-              id: acc._id,
-              internalId: acc.internalId,
+              id: acc.id,
+              internalId: acc.targetId,
               name: acc.name || "Connected Account",
               provider,
-              handle: acc.profile ? `@${acc.profile}` : "@" + (acc.name || "account").toLowerCase().replace(/\s+/g, ""),
+              handle: "@" + (acc.name || "account").toLowerCase().replace(/\s+/g, ""),
               avatar: avatarUrl,
             };
           });

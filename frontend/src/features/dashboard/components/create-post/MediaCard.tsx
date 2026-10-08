@@ -1,0 +1,384 @@
+import { useState, useRef, useEffect } from "react";
+import { Image, Upload, Film, X, GripVertical, AlertTriangle, Plus, Sparkles } from "lucide-react";
+import { MediaItem } from "./useCreatePost";
+import { MediaLibraryModal } from "../MediaLibraryModal";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { apiPost } from "../../../../lib/fetcher";
+import { useImageStore } from "../../../../store/imageStore";
+
+interface MediaCardProps {
+  mediaList: MediaItem[];
+  onAddMedia: (item: Omit<MediaItem, "id">) => void;
+  onRemoveMedia: (id: string) => void;
+  onReorderMedia: (startIndex: number, endIndex: number) => void;
+  error?: string;
+  cardRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export function MediaCard({
+  mediaList,
+  onAddMedia,
+  onRemoveMedia,
+  onReorderMedia,
+  error,
+  cardRef,
+}: MediaCardProps) {
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // AI Image Generation state
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const getImageUrl = useImageStore((s) => s.getImageUrl);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const dragItemIndex = useRef<number | null>(null);
+  const dragOverItemIndex = useRef<number | null>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
+
+  // Handle local device file upload
+  const handleDeviceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setValidationError(null);
+    const file = files[0];
+
+    // Validate size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      setValidationError("File exceeds maximum allowed size of 50MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(25);
+
+    // Simulate smooth upload progress
+    const timer = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(timer);
+          return 90;
+        }
+        return prev + 25;
+      });
+    }, 150);
+
+    // Create object URL for local preview
+    const objectUrl = URL.createObjectURL(file);
+    setTimeout(() => {
+      clearInterval(timer);
+      setUploadProgress(100);
+      setIsUploading(false);
+
+      onAddMedia({
+        path: objectUrl,
+        type: file.type.startsWith("video/") ? "video" : "image",
+        name: file.name,
+        sizeMB: parseFloat((file.size / (1024 * 1024)).toFixed(1)),
+      });
+    }, 700);
+
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Handle selection from Media Library Modal
+  const handleMediaLibrarySelect = (selected: { path: string; type: string }) => {
+    onAddMedia({
+      path: selected.path,
+      type: selected.type === "video" ? "video" : "image",
+    });
+    setMediaModalOpen(false);
+  };
+
+  // Handle AI Image Generation via Backend API (/api/ai/generate-image)
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) return;
+
+    setAiGenerating(true);
+    setValidationError(null);
+    try {
+      const res: any = await apiPost("/ai/generate-image", { prompt: aiPrompt });
+      if (res?.media) {
+        const fullUrl = res.media.key ? getImageUrl(res.media.key) : res.media.path;
+        onAddMedia({
+          path: fullUrl || res.media.path,
+          type: "image",
+          name: res.media.originalName || "AI Generated Image",
+        });
+        setAiModalOpen(false);
+        setAiPrompt("");
+      }
+    } catch (err: any) {
+      setValidationError(err?.message || "Failed to generate image with AI. Please try again.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  // Drag and drop reorder handlers
+  const handleDragStart = (index: number) => {
+    dragItemIndex.current = index;
+  };
+
+  const handleDragEnter = (index: number) => {
+    dragOverItemIndex.current = index;
+  };
+
+  const handleDragEnd = () => {
+    if (dragItemIndex.current !== null && dragOverItemIndex.current !== null && dragItemIndex.current !== dragOverItemIndex.current) {
+      onReorderMedia(dragItemIndex.current, dragOverItemIndex.current);
+    }
+    dragItemIndex.current = null;
+    dragOverItemIndex.current = null;
+  };
+
+  return (
+    <div ref={cardRef}>
+      <MediaLibraryModal
+        open={mediaModalOpen}
+        onOpenChange={setMediaModalOpen}
+        onSelect={handleMediaLibrarySelect}
+      />
+
+      {/* AI Image Generator Modal */}
+      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-purple-100 text-purple-700">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <span>Create Image with AI</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <p className="text-xs text-gray-500">
+              Describe the image you want to generate. Our AI will create a high-quality visual asset for your post.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-gray-800">Image Prompt</label>
+              <Textarea
+                rows={4}
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="e.g. A vibrant sunset over a modern city skyline with neon aesthetic..."
+                className="text-xs resize-none"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setAiModalOpen(false)}
+              disabled={aiGenerating}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAiGenerate}
+              disabled={!aiPrompt.trim() || aiGenerating}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs"
+            >
+              {aiGenerating ? (
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generate Image</span>
+                </div>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleDeviceUpload}
+        accept="image/*,video/*"
+        className="hidden"
+      />
+
+      <Card className="rounded-[16px] border border-gray-100 bg-white shadow-xs transition-shadow hover:shadow-sm overflow-visible">
+        <CardContent className="p-5 sm:p-6 space-y-4 overflow-visible">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[17px] font-bold text-[#1c2b36] tracking-tight">Media</h2>
+              <p className="text-xs text-gray-500 font-normal mt-0.5">Share photos and videos.</p>
+            </div>
+
+            {/* Compact "Add photo/video" Outlined Button with Dropdown Menu */}
+            <div className="relative" ref={menuRef}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="h-9 px-3 border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#0A7CFF]" />
+                <span>Add photo/video</span>
+              </Button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-gray-200 shadow-xl py-1.5 z-50 animate-in fade-in duration-150">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 cursor-pointer"
+                  >
+                    <Upload className="w-4 h-4 text-gray-500" />
+                    <span>Upload from device</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setMediaModalOpen(true);
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 cursor-pointer border-t border-gray-100"
+                  >
+                    <Image className="w-4 h-4 text-gray-500" />
+                    <span>Choose from media library</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setAiModalOpen(true);
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-purple-700 hover:bg-purple-50 flex items-center gap-2.5 cursor-pointer border-t border-gray-100"
+                  >
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <span>Create with AI</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Upload Progress Bar */}
+          {isUploading && (
+            <div className="space-y-1.5 p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <div className="flex justify-between text-xs font-semibold text-blue-900">
+                <span>Uploading asset...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-blue-200/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#0A7CFF] rounded-full transition-all duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Validation Errors */}
+          {(validationError || error) && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-xl text-xs font-medium border border-red-100">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
+              <span>{validationError || error}</span>
+            </div>
+          )}
+
+          {/* Uploaded Thumbnails Row with Drag Reorder & Cover Badge */}
+          {mediaList.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                Reorder thumbnails (First item is cover)
+              </p>
+
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+                {mediaList.map((item, idx) => {
+                  const isCover = idx === 0;
+
+                  return (
+                    <div
+                      key={item.id}
+                      draggable
+                      onDragStart={() => handleDragStart(idx)}
+                      onDragEnter={() => handleDragEnter(idx)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(e) => e.preventDefault()}
+                      className={`relative group shrink-0 w-28 h-28 rounded-xl border-2 overflow-hidden bg-gray-100 transition-all cursor-grab active:cursor-grabbing ${
+                        isCover ? "border-[#0A7CFF] ring-2 ring-[#0A7CFF]/15" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {item.type === "video" ? (
+                        <div className="w-full h-full bg-black/80 flex items-center justify-center text-white">
+                          <Film className="w-8 h-8 opacity-80" />
+                        </div>
+                      ) : (
+                        <img src={item.path} alt="" className="w-full h-full object-cover" />
+                      )}
+
+                      {/* Drag Handle Icon */}
+                      <div className="absolute top-1 left-1 p-0.5 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <GripVertical className="w-3.5 h-3.5" />
+                      </div>
+
+                      {/* Cover Badge */}
+                      {isCover && (
+                        <span className="absolute bottom-1 left-1 bg-[#0A7CFF] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-xs">
+                          COVER
+                        </span>
+                      )}
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        aria-label="Remove media item"
+                        onClick={() => onRemoveMedia(item.id)}
+                        className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-red-600 transition-colors cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -50,55 +50,55 @@ export function ScheduleCard({
             <div>
               <h2 className="text-sm font-semibold text-slate-900 tracking-tight">Schedule</h2>
               <p className="text-xs text-slate-500 font-normal mt-0.5">
-                {isScheduleOn ? "Choose when your post goes live." : "Publish immediately or schedule for later."}
+                {isScheduleOn ? "Select the date and time for publication." : "Publish immediately or set a schedule."}
               </p>
             </div>
 
             <div className="flex items-center gap-2">
-              <label htmlFor="schedule-toggle" className="text-xs font-semibold text-slate-700 cursor-pointer">
-                Set date and time
-              </label>
-              <Switch id="schedule-toggle" checked={isScheduleOn} onCheckedChange={onToggleSchedule} />
+              <span className="text-xs font-medium text-slate-600">
+                {isScheduleOn ? "Scheduled" : "Publish now"}
+              </span>
+              <Switch checked={isScheduleOn} onCheckedChange={onToggleSchedule} />
             </div>
           </div>
 
           {/* Inline Expanded Schedule Form (When ON) */}
           {isScheduleOn && (
-            <div className="space-y-3 pt-2 border-t border-gray-100 animate-in fade-in duration-200">
-              {/* Date & Time Picker Grid */}
+            <div className="space-y-3 pt-3 border-t border-gray-100 animate-in fade-in duration-150">
+              {/* Date & Time Picker Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">Date</label>
+                  <label className="block text-xs font-medium text-slate-700">Date</label>
                   <div className="relative">
+                    <Calendar className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
                     <input
                       type="date"
                       value={date}
                       onChange={(e) => onChangeDate(e.target.value)}
-                      className="w-full h-8.5 p-2 pl-9 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white"
+                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white cursor-pointer"
                     />
-                    <Calendar className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">Time</label>
+                  <label className="block text-xs font-medium text-slate-700">Time</label>
                   <div className="relative">
+                    <Clock className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
                     <input
                       type="time"
                       value={time}
                       onChange={(e) => onChangeTime(e.target.value)}
-                      className="w-full h-8.5 p-2 pl-9 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white"
+                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white cursor-pointer"
                     />
-                    <Clock className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
                   </div>
                 </div>
               </div>
 
-              {/* Best Time Suggestion Chips */}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              {/* Suggested Times */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
                   <Sparkles className="w-3 h-3 text-[#0A7CFF]" />
-                  <span>Recommended Best Times</span>
+                  <span>Suggested times</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -107,7 +107,7 @@ export function ScheduleCard({
                       key={idx}
                       type="button"
                       onClick={() => handleApplyBestTime(chip.offsetDays, chip.timeVal)}
-                      className="text-xs font-semibold text-[#0A7CFF] bg-blue-50/80 hover:bg-blue-100 border border-blue-100 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+                      className="text-xs font-medium text-slate-700 bg-slate-50 hover:bg-blue-50/80 hover:text-[#0A7CFF] border border-slate-200 hover:border-blue-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                     >
                       {chip.label}
                     </button>

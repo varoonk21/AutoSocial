@@ -89,21 +89,18 @@ export function CreatePost() {
       )}
 
       {/* Main Container */}
-      <div className="max-w-[1360px] mx-auto space-y-4">
+      <div className="max-w-[1360px] mx-auto space-y-4 pb-20 lg:pb-8">
         {/* Page Title Header (Above Left Column) */}
-        <div className="pb-1 border-b border-gray-200/80 flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">Create post</h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Draft, customize, and publish content across Meta and social networks.
-            </p>
           </div>
         </div>
 
         {/* Two Column Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* LEFT COLUMN (~45%): Stack of white rounded cards in independent scroll container */}
-          <div className="lg:col-span-6 space-y-3.5 max-h-[calc(100vh-150px)] overflow-y-auto pr-1 sm:pr-2 scrollbar-none">
+          {/* LEFT COLUMN (~50%): Stack of white rounded cards flowing naturally */}
+          <div className="lg:col-span-6 space-y-3.5">
             {/* Card 1: Post to */}
             <AccountSelectCard
               accounts={accounts}
@@ -156,8 +153,8 @@ export function CreatePost() {
             />
           </div>
 
-          {/* RIGHT COLUMN (~55%): Fixed/Sticky Live Preview & Action Bar */}
-          <div className="hidden lg:block lg:col-span-6 space-y-3 sticky top-16">
+          {/* RIGHT COLUMN (~50%): Sticky Live Preview & Action Bar */}
+          <div className="hidden lg:block lg:col-span-6 space-y-3.5 sticky top-0 self-start">
             <PostPreview
               activePlatformId={activePreviewPlatform}
               onSelectPlatform={setActivePreviewPlatform}

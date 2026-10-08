@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { apiPost } from "../../../../lib/fetcher";
 import { useImageStore } from "../../../../store/imageStore";
+import { uploadFileToS3 } from "../../../../api/index";
 
 interface MediaCardProps {
   mediaList: MediaItem[];
@@ -58,51 +59,76 @@ export function MediaCard({
     };
   }, [menuOpen]);
 
-  // Handle local device file upload
-  const handleDeviceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle device file upload by saving to Media Library first
+  const handleDeviceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setValidationError(null);
-    const file = files[0];
+    const fileList = Array.from(files);
 
-    // Validate size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      setValidationError("File exceeds maximum allowed size of 50MB.");
-      return;
+    // Validate size against the media library limit (backend enforces 10MB)
+    for (const file of fileList) {
+      if (file.size > 10 * 1024 * 1024) {
+        setValidationError(`File "${file.name}" exceeds the media library limit of 10MB.`);
+        return;
+      }
     }
 
     setIsUploading(true);
-    setUploadProgress(25);
+    setUploadProgress(10);
 
-    // Simulate smooth upload progress
-    const timer = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(timer);
-          return 90;
+    try {
+      const failedFiles: string[] = [];
+
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+
+        try {
+          // Upload to S3 and save a record to the Media Library first.
+          // The returned `path` is the library URL Facebook can fetch at publish time.
+          const uploadedMedia = await uploadFileToS3(file, (p: number) => {
+            const fileShare = 100 / fileList.length;
+            const currentTotal = Math.round(i * fileShare + (p * fileShare) / 100);
+            setUploadProgress(Math.min(99, Math.max(10, currentTotal)));
+          });
+
+          const mediaUrl = uploadedMedia?.path || getImageUrl(uploadedMedia?.key);
+
+          if (!mediaUrl) {
+            failedFiles.push(file.name);
+            continue;
+          }
+
+          onAddMedia({
+            path: mediaUrl,
+            type: file.type.startsWith("video/") ? "video" : "image",
+            name: file.name,
+            sizeMB: parseFloat((file.size / (1024 * 1024)).toFixed(1)),
+          });
+        } catch {
+          // Do not fall back to local blob: URLs — Facebook cannot fetch those.
+          // Surface the failure so the user retries and gets a real library URL.
+          failedFiles.push(file.name);
         }
-        return prev + 25;
-      });
-    }, 150);
+      }
 
-    // Create object URL for local preview
-    const objectUrl = URL.createObjectURL(file);
-    setTimeout(() => {
-      clearInterval(timer);
+      if (failedFiles.length > 0) {
+        setValidationError(
+          failedFiles.length === 1
+            ? `Failed to save "${failedFiles[0]}" to the media library. Please try again.`
+            : `Failed to save ${failedFiles.length} files to the media library. Please try again.`,
+        );
+      }
+
       setUploadProgress(100);
+    } catch (err: any) {
+      setValidationError(err?.message || "Failed to upload file to media library.");
+    } finally {
       setIsUploading(false);
-
-      onAddMedia({
-        path: objectUrl,
-        type: file.type.startsWith("video/") ? "video" : "image",
-        name: file.name,
-        sizeMB: parseFloat((file.size / (1024 * 1024)).toFixed(1)),
-      });
-    }, 700);
-
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = "";
+      setUploadProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   // Handle selection from Media Library Modal
@@ -231,6 +257,7 @@ export function MediaCard({
         ref={fileInputRef}
         onChange={handleDeviceUpload}
         accept="image/*,video/*"
+        multiple
         className="hidden"
       />
 
@@ -242,56 +269,58 @@ export function MediaCard({
               <p className="text-xs text-slate-500 font-normal mt-0.5">Share photos and videos.</p>
             </div>
 
-            {/* Compact "Add photo/video" Outlined Button with Dropdown Menu */}
-            <div className="relative" ref={menuRef}>
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="h-8 px-2.5 border-gray-300 hover:bg-gray-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                onClick={() => setAiModalOpen(true)}
+                className="h-8 px-2.5 border-gray-300 hover:bg-slate-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Plus className="w-3.5 h-3.5 text-[#0A7CFF]" />
-                <span>Add photo/video</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#0A7CFF]" />
+                <span>Generate with AI</span>
               </Button>
 
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      fileInputRef.current?.click();
-                    }}
-                    className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Upload className="w-4 h-4 text-slate-500" />
-                    <span>Upload from device</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setMediaModalOpen(true);
-                    }}
-                    className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-gray-100"
-                  >
-                    <Image className="w-4 h-4 text-slate-500" />
-                    <span>Choose from media library</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setAiModalOpen(true);
-                    }}
-                    className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-gray-100"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#0A7CFF]" />
-                    <span>Create with AI</span>
-                  </button>
-                </div>
-              )}
+              {/* Compact "Add photo/video" Outlined Button with Dropdown Menu */}
+              <div className="relative" ref={menuRef}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="h-8 px-2.5 border-gray-300 hover:bg-gray-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#0A7CFF]" />
+                  <span>Add photo/video</span>
+                </Button>
+
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        fileInputRef.current?.click();
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4 text-slate-500" />
+                      <span>Upload from device</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setMediaModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-gray-100"
+                    >
+                      <Image className="w-4 h-4 text-slate-500" />
+                      <span>Choose from media library</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

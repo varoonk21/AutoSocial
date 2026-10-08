@@ -121,8 +121,47 @@ export function PostDetailsCard({
                 value={text}
                 onChange={(e) => onChangeText(e.target.value)}
                 placeholder="Write your post caption here or click Write with AI options below..."
-                className="w-full p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed border-none rounded-lg"
+                className="w-full p-3 pb-1 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed border-none rounded-t-lg"
               />
+
+              {/* Input Footer Inside Text Field: Emoji Button & Live Character Counter */}
+              <div className="flex items-center justify-between px-2 pb-1.5">
+                <div className="relative" ref={emojiRef}>
+                  <button
+                    type="button"
+                    onClick={handleEmojiButtonClick}
+                    aria-label="Add feeling or emoji"
+                    className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <Smile className="w-4 h-4" />
+                  </button>
+
+                  {emojiOpen && (
+                    <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-white rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
+                      <div className="grid grid-cols-7 gap-1 text-center">
+                        {EMOJIS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              insertEmojiAtCursor(emoji);
+                              setEmojiOpen(false);
+                            }}
+                            className="text-sm p-1 hover:bg-slate-100 rounded cursor-pointer transition-transform hover:scale-110"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className={`text-xs font-medium pr-1.5 ${isOverLimit ? "text-red-600" : "text-slate-400"}`}>
+                  <span>{charCount}</span> / <span>{maxCharacters}</span>
+                  <span className="ml-1 text-[11px] text-slate-400 font-normal">({platformName})</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -134,46 +173,6 @@ export function PostDetailsCard({
             onUndo={onUndoAi}
             canUndo={canUndoAi}
           />
-
-          {/* Bottom Row: Emoji Button on Left & Live Character Counter on Right */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <div className="relative" ref={emojiRef}>
-              <button
-                type="button"
-                onClick={handleEmojiButtonClick}
-                aria-label="Add feeling or emoji"
-                className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <Smile className="w-4 h-4" />
-              </button>
-
-              {emojiOpen && (
-                <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-white rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
-                  <div className="grid grid-cols-7 gap-1 text-center">
-                    {EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => {
-                          insertEmojiAtCursor(emoji);
-                          setEmojiOpen(false);
-                        }}
-                        className="text-sm p-1 hover:bg-slate-100 rounded cursor-pointer transition-transform hover:scale-110"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Live Character Counter */}
-            <div className={`text-xs font-medium ${isOverLimit ? "text-red-600" : "text-slate-400"}`}>
-              <span>{charCount}</span> / <span>{maxCharacters}</span>
-              <span className="ml-1 text-[11px] text-slate-400 font-normal">({platformName})</span>
-            </div>
-          </div>
 
           {/* Validation Error Message */}
           {error && (

@@ -6,6 +6,7 @@ export interface Media {
   type: 'image' | 'video'
   fileSize: number
   key: string
+  path?: string
   thumbnail?: string
   alt?: string
   deletedAt?: string

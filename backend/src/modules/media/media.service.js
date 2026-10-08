@@ -65,7 +65,10 @@ async function saveMediaMetadata(userId, { key, originalName, contentType, fileS
     key,
   });
 
-  return media;
+  // Return the same library URL shape as GET /media so clients can use it directly
+  const obj = media.toObject();
+  obj.path = await getS3Url(key);
+  return obj;
 }
 
 async function deleteMediaPermanently(userId, mediaId) {

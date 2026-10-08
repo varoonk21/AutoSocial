@@ -5,7 +5,7 @@ export function FacebookLogo({ className = "w-4 h-4" }: { className?: string }) 
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="12" fill="#1877F2" />
       <path
-        d="M15.5 12.073h-2.115v7.781H10.278v-7.781H8.812V9.344h1.466V7.414c0-1.453.692-2.314 2.314-2.314h1.848v2.609h-1.155c-.672 0-.806.253-.806.806v.828h1.986l-.315 2.729z"
+        d="M15.5 12h-2.3v8h-3.3v-8H8.5V9.3h1.4V7.5c0-2.2 1.3-3.5 3.4-3.5H15.8v2.7h-1.4c-1 0-1.2.4-1.2 1.2v1.4h2.6L15.5 12z"
         fill="#FFFFFF"
       />
     </svg>

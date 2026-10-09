@@ -77,9 +77,9 @@ export function ResetPasswordPage() {
         <div className="w-full bg-white rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
           <div className="text-center space-y-1 mb-6">
             <div className="flex justify-center mb-4">
-              <img src="/Icon.png" alt="AutoSocial Icon" className="w-12 h-12 object-contain rounded-lg shadow-sm" />
+              <img src="/Icon.png" alt="AutoSocial Icon" className="w-20 h-20 object-contain rounded-lg shadow-sm" />
             </div>
-            <h2 className="text-lg font-bold text-neutral-900 tracking-tight">Set New Password</h2>
+            <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Set New Password</h2>
             <p className="text-sm text-neutral-500 font-normal">
               Enter your new password below to regain access to your account.
             </p>

@@ -26,8 +26,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
       <div className="relative z-10 flex min-h-screen w-full">
         <div className="hidden w-1/2 flex-col justify-between p-12 md:flex">
-          <div className="flex items-center gap-2.5 font-semibold tracking-tight text-xl text-neutral-900">
-            <img src="/Icon.png" alt="AutoSocial Icon" className="w-9 h-9 object-contain rounded-lg" />
+          <div className="flex items-start justify-center flex-col  font-bold tracking-tight text-3xl text-neutral-900">
+            <img src="/Icon.png" alt="AutoSocial Icon" className="w-20 h-20 object-contain rounded-lg" />
             <span>AutoSocial</span>
           </div>
 
@@ -47,8 +47,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
         <div className="flex w-full flex-col items-center justify-center p-4 md:w-1/2">
           <div className="md:hidden flex flex-col items-center mb-8 text-center space-y-2">
-            <div className="flex items-center gap-2 font-bold tracking-tight text-2xl text-neutral-900">
-              <img src="/Icon.png" alt="AutoSocial Icon" className="w-9 h-9 object-contain rounded-lg" />
+            <div className="flex items-center gap-3 font-bold tracking-tight text-3xl text-neutral-900">
+              <img src="/Icon.png" alt="AutoSocial Icon" className="w-20 h-20 object-contain rounded-lg" />
               <span>AutoSocial</span>
             </div>
             <p className="text-sm text-neutral-500 font-normal">Turn ideas into posts with an AI partner.</p>

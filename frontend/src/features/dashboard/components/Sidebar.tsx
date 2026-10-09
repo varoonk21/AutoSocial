@@ -104,11 +104,8 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div
-          className="flex items-center gap-2.5 px-3 py-2 cursor-pointer"
-          onClick={() => navigate("/dashboard")}
-        >
-          <img src="/Icon.png" alt="AutoSocial Icon" className="w-7 h-7 object-contain rounded-md" />
+        <div className="flex items-center px-3 py-2 cursor-pointer" onClick={() => navigate("/dashboard")}>
+          <img src="/Icon.png" alt="AutoSocial Icon" className="w-14 h-14 object-contain rounded-lg" />
           <span className="font-bold text-slate-900 text-lg tracking-tight">AutoSocial</span>
         </div>
       </SidebarHeader>
@@ -122,10 +119,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {/* Dashboard - Item 1 */}
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<NavLink to="/dashboard" end />}
-                  isActive={location.pathname === "/dashboard"}
-                >
+                <SidebarMenuButton render={<NavLink to="/dashboard" end />} isActive={location.pathname === "/dashboard"}>
                   {ICONS.home}
                   <span>Dashboard</span>
                 </SidebarMenuButton>
@@ -133,17 +127,10 @@ export function AppSidebar() {
 
               {/* Content Menu Item with Accordion Submenu - Item 2 */}
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isContentActive}
-                  onClick={() => setIsContentOpen(!isContentOpen)}
-                >
+                <SidebarMenuButton isActive={isContentActive} onClick={() => setIsContentOpen(!isContentOpen)}>
                   {ICONS.content}
                   <span>Content</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${
-                      isContentOpen ? "rotate-180" : ""
-                    }`}
-                  />
+                  <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${isContentOpen ? "rotate-180" : ""}`} />
                 </SidebarMenuButton>
 
                 {isContentOpen && (
@@ -152,10 +139,7 @@ export function AppSidebar() {
                       const active = isSubItemActive(item.matchPaths);
                       return (
                         <SidebarMenuSubItem key={item.to}>
-                          <SidebarMenuSubButton
-                            render={<NavLink to={item.to} />}
-                            isActive={active}
-                          >
+                          <SidebarMenuSubButton render={<NavLink to={item.to} />} isActive={active}>
                             {ICONS[item.icon]}
                             <span>{item.label}</span>
                           </SidebarMenuSubButton>
@@ -169,10 +153,7 @@ export function AppSidebar() {
               {/* Remaining Top-level Nav Items */}
               {NAV_ITEMS.filter((item) => item.to !== "/dashboard").map((item) => (
                 <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton
-                    render={<NavLink to={item.to} end={item.to === "/"} />}
-                    isActive={location.pathname === item.to}
-                  >
+                  <SidebarMenuButton render={<NavLink to={item.to} end={item.to === "/"} />} isActive={location.pathname === item.to}>
                     {ICONS[item.icon]}
                     <span>{item.label}</span>
                   </SidebarMenuButton>
@@ -188,10 +169,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              render={<a href="/dashboard/settings" />}
-              onClick={() => navigate("/dashboard/settings")}
-            >
+            <SidebarMenuButton render={<a href="/dashboard/settings" />} onClick={() => navigate("/dashboard/settings")}>
               <HelpCircle className="w-4 h-4" />
               <span>Help</span>
             </SidebarMenuButton>

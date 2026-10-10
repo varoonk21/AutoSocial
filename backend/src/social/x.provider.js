@@ -434,6 +434,30 @@ class XProvider extends SocialProvider {
       },
     ];
   }
+  /**
+   * X tweet public metrics via API v2. Returns null on any failure.
+   */
+  async getPostInsights(postId, accessToken) {
+    try {
+      const res = await fetch(
+        `https://api.x.com/2/tweets/${postId}?tweet.fields=public_metrics`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!res.ok) return null;
+      const json = await res.json();
+      const m = (json.data && json.data.public_metrics) || {};
+      return {
+        impressions: m.impression_count || 0,
+        reach: 0,
+        likes: m.like_count || 0,
+        comments: m.reply_count || 0,
+        shares: (m.retweet_count || 0) + (m.quote_count || 0),
+        clicks: 0,
+      };
+    } catch {
+      return null;
+    }
+  }
 }
 
 export { XProvider };

@@ -20,6 +20,7 @@ import {
   ImagePlus,
   Pencil,
   Save,
+  User as UserIcon,
 } from "lucide-react";
 import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
 import { uploadToS3Only } from "../../../api/index";
@@ -338,18 +339,35 @@ export function MediaLibraryPage() {
             </ToggleGroupItem>
           </ToggleGroup>
 
-          {/* Middle Source Filters (User Uploads / AI Generated) */}
-          <div className="flex items-center gap-2">
-            <ToggleGroup type="single" value={sourceFilter} onValueChange={(value) => value && setSourceFilter(value)} variant="outline" size="sm">
-              <ToggleGroupItem value="user">
-                <Sparkles className="w-4 h-4 text-foreground" />
-                <span>User Uploads</span>
-              </ToggleGroupItem>
-              <ToggleGroupItem value="ai">
-                <Sparkles className="w-4 h-4 text-primary-500" />
-                <span>AI Generated</span>
-              </ToggleGroupItem>
-            </ToggleGroup>
+          {/* Source filter: minimal 2-icon toggle (click active again for all) */}
+          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 gap-1">
+            <button
+              type="button"
+              onClick={() => setSourceFilter(sourceFilter === "user" ? "all" : "user")}
+              title="User uploads"
+              aria-label="Show user uploads"
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                sourceFilter === "user"
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <UserIcon className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSourceFilter(sourceFilter === "ai" ? "all" : "ai")}
+              title="AI generated"
+              aria-label="Show AI generated"
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                sourceFilter === "ai"
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+            </button>
+          </div>
 
             <Button
               variant="outline"
@@ -360,7 +378,6 @@ export function MediaLibraryPage() {
               <Plus className="w-4 h-4 text-primary-600" />
               <span>Generate AI</span>
             </Button>
-          </div>
 
           {/* Right Sort Dropdown */}
           <div className="flex items-center gap-2">
@@ -461,7 +478,7 @@ export function MediaLibraryPage() {
                     className="w-full justify-start"
                     onClick={() => {
                       setMenuOpenId(null);
-                      navigate("/dashboard/create-post");
+                      navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
                     }}
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -494,7 +511,7 @@ export function MediaLibraryPage() {
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate("/dashboard/create-post");
+                    navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
                   }}
                   className="shadow-md"
                 >

@@ -96,9 +96,16 @@ class LinkedInProvider extends SocialProvider {
       })
     ).json();
 
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
-    ).json();
+    const { vanityName } = await (async () => {
+      // /v2/me needs the legacy r_basicprofile product, retired for new apps.
+      try {
+        return await (
+          await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+        ).json();
+      } catch {
+        return { vanityName: '' };
+      }
+    })();
 
     const { name, sub: id, picture } = await (
       await fetch('https://api.linkedin.com/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
@@ -151,9 +158,16 @@ class LinkedInProvider extends SocialProvider {
       await fetch('https://api.linkedin.com/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
     ).json();
 
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
-    ).json();
+    const { vanityName } = await (async () => {
+      // /v2/me needs the legacy r_basicprofile product, retired for new apps.
+      try {
+        return await (
+          await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+        ).json();
+      } catch {
+        return { vanityName: '' };
+      }
+    })();
 
     return { id, accessToken, refreshToken, expiresIn, name, picture, username: vanityName };
   }
@@ -463,34 +477,6 @@ class LinkedInProvider extends SocialProvider {
         status: 'success',
       },
     ];
-  }
-  /**
-   * LinkedIn engagement via the socialActions API. Best-effort: the stored
-   * postId must be a share/post URN; returns null otherwise or on any failure.
-   */
-  async getPostInsights(postId, accessToken) {
-    try {
-      if (!postId || !postId.includes('urn:li:')) return null;
-      const encoded = encodeURIComponent(postId);
-      const headers = { Authorization: `Bearer ${accessToken}` };
-      const [likesRes, commentsRes] = await Promise.all([
-        fetch(`https://api.linkedin.com/v2/socialActions/${encoded}/likes/summary`, { headers }),
-        fetch(`https://api.linkedin.com/v2/socialActions/${encoded}/comments/summary`, { headers }),
-      ]);
-      if (!likesRes.ok && !commentsRes.ok) return null;
-      const likes = likesRes.ok ? await likesRes.json().catch(() => ({})) : {};
-      const comments = commentsRes.ok ? await commentsRes.json().catch(() => ({})) : {};
-      return {
-        impressions: 0,
-        reach: 0,
-        likes: likes.totalLikes || 0,
-        comments: comments.totalFirstLevelComments || 0,
-        shares: 0,
-        clicks: 0,
-      };
-    } catch {
-      return null;
-    }
   }
 }
 

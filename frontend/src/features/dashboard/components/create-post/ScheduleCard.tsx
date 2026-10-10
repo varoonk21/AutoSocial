@@ -1,4 +1,4 @@
-import { Calendar, Clock, Globe } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
@@ -9,8 +9,6 @@ interface ScheduleCardProps {
   onChangeDate: (date: string) => void;
   time: string;
   onChangeTime: (time: string) => void;
-  timezone: string;
-  onChangeTimezone: (tz: string) => void;
   error?: string;
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }
@@ -22,15 +20,13 @@ export function ScheduleCard({
   onChangeDate,
   time,
   onChangeTime,
-  timezone,
-  onChangeTimezone,
   error,
   cardRef,
 }: ScheduleCardProps) {
 
   return (
     <div ref={cardRef}>
-      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs">
+      <Card className="rounded-xl border border-slate-200 bg-white shadow-xs">
         <CardContent className="p-4 space-y-3">
           {/* Card Header & Toggle */}
           <div className="flex items-center justify-between">
@@ -51,7 +47,7 @@ export function ScheduleCard({
 
           {/* Inline Expanded Schedule Form (When ON) */}
           {isScheduleOn && (
-            <div className="space-y-3 pt-3 border-t border-gray-100 animate-in fade-in duration-150">
+            <div className="space-y-3 pt-3 border-t border-slate-100 animate-in fade-in duration-150">
               {/* Date & Time Picker Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -62,7 +58,7 @@ export function ScheduleCard({
                       type="date"
                       value={date}
                       onChange={(e) => onChangeDate(e.target.value)}
-                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-background cursor-pointer"
+                      className="w-full h-9 pl-9 pr-3 text-xs font-medium border border-slate-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-white cursor-pointer"
                     />
                   </div>
                 </div>
@@ -75,13 +71,12 @@ export function ScheduleCard({
                       type="time"
                       value={time}
                       onChange={(e) => onChangeTime(e.target.value)}
-                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-background cursor-pointer"
+                      className="w-full h-9 pl-9 pr-3 text-xs font-medium border border-slate-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-white cursor-pointer"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Suggested Times - removed per redesign */}
             </div>
           )}
 

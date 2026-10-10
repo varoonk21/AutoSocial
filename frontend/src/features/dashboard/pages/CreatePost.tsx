@@ -126,12 +126,7 @@ export function CreatePost() {
               text={text}
               onChangeText={setText}
               mediaList={mediaList}
-              isAdPost={isAdPost}
-              onToggleAdPost={setIsAdPost}
-              language={language}
-              onChangeLanguage={setLanguage}
               maxCharacters={activePlatformConfig.maxCharacters}
-              platformName={activePlatformConfig.name}
               onApplyAiRewrite={applyAiRewrite}
               onUndoAi={undoAiRewrite}
               canUndoAi={canUndoAi}
@@ -147,8 +142,6 @@ export function CreatePost() {
               onChangeDate={setScheduleDate}
               time={scheduleTime}
               onChangeTime={setScheduleTime}
-              timezone={timezone}
-              onChangeTimezone={setTimezone}
               error={validationErrors.schedule}
               cardRef={cardRefs.schedule}
             />

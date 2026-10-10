@@ -56,7 +56,7 @@ export function AccountSelectCard({
 
   return (
     <div ref={cardRef}>
-      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs overflow-visible">
+      <Card className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-visible">
         <CardContent className="p-4 space-y-3 overflow-visible">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-900 tracking-tight">Post to</h2>
@@ -64,7 +64,7 @@ export function AccountSelectCard({
 
           {accounts.length === 0 ? (
             /* No Accounts Connected State */
-            <div className="rounded-lg border border-dashed border-gray-300 p-3.5 text-center bg-gray-50/50 space-y-1.5">
+            <div className="rounded-lg border border-dashed border-slate-300 p-3.5 text-center bg-slate-50/50 space-y-1.5">
               <p className="text-xs text-slate-500">No social media accounts connected yet.</p>
               <Link
                 to="/dashboard/connected-accounts"
@@ -81,12 +81,12 @@ export function AccountSelectCard({
                 type="button"
                 aria-label="Select social accounts to post to"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between py-2 px-3 rounded-lg border transition-all text-left bg-background cursor-pointer ${
+                className={`w-full flex items-center justify-between py-2 px-3 rounded-lg border transition-all text-left bg-white cursor-pointer ${
                   error
                     ? "border-red-500 ring-2 ring-red-100"
                     : isOpen
                     ? "border-primary ring-2 ring-primary/10"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -102,9 +102,9 @@ export function AccountSelectCard({
                                 alt={acc.name}
                                 referrerPolicy="no-referrer"
                                 onError={(e) => handleAvatarError(e, acc)}
-                                className="w-7 h-7 rounded-full border-2 border-white object-cover bg-gray-100"
+                                className="w-7 h-7 rounded-full border-2 border-white object-cover bg-slate-100"
                               />
-                              <span className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-[1px] flex items-center justify-center">
+                              <span className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-[1px] flex items-center justify-center">
                                 {renderBadge(acc.provider)}
                               </span>
                             </div>
@@ -135,8 +135,8 @@ export function AccountSelectCard({
 
               {/* Dropdown Menu Popup */}
               {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-lg border border-gray-200 bg-background shadow-md py-1 max-h-64 overflow-y-auto animate-in fade-in duration-150">
-                  <div className="px-3 py-1.5 border-b border-gray-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-lg border border-slate-200 bg-white shadow-md py-1 max-h-64 overflow-y-auto animate-in fade-in duration-150">
+                  <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                     <span>Connected Accounts</span>
                     <span>Select Multiple</span>
                   </div>
@@ -161,9 +161,9 @@ export function AccountSelectCard({
                                 alt={acc.name}
                                 referrerPolicy="no-referrer"
                                 onError={(e) => handleAvatarError(e, acc)}
-                                className="w-7 h-7 rounded-full object-cover border border-gray-200 bg-gray-100"
+                                className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100"
                               />
-                              <span className="absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-[1px] flex items-center justify-center">
+                              <span className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-[1px] flex items-center justify-center">
                                 {renderBadge(acc.provider)}
                               </span>
                             </div>
@@ -175,7 +175,7 @@ export function AccountSelectCard({
 
                           <div
                             className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected ? "border-primary bg-primary text-white" : "border-gray-300 bg-background"
+                              isSelected ? "border-primary bg-primary text-white" : "border-slate-300 bg-white"
                             }`}
                           >
                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -185,7 +185,7 @@ export function AccountSelectCard({
                     })}
                   </div>
 
-                  <div className="p-2 border-t border-gray-100 bg-slate-50/50 flex justify-between items-center text-xs">
+                  <div className="p-2 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-xs">
                     <Link
                       to="/dashboard/connected-accounts"
                       className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"

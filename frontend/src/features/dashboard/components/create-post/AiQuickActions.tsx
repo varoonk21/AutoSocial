@@ -184,10 +184,10 @@ export function AiQuickActions({
   };
 
   return (
-    <div className="space-y-2 p-2.5 bg-accent/50 border border-primary-200/70 rounded-lg">
+    <div className="space-y-2 pt-1">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-          <Wand2 className="w-3.5 h-3.5 text-primary-700" />
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+          <Wand2 className="w-3.5 h-3.5 text-primary" />
           <span>Write with AI</span>
         </div>
 
@@ -195,7 +195,7 @@ export function AiQuickActions({
           <button
             type="button"
             onClick={onUndo}
-            className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Undo AI rewrite</span>
@@ -208,25 +208,21 @@ export function AiQuickActions({
         {PRIMARY_ACTIONS.map((action) => {
           const isLoading = loadingActionId === action.id;
           const IconComponent = action.icon;
-          const isPrimary = action.primary;
 
           return (
             <Button
               key={action.id}
               type="button"
-              variant={isPrimary ? "default" : "outline"}
+              variant="outline"
               size="xs"
               disabled={loadingActionId !== null}
               onClick={() => executeAiAction(action.id, action.label)}
+              className="text-slate-600"
             >
               {isLoading ? (
-                <div
-                  className={`w-3 h-3 border-2 border-t-transparent rounded-full animate-spin mr-1 ${
-                    isPrimary ? "border-white" : "border-slate-600"
-                  }`}
-                />
+                <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin mr-1" />
               ) : IconComponent ? (
-                <IconComponent className="w-3 h-3 mr-1.5 shrink-0" />
+                <IconComponent className="w-3 h-3 mr-1.5 shrink-0 text-primary" />
               ) : null}
               <span>{action.label}</span>
             </Button>

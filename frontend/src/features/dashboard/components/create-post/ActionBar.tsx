@@ -26,7 +26,7 @@ export function ActionBar({
 }: ActionBarProps) {
   if (variant === "fixed") {
     return (
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-gray-200/90 p-3 sm:px-6 shadow-2xl transition-all">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 sm:px-6 shadow-2xl transition-all">
         <div className="max-w-[1320px] mx-auto flex items-center justify-end gap-2">
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -36,7 +36,7 @@ export function ActionBar({
                 variant="outline"
                 size="sm"
                 onClick={onOpenMobilePreview}
-                className="h-8 px-2.5 text-xs font-semibold text-gray-700 border-gray-300 hover:bg-gray-100 cursor-pointer"
+                className="h-8 px-2.5 text-xs font-semibold text-slate-700 border-slate-300 hover:bg-slate-100 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span className="hidden xs:inline">Preview</span>
@@ -48,7 +48,7 @@ export function ActionBar({
               variant="outline"
               size="sm"
               onClick={onCancel}
-              className="h-8 px-2.5 text-xs font-semibold text-gray-700 border-gray-300 hover:bg-gray-100 cursor-pointer rounded-xl"
+              className="h-8 px-2.5 text-xs font-semibold text-slate-700 border-slate-300 hover:bg-slate-100 cursor-pointer rounded-xl"
             >
               Cancel
             </Button>
@@ -58,7 +58,7 @@ export function ActionBar({
               variant="outline"
               size="sm"
               onClick={onSaveDraft}
-              className="h-8 px-2.5 text-xs font-semibold text-gray-800 border-gray-300 hover:bg-gray-100 cursor-pointer rounded-xl"
+              className="h-8 px-2.5 text-xs font-semibold text-gray-800 border-slate-300 hover:bg-slate-100 cursor-pointer rounded-xl"
             >
               Finish later
             </Button>
@@ -70,7 +70,7 @@ export function ActionBar({
               disabled={!isValid || isSaving}
               className={`h-8 px-3.5 text-xs font-bold text-white shadow-md transition-all rounded-xl cursor-pointer ${
                 !isValid
-                  ? "bg-gray-300 text-gray-500 shadow-none cursor-not-allowed"
+                  ? "bg-gray-300 text-slate-500 shadow-none cursor-not-allowed"
                   : "bg-primary hover:bg-primary-hover active:scale-[0.98] shadow-primary/20"
               }`}
             >
@@ -89,7 +89,7 @@ export function ActionBar({
 
   // Inline Variant (Placed directly under the preview card)
   return (
-        <div className="bg-background rounded-xl border border-gray-200 p-3 shadow-xs space-y-2">
+        <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Left: Save Status */}
         <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export function ActionBar({
             variant="outline"
             size="sm"
             onClick={onCancel}
-            className="h-8 px-3 text-xs font-semibold text-slate-700 border-gray-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
+            className="h-8 px-3 text-xs font-semibold text-slate-700 border-slate-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
           >
             Cancel
           </Button>
@@ -128,7 +128,7 @@ export function ActionBar({
             variant="outline"
             size="sm"
             onClick={onSaveDraft}
-            className="h-8 px-3 text-xs font-semibold text-slate-800 border-gray-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
+            className="h-8 px-3 text-xs font-semibold text-slate-800 border-slate-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
           >
             Finish later
           </Button>

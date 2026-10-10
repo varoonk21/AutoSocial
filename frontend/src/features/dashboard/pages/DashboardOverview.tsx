@@ -4,7 +4,7 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon } from "lucide-react";
+import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, Repeat } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
@@ -52,6 +52,8 @@ export function DashboardOverview() {
   const [postsLoading, setPostsLoading] = useState(true);
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [covers, setCovers] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadStats();
@@ -117,22 +119,38 @@ export function DashboardOverview() {
       const fbPages = integrations.filter((i) => i.platform === "facebook");
       const displayPages = fbPages.length > 0 ? fbPages : integrations;
       setPages(displayPages);
+      setActivePageIndex(0);
 
-      // Fetch cover photo for the first Facebook page
-      if (fbPages.length > 0) {
-        try {
-          const coverData = await apiGet(`/integrations/${fbPages[0].id}/cover`);
-          if (coverData?.cover) setCoverUrl(coverData.cover);
-        } catch {
-          // Cover stays null -> gradient fallback
-        }
+      // Fetch cover photos for all Facebook pages
+      const coverMap: Record<string, string> = {};
+      await Promise.all(
+        fbPages.map(async (p) => {
+          try {
+            const coverData = await apiGet(`/integrations/${p.id}/cover`);
+            if (coverData?.cover) coverMap[p.id] = coverData.cover;
+          } catch {
+            // Cover stays unset -> gradient fallback
+          }
+        })
+      );
+      setCovers(coverMap);
+      if (displayPages[0] && coverMap[displayPages[0].id]) {
+        setCoverUrl(coverMap[displayPages[0].id]);
       }
     } catch {
       // Pages stay empty
     }
   }
 
-  const primaryPage = pages[0];
+  const activePage = pages[activePageIndex] || pages[0];
+
+  const handleSwitchPage = () => {
+    if (pages.length < 2) return;
+    const nextIndex = (activePageIndex + 1) % pages.length;
+    setActivePageIndex(nextIndex);
+    const nextPage = pages[nextIndex];
+    setCoverUrl(covers[nextPage.id] || null);
+  };
 
   return (
     <div className="space-y-8 -mt-8 -mx-10">
@@ -155,44 +173,80 @@ export function DashboardOverview() {
       <div className="px-10">
         <div className="-mt-16 relative rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
           <div className="flex flex-wrap items-center gap-5">
-            <Avatar className="size-20 ring-4 ring-white shadow-md shrink-0">
-              <AvatarImage
-                src={
-                  primaryPage?.avatar
-                    ? primaryPage.avatar
-                    : session?.user?.image
-                      ? getImageUrl(session.user.image)
-                      : undefined
-                }
-                alt={primaryPage?.name || session?.user?.name || "Page"}
-              />
-              <AvatarFallback className="bg-teal-50 text-teal-700">
-                <UserIcon className="w-8 h-8" />
-              </AvatarFallback>
-            </Avatar>
+            {/* Active page avatar with platform badge */}
+            <div className="relative shrink-0">
+              <Avatar className="size-20 ring-4 ring-white shadow-md">
+                <AvatarImage
+                  src={
+                    activePage?.avatar
+                      ? activePage.avatar
+                      : session?.user?.image
+                        ? getImageUrl(session.user.image)
+                        : undefined
+                  }
+                  alt={activePage?.name || session?.user?.name || "Page"}
+                />
+                <AvatarFallback className="bg-teal-50 text-teal-700">
+                  <UserIcon className="w-8 h-8" />
+                </AvatarFallback>
+              </Avatar>
+              {activePage && (
+                <span className="absolute -bottom-1 -right-1 size-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center">
+                  <PlatformIcon platform={activePage.platform as any} size={14} />
+                </span>
+              )}
+            </div>
 
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
-                {primaryPage?.name || session?.user?.name || "Your Workspace"}
-              </h1>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
+                  {activePage?.name || session?.user?.name || "Your Workspace"}
+                </h1>
+                {pages.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleSwitchPage}
+                    title={`Switch to ${pages[(activePageIndex + 1) % pages.length].name}`}
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600 transition-colors shrink-0"
+                  >
+                    <Repeat className="w-3.5 h-3.5" />
+                    Switch
+                  </button>
+                )}
+              </div>
               <p className="text-sm text-slate-500 mt-1">
-                {primaryPage
-                  ? `${primaryPage.platform.charAt(0).toUpperCase() + primaryPage.platform.slice(1)} Page · ${primaryPage.status === "active" ? "Connected" : primaryPage.status.replace("_", " ")}`
+                {activePage
+                  ? `${activePage.platform.charAt(0).toUpperCase() + activePage.platform.slice(1)} Page · ${activePage.status === "active" ? "Connected" : activePage.status.replace("_", " ")}`
                   : "Connect an account to start creating and scheduling posts"}
               </p>
               {pages.length > 1 && (
                 <div className="flex items-center gap-2 mt-3">
-                  {pages.slice(1, 5).map((p) => (
-                    <Avatar key={p.id} className="size-8 ring-2 ring-white" title={p.name}>
-                      <AvatarImage src={p.avatar || undefined} alt={p.name} />
-                      <AvatarFallback className="bg-slate-100 text-slate-500 text-[10px] font-semibold">
-                        {p.name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                  {pages.map((p, idx) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setActivePageIndex(idx);
+                        setCoverUrl(covers[p.id] || null);
+                      }}
+                      title={p.name}
+                      className={`relative rounded-full transition-all ${
+                        idx === activePageIndex
+                          ? "ring-2 ring-teal-600 ring-offset-2"
+                          : "opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <Avatar className="size-9">
+                        <AvatarImage src={p.avatar || undefined} alt={p.name} />
+                        <AvatarFallback className="bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                          {p.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white border border-slate-200 flex items-center justify-center">
+                        <PlatformIcon platform={p.platform as any} size={9} />
+                      </span>
+                    </button>
                   ))}
-                  {pages.length > 5 && (
-                    <span className="text-xs font-medium text-slate-500">+{pages.length - 5} more</span>
-                  )}
                 </div>
               )}
             </div>

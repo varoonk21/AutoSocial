@@ -5,6 +5,7 @@ import { schedulePost, removeScheduledJobs } from '../services/scheduler.service
 import { logger } from '../utils/logger.util.js';
 import { sendSuccess } from '../utils/response.util.js';
 import { normalizeMediaItem } from '../lib/media-url.js';
+import { refreshInsights } from '../services/insights.service.js';
 
 async function listPosts(req, res) {
   try {

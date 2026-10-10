@@ -344,4 +344,19 @@ async function getAnalytics(req, res) {
   }
 }
 
-export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics };
+
+/**
+ * POST /posts/refresh-insights
+ * Pulls fresh engagement metrics from platforms for recent published posts.
+ */
+async function refreshPostInsights(req, res) {
+  try {
+    const summary = await refreshInsights(req.user._id.toString());
+    sendSuccess(res, summary);
+  } catch (err) {
+    logger.error({ err }, "Insights refresh endpoint failed");
+    res.status(500).json({ error: "Failed to refresh insights" });
+  }
+}
+
+export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics , refreshPostInsights };

@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Header } from './Header'
 import { AppSidebar } from './Sidebar'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { useImageStore } from '@/store/imageStore'
 
 export function Layout() {
@@ -13,14 +11,13 @@ export function Layout() {
   }, [fetchS3PublicUrl])
 
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen bg-white">
       <AppSidebar />
-      <SidebarInset>
-        <Header />
-        <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 min-w-0 overflow-y-auto">
+        <div className="px-10 py-8 max-w-[1400px]">
           <Outlet />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+        </div>
+      </main>
+    </div>
   )
 }

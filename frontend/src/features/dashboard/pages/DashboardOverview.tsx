@@ -4,7 +4,8 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, Repeat } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
@@ -50,6 +51,7 @@ export function DashboardOverview() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [pagesLoading, setPagesLoading] = useState(true);
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
@@ -87,7 +89,9 @@ export function DashboardOverview() {
             const mediaItems = JSON.parse(p.image || "[]");
             const first = mediaItems[0];
             if (first) imageUrl = typeof first === "string" ? first : first?.path || null;
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           return {
             id: p._id,
             content: p.content?.slice(0, 60) + (p.content?.length > 60 ? "..." : ""),
@@ -113,6 +117,7 @@ export function DashboardOverview() {
 
   async function loadPages() {
     try {
+      setPagesLoading(true);
       const data = await apiGet("/integrations/list");
       const integrations: PageInfo[] = data.integrations || [];
       // Prefer Facebook pages for the Business Suite header
@@ -131,7 +136,7 @@ export function DashboardOverview() {
           } catch {
             // Cover stays unset -> gradient fallback
           }
-        })
+        }),
       );
       setCovers(coverMap);
       if (displayPages[0] && coverMap[displayPages[0].id]) {
@@ -139,18 +144,12 @@ export function DashboardOverview() {
       }
     } catch {
       // Pages stay empty
+    } finally {
+      setPagesLoading(false);
     }
   }
 
   const activePage = pages[activePageIndex] || pages[0];
-
-  const handleSwitchPage = () => {
-    if (pages.length < 2) return;
-    const nextIndex = (activePageIndex + 1) % pages.length;
-    setActivePageIndex(nextIndex);
-    const nextPage = pages[nextIndex];
-    setCoverUrl(covers[nextPage.id] || null);
-  };
 
   return (
     <div className="space-y-8 -mt-8 -mx-10">
@@ -172,82 +171,78 @@ export function DashboardOverview() {
       {/* Page card overlapping the cover */}
       <div className="px-10">
         <div className="-mt-16 relative rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-          <div className="flex flex-wrap items-center gap-5">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Active page avatar with platform badge */}
             <div className="relative shrink-0">
-              <Avatar className="size-20 ring-4 ring-white shadow-md">
-                <AvatarImage
-                  src={
-                    activePage?.avatar
-                      ? activePage.avatar
-                      : session?.user?.image
-                        ? getImageUrl(session.user.image)
-                        : undefined
-                  }
-                  alt={activePage?.name || session?.user?.name || "Page"}
-                />
-                <AvatarFallback className="bg-teal-50 text-teal-700">
-                  <UserIcon className="w-8 h-8" />
-                </AvatarFallback>
-              </Avatar>
-              {activePage && (
-                <span className="absolute -bottom-1 -right-1 size-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center">
-                  <PlatformIcon platform={activePage.platform as any} size={14} />
-                </span>
+              {pagesLoading ? (
+                <Skeleton className="size-24 rounded-full ring-4 ring-gray-100" />
+              ) : (
+                <>
+                  <Avatar className="size-24 ring-4 ring-gray-200 shadow-md">
+                    <AvatarImage
+                      src={activePage?.avatar ? activePage.avatar : session?.user?.image ? getImageUrl(session.user.image) : undefined}
+                      alt={activePage?.name || session?.user?.name || "Page"}
+                    />
+                    <AvatarFallback className="bg-teal-50 text-teal-700">
+                      <UserIcon className="w-8 h-8" />
+                    </AvatarFallback>
+                  </Avatar>
+                  {activePage && (
+                    <span className="absolute -bottom-1 -right-1 size-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center">
+                      <PlatformIcon platform={activePage.platform as any} size={14} />
+                    </span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
-                  {activePage?.name || session?.user?.name || "Your Workspace"}
-                </h1>
-                {pages.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={handleSwitchPage}
-                    title={`Switch to ${pages[(activePageIndex + 1) % pages.length].name}`}
-                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600 transition-colors shrink-0"
-                  >
-                    <Repeat className="w-3.5 h-3.5" />
-                    Switch
-                  </button>
-                )}
-              </div>
-              <p className="text-sm text-slate-500 mt-1">
-                {activePage
-                  ? `${activePage.platform.charAt(0).toUpperCase() + activePage.platform.slice(1)} Page · ${activePage.status === "active" ? "Connected" : activePage.status.replace("_", " ")}`
-                  : "Connect an account to start creating and scheduling posts"}
-              </p>
-              {pages.length > 1 && (
-                <div className="flex items-center gap-2 mt-3">
-                  {pages.map((p, idx) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setActivePageIndex(idx);
-                        setCoverUrl(covers[p.id] || null);
-                      }}
-                      title={p.name}
-                      className={`relative rounded-full transition-all ${
-                        idx === activePageIndex
-                          ? "ring-2 ring-teal-600 ring-offset-2"
-                          : "opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <Avatar className="size-9">
-                        <AvatarImage src={p.avatar || undefined} alt={p.name} />
-                        <AvatarFallback className="bg-slate-100 text-slate-500 text-[10px] font-semibold">
-                          {p.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-                        <PlatformIcon platform={p.platform as any} size={9} />
-                      </span>
-                    </button>
-                  ))}
+              {pagesLoading ? (
+                <div className="space-y-2 py-1">
+                  <Skeleton className="h-6 w-48 rounded-md" />
+                  <Skeleton className="h-4 w-72 rounded-md" />
                 </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
+                      {activePage?.name || session?.user?.name || "Your Workspace"}
+                    </h1>
+                  </div>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {activePage
+                      ? `${activePage.platform.charAt(0).toUpperCase() + activePage.platform.slice(1)} Page · ${activePage.status === "active" ? "Connected" : activePage.status.replace("_", " ")}`
+                      : "Connect an account to start creating and scheduling posts"}
+                  </p>
+                  {pages.length > 1 && (
+                    <div className="flex items-center gap-2 mt-3">
+                      {pages.map((p, idx) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setActivePageIndex(idx);
+                            setCoverUrl(covers[p.id] || null);
+                          }}
+                          title={p.name}
+                          className={`relative rounded-full transition-all ${
+                            idx === activePageIndex ? "ring-2 ring-teal-600 ring-offset-2" : "opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          <Avatar className="size-9">
+                            <AvatarImage src={p.avatar || undefined} alt={p.name} />
+                            <AvatarFallback className="bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                              {p.name.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white border border-slate-200 flex items-center justify-center">
+                            <PlatformIcon platform={p.platform as any} size={9} />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -273,24 +268,33 @@ export function DashboardOverview() {
         {/* Minimal insights */}
         <div className="grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Posts this month</p>
+            <p className="text-xs font-medium text-slate-800 uppercase tracking-wide">Posts this month</p>
             <div className="mt-1.5 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">
-                {statsLoading ? "—" : stats.postsThisMonth}
-              </span>
-              {!statsLoading && stats.postsChange !== 0 && (
-                <span className={`text-xs font-medium ${stats.postsChange > 0 ? "text-teal-600" : "text-red-500"}`}>
-                  {stats.postsChange > 0 ? "↑" : "↓"} {Math.abs(stats.postsChange)}%
-                </span>
+              {statsLoading ? (
+                <Skeleton className="h-8 w-16 rounded-md my-0.5" />
+              ) : (
+                <>
+                  <span className={`text-2xl font-bold ${stats.postsThisMonth === 0 ? "text-slate-400" : "text-slate-900"}`}>
+                    {stats.postsThisMonth === 0 ? "—" : stats.postsThisMonth}
+                  </span>
+                  {stats.postsThisMonth > 0 && stats.postsChange !== 0 && (
+                    <span className={`text-xs font-medium ${stats.postsChange > 0 ? "text-teal-600" : "text-red-500"}`}>
+                      {stats.postsChange > 0 ? "↑" : "↓"} {Math.abs(stats.postsChange)}%
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">By platform</p>
+            <p className="text-xs font-medium text-slate-800 uppercase tracking-wide">By platform</p>
             <div className="mt-2 flex items-center gap-3">
               {statsLoading ? (
-                <span className="text-2xl font-bold text-slate-900">—</span>
+                <div className="flex items-center gap-2 py-0.5">
+                  <Skeleton className="h-6 w-16 rounded-md" />
+                  <Skeleton className="h-6 w-16 rounded-md" />
+                </div>
               ) : Object.keys(stats.postsByPlatform).length > 0 ? (
                 Object.entries(stats.postsByPlatform).map(([platform, count]) => (
                   <span key={platform} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
@@ -305,12 +309,18 @@ export function DashboardOverview() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Upcoming</p>
+            <p className="text-xs font-medium text-slate-800 uppercase tracking-wide">Upcoming</p>
             <div className="mt-1.5 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">
-                {statsLoading ? "—" : stats.upcomingPosts}
-              </span>
-              <span className="text-xs text-slate-500">next 7 days</span>
+              {statsLoading ? (
+                <Skeleton className="h-8 w-16 rounded-md my-0.5" />
+              ) : (
+                <>
+                  <span className={`text-2xl font-bold ${stats.upcomingPosts === 0 ? "text-slate-400" : "text-slate-900"}`}>
+                    {stats.upcomingPosts === 0 ? "—" : stats.upcomingPosts}
+                  </span>
+                  {stats.upcomingPosts > 0 && <span className="text-xs text-slate-500">next 7 days</span>}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -326,11 +336,24 @@ export function DashboardOverview() {
 
           <div className="divide-y divide-slate-50">
             {postsLoading ? (
-              <div className="px-6 py-8 text-center text-sm text-slate-400">Loading posts...</div>
+              <div className="divide-y divide-slate-50">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center gap-4 px-6 py-3.5">
+                    <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/5 max-w-sm rounded-md" />
+                      <Skeleton className="h-3 w-1/4 max-w-xs rounded-md" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full shrink-0" />
+                  </div>
+                ))}
+              </div>
             ) : posts.length === 0 ? (
               <div className="px-6 py-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">No posts yet. Published and scheduled posts will appear here.</p>
-                <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>Create your first post</Button>
+                <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>
+                  Create your first post
+                </Button>
               </div>
             ) : (
               posts.map((post) => {
@@ -346,9 +369,13 @@ export function DashboardOverview() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-slate-900 truncate">{post.content}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{post.platformLabel} · {post.date}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {post.platformLabel} · {post.date}
+                      </p>
                     </div>
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}
+                    >
                       {statusConf.label}
                     </span>
                     {post.releaseURL && (

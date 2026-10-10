@@ -132,8 +132,7 @@ export function BrandKitPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="max-w-3xl space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Logo & Assets</CardTitle>
@@ -349,51 +348,6 @@ export function BrandKitPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="lg:col-span-5 sticky top-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">LIVE PREVIEW</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="border border-gray-200/80 rounded-xl p-4 space-y-3 bg-background shadow-xs">
-                <div className="flex items-center gap-2.5">
-                  {primaryLogoUrl ? (
-                    <img src={primaryLogoUrl} alt="Logo" className="w-8 h-8 rounded-full object-cover border" />
-                  ) : (
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      AS
-                    </div>
-                  )}
-                  <span className="font-semibold text-sm text-gray-900">AutoSocial</span>
-                </div>
-                <div className="relative rounded-lg overflow-hidden border border-gray-100">
-                  <img
-                    src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=500&q=80"
-                    alt="Post content preview"
-                    className="w-full h-44 object-cover"
-                  />
-                  <div className="absolute bottom-2 right-2 bg-primary-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                    {watermarkLogoUrl ? <img src={watermarkLogoUrl} alt="WM" className="w-4 h-4 object-contain" /> : "AS"}
-                  </div>
-                </div>
-                <p className="text-xs text-gray-700 leading-relaxed font-normal">
-                  <span className="font-semibold text-gray-900">AutoSocial</span> Elevate your content strategy with AI. Streamline your workflow and
-                  ensure brand consistency across all channels. 🚀 #AutoSocial #ContentCreation
-                </p>
-                <Button className="w-full font-semibold text-xs" style={{ backgroundColor: accentColor }}>
-                  Learn More
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

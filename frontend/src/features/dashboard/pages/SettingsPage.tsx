@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, User as UserIcon } from "lucide-react";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
@@ -111,12 +111,12 @@ export function SettingsPage() {
                     src={
                       session?.user?.image
                         ? getImageUrl(session.user.image)
-                        : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80&h=80"
+                        : undefined
                     }
                     alt="Profile Picture"
                   />
-                  <AvatarFallback>
-                    {name?.slice(0, 2).toUpperCase() || "U"}
+                  <AvatarFallback className="bg-slate-200">
+                    <UserIcon className="w-8 h-8 text-slate-500" />
                   </AvatarFallback>
                 </Avatar>
                 {uploading && (

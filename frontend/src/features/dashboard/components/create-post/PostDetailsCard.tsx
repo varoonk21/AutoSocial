@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Smile, AlertCircle } from "lucide-react";
 import { AiQuickActions } from "./AiQuickActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,8 +21,6 @@ interface PostDetailsCardProps {
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-const EMOJIS = ["✨", "🚀", "🔥", "💡", "🎯", "🎉", "👏", "❤️", "👍", "🙌", "💬", "👇", "🌟", "📈", "😊", "😍", "🥳", "💯", "🔥", "👇", "🤩"];
-
 export function PostDetailsCard({
   text,
   onChangeText,
@@ -39,57 +37,12 @@ export function PostDetailsCard({
   error,
   cardRef,
 }: PostDetailsCardProps) {
-  const [emojiOpen, setEmojiOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const emojiRef = useRef<HTMLDivElement>(null);
 
-  // Close emoji popover on click outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) {
-        setEmojiOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Insert emoji at cursor position
-  const insertEmojiAtCursor = (emoji: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      onChangeText(text + emoji);
-      return;
-    }
-
-    const start = textarea.selectionStart ?? text.length;
-    const end = textarea.selectionEnd ?? text.length;
-
-    const newText = text.substring(0, start) + emoji + text.substring(end);
-    onChangeText(newText);
-
-    // Restore focus and update cursor position after render
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + emoji.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
-
+  // Focus the editor so the user can open their native OS emoji picker
+  // (Win + . on Windows, Ctrl + Cmd + Space on Mac)
   const handleEmojiButtonClick = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.focus();
-      // Attempt native OS emoji picker if supported by browser/device
-      if ("showPicker" in textarea && typeof (textarea as any).showPicker === "function") {
-        try {
-          (textarea as any).showPicker();
-        } catch {
-          // Fallback to custom emoji popover
-        }
-      }
-    }
-    setEmojiOpen((prev) => !prev);
+    textareaRef.current?.focus();
   };
 
   const charCount = text.length;
@@ -126,36 +79,15 @@ export function PostDetailsCard({
 
               {/* Input Footer Inside Text Field: Emoji Button & Live Character Counter */}
               <div className="flex items-center justify-between px-2 pb-1.5">
-                <div className="relative" ref={emojiRef}>
-                  <button
-                    type="button"
-                    onClick={handleEmojiButtonClick}
-                    aria-label="Add feeling or emoji"
-                    className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <Smile className="w-4 h-4" />
-                  </button>
-
-                  {emojiOpen && (
-                    <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-background rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
-                      <div className="grid grid-cols-7 gap-1 text-center">
-                        {EMOJIS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => {
-                              insertEmojiAtCursor(emoji);
-                              setEmojiOpen(false);
-                            }}
-                            className="text-sm p-1 hover:bg-slate-100 rounded cursor-pointer transition-transform hover:scale-110"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={handleEmojiButtonClick}
+                  aria-label="Add emoji (Win + . / Ctrl + Cmd + Space)"
+                  title="Emoji (Win + . / Ctrl + Cmd + Space)"
+                  className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
 
                 <div className={`text-xs font-medium pr-1.5 ${isOverLimit ? "text-red-600" : "text-slate-400"}`}>
                   <span>{charCount}</span> / <span>{maxCharacters}</span>

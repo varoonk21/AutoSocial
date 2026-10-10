@@ -1,4 +1,4 @@
-import { Calendar, Clock, Globe, Sparkles } from "lucide-react";
+import { Calendar, Clock, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
@@ -15,12 +15,6 @@ interface ScheduleCardProps {
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-const BEST_TIMES = [
-  { label: "Tomorrow 9:00 AM", offsetDays: 1, timeVal: "09:00" },
-  { label: "Tomorrow 6:00 PM", offsetDays: 1, timeVal: "18:00" },
-  { label: "Friday 3:00 PM", offsetDays: 2, timeVal: "15:00" },
-];
-
 export function ScheduleCard({
   isScheduleOn,
   onToggleSchedule,
@@ -33,13 +27,6 @@ export function ScheduleCard({
   error,
   cardRef,
 }: ScheduleCardProps) {
-  const handleApplyBestTime = (offsetDays: number, timeVal: string) => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + offsetDays);
-    const dateStr = targetDate.toISOString().split("T")[0];
-    onChangeDate(dateStr);
-    onChangeTime(timeVal);
-  };
 
   return (
     <div ref={cardRef}>
@@ -94,26 +81,7 @@ export function ScheduleCard({
                 </div>
               </div>
 
-              {/* Suggested Times */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                  <Sparkles className="w-3 h-3 text-primary" />
-                  <span>Suggested times</span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {BEST_TIMES.map((chip, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleApplyBestTime(chip.offsetDays, chip.timeVal)}
-                      className="text-xs font-medium text-slate-700 bg-slate-50 hover:bg-primary-50/80 hover:text-primary border border-slate-200 hover:border-primary-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Suggested Times - removed per redesign */}
             </div>
           )}
 

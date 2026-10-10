@@ -13,11 +13,10 @@ interface AiQuickActionsProps {
 }
 
 const PRIMARY_ACTIONS = [
-  { id: "write_caption", label: "Write caption", icon: Sparkles, primary: true },
+  { id: "write_caption", label: "Generate caption", icon: Sparkles, primary: true },
   { id: "add_hashtags", label: "Add hashtags", icon: Hash, primary: true },
   { id: "fix_grammar", label: "Fix grammar" },
   { id: "rephrase", label: "Rephrase" },
-  { id: "professional", label: "Professional" },
 ];
 
 const MORE_ACTIONS = [
@@ -165,8 +164,6 @@ export function AiQuickActions({
           rewritten = words.slice(0, Math.max(5, Math.floor(words.length * 0.6))).join(" ") + "...";
         } else if (actionId === "longer") {
           rewritten = `${currentText}\n\nKey takeaway: Consistency and innovation drive long-term business growth. What are your thoughts on this approach? Let us know below! 🚀`;
-        } else if (actionId === "professional") {
-          rewritten = `We are pleased to announce: ${currentText}. We look forward to engaging with our community on this strategic initiative.`;
         } else if (actionId === "funny") {
           rewritten = `${currentText} (Yes, we actually posted this before our morning coffee ☕😂)`;
         } else if (actionId === "casual") {
@@ -221,11 +218,6 @@ export function AiQuickActions({
               size="xs"
               disabled={loadingActionId !== null}
               onClick={() => executeAiAction(action.id, action.label)}
-              className={`h-7 px-2.5 text-[11px] font-medium rounded-md cursor-pointer transition-all shadow-2xs ${
-                isPrimary
-                  ? "bg-primary hover:bg-primary-hover text-white border-none"
-                  : "bg-background hover:bg-slate-100 text-slate-700 border-slate-200"
-              }`}
             >
               {isLoading ? (
                 <div
@@ -249,7 +241,6 @@ export function AiQuickActions({
             size="xs"
             disabled={loadingActionId !== null}
             onClick={() => setMoreOpen(!moreOpen)}
-            className="h-7 px-2.5 bg-background hover:bg-slate-100 text-slate-700 text-[11px] font-medium border-slate-200 rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
           >
             <span>More</span>
             <ChevronDown className="w-3 h-3 text-slate-400" />

@@ -4,7 +4,10 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, User as UserIcon } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
+import { useImageStore } from "@/store/imageStore";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Stats {
   postsThisMonth: number;
@@ -25,8 +28,17 @@ interface MappedPost {
   releaseURL: string | null;
 }
 
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export function DashboardOverview() {
   const navigate = useNavigate();
+  const { data: session } = useSession();
+  const getImageUrl = useImageStore((state) => state.getImageUrl);
   const [posts, setPosts] = useState<MappedPost[]>([]);
   const [stats, setStats] = useState<Stats>({
     postsThisMonth: 0,
@@ -92,167 +104,146 @@ export function DashboardOverview() {
     }
   }
 
+  const userName = session?.user?.name || "there";
+  const firstName = userName.split(" ")[0];
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-          <p className="text-gray-500 mt-1">Welcome back. Here's a snapshot of your content engine.</p>
+    <div className="space-y-8 -mt-8 -mx-10">
+      {/* Greeting */}
+      <div className="px-10 pt-8">
+        <p className="text-sm text-slate-500">{getGreeting()},</p>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{firstName}</h1>
+      </div>
+
+      {/* Facebook-style cover */}
+      <div className="relative mx-10 rounded-2xl overflow-hidden">
+        <div
+          className="h-44 w-full"
+          style={{
+            background: "linear-gradient(120deg, #2f8587 0%, #5fa4a6 55%, #8cc2c3 100%)",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute left-6 -bottom-0 translate-y-1/2 flex items-end gap-4">
+          <Avatar className="size-20 ring-4 ring-white shadow-md">
+            <AvatarImage
+              src={session?.user?.image ? getImageUrl(session.user.image) : undefined}
+              alt={userName}
+            />
+            <AvatarFallback className="bg-teal-50 text-teal-700">
+              <UserIcon className="w-8 h-8" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <div className="absolute left-32 bottom-4 right-6">
+          <h2 className="text-xl font-bold text-white tracking-tight drop-shadow-sm">
+            {userName}'s Workspace
+          </h2>
+          <p className="text-sm text-white/85">Create. Schedule. Grow.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="bg-background rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">Posts This Month</span>
-            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
+      {/* Spacer for overlapping avatar */}
+      <div className="h-8" />
+
+      <div className="px-10 space-y-8">
+        {/* Minimal insights */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Posts this month</p>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-slate-900">
+                {statsLoading ? "—" : stats.postsThisMonth}
+              </span>
+              {!statsLoading && stats.postsChange !== 0 && (
+                <span className={`text-xs font-medium ${stats.postsChange > 0 ? "text-teal-600" : "text-red-500"}`}>
+                  {stats.postsChange > 0 ? "↑" : "↓"} {Math.abs(stats.postsChange)}%
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex items-end gap-2">
-            <span className="text-3xl font-bold text-gray-900">
-              {statsLoading ? "—" : stats.postsThisMonth}
-            </span>
-            {!statsLoading && stats.postsChange !== 0 && (
-              <span className={`text-sm font-medium mb-1 ${stats.postsChange > 0 ? 'text-primary-600' : 'text-red-500'}`}>
-                {stats.postsChange > 0 ? '↑' : '↓'} {Math.abs(stats.postsChange)}%
+
+          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">By platform</p>
+            <div className="mt-2 flex items-center gap-3">
+              {statsLoading ? (
+                <span className="text-2xl font-bold text-slate-900">—</span>
+              ) : Object.keys(stats.postsByPlatform).length > 0 ? (
+                Object.entries(stats.postsByPlatform).map(([platform, count]) => (
+                  <span key={platform} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                    <PlatformIcon platform={platform} size={14} />
+                    {count}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-slate-400">No posts yet</span>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Upcoming</p>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-slate-900">
+                {statsLoading ? "—" : stats.upcomingPosts}
               </span>
-            )}
+              <span className="text-xs text-slate-500">next 7 days</span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-background rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">Posts by Platform</span>
-            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
-              </svg>
-            </div>
+        {/* Recent activity */}
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <h2 className="text-base font-bold text-slate-900">Recent Activity</h2>
+            <Button variant="link" size="sm" onClick={() => navigate("/calendar")}>
+              View All
+            </Button>
           </div>
-          <div className="flex items-end gap-2">
-            {statsLoading ? (
-              <span className="text-3xl font-bold text-gray-900">—</span>
-            ) : Object.keys(stats.postsByPlatform).length > 0 ? (
-              <div className="flex gap-3">
-                {Object.entries(stats.postsByPlatform).map(([platform, count]) => (
-                  <div key={platform} className="flex items-center gap-1.5">
-                    <PlatformIcon platform={platform} size={14} />
-                    <span className="text-sm font-semibold text-gray-700">{count}</span>
-                  </div>
-                ))}
+
+          <div className="divide-y divide-slate-50">
+            {postsLoading ? (
+              <div className="px-6 py-8 text-center text-sm text-slate-400">Loading posts...</div>
+            ) : posts.length === 0 ? (
+              <div className="px-6 py-10 text-center">
+                <p className="text-sm text-slate-500 mb-3">No posts yet. Published and scheduled posts will appear here.</p>
+                <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>Create your first post</Button>
               </div>
             ) : (
-              <span className="text-sm text-gray-400">No posts yet</span>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-background rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">Upcoming Posts</span>
-            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-gray-900">
-              {statsLoading ? "—" : stats.upcomingPosts}
-            </span>
-            <span className="text-sm text-gray-500">Scheduled for next 7 days</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-background rounded-xl border border-gray-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Recent Activity Feed</h2>
-          <Button variant="link" size="sm" onClick={() => navigate("/calendar")}>
-            View All
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          <div className="col-span-5">Post Content</div>
-          <div className="col-span-2">Platform</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-2">Date/Time</div>
-          <div className="col-span-1 text-right">Link</div>
-        </div>
-
-        <div className="divide-y divide-gray-50">
-          {postsLoading ? (
-            <div className="px-6 py-8 text-center text-sm text-gray-400">Loading posts...</div>
-          ) : posts.length === 0 ? (
-            <div className="px-6 py-8 text-center">
-              <p className="text-sm text-gray-500 mb-2">No posts yet. Published and scheduled posts will appear here.</p>
-              <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>Create your first post</Button>
-            </div>
-          ) : (
-            posts.map((post) => {
-              const statusConf = STATUS_CONFIG[post.status] || STATUS_CONFIG.DRAFT;
-              return (
-                <div key={post.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
-                  <div className="col-span-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+              posts.map((post) => {
+                const statusConf = STATUS_CONFIG[post.status] || STATUS_CONFIG.DRAFT;
+                return (
+                  <div key={post.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
+                    <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                       {post.image ? (
                         <img src={post.image} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <circle cx="8.5" cy="8.5" r="1.5" />
-                          <polyline points="21 15 16 10 5 21" />
-                        </svg>
+                        <PlatformIcon platform={post.platform} size={18} />
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{post.content}</p>
-                      {post.campaign && <p className="text-xs mt-0.5 text-gray-400">{post.campaign}</p>}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-900 truncate">{post.content}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{post.platformLabel} · {post.date}</p>
                     </div>
-                  </div>
-
-                  <div className="col-span-2 flex items-center gap-2">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <PlatformIcon platform={post.platform} size={16} />
-                    </div>
-                    <span className="text-sm text-gray-700">{post.platformLabel}</span>
-                  </div>
-
-                  <div className="col-span-2">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}>
                       {statusConf.label}
                     </span>
-                  </div>
-
-                  <div className="col-span-2 flex items-center">
-                    <span className="text-sm text-gray-500">{post.date}</span>
-                  </div>
-
-                  <div className="col-span-1 flex items-center justify-end">
                     {post.releaseURL && (
                       <a
                         href={post.releaseURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View
                       </a>
                     )}
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

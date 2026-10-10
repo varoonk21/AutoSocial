@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { NotFoundPage } from "@/routes/NotFoundPage";
 import { DashboardOverview } from "./pages/DashboardOverview";
 import { CreatePost } from "./pages/CreatePost";
 import { ScheduledPostsPage } from "./pages/ScheduledPostsPage";
@@ -36,6 +37,7 @@ export default function DashboardRoutes() {
         <Route path="connected-accounts" element={<ConnectedAccountsPage />} />
         <Route path="integrations/social/:provider" element={<OAuthCallbackPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

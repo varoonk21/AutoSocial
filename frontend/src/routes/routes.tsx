@@ -2,14 +2,10 @@ import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { ModuleLoader } from "./ModuleLoader";
+import { NotFoundPage } from "./NotFoundPage";
 
 const AuthRoutes = lazy(() => import("@/features/auth/routes"));
 const DashboardRoutes = lazy(() => import("@/features/dashboard/routes"));
-const OAuthCallbackPage = lazy(() =>
-  import("@/features/dashboard/pages/OAuthCallbackPage").then((m) => ({
-    default: m.OAuthCallbackPage,
-  }))
-);
 
 export const router = createBrowserRouter([
   {
@@ -24,14 +20,6 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: "integrations/social/:provider",
-        element: (
-          <ModuleLoader>
-            <OAuthCallbackPage />
-          </ModuleLoader>
-        ),
-      },
-      {
         path: "dashboard/*",
         element: (
           <ModuleLoader>
@@ -40,5 +28,9 @@ export const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);

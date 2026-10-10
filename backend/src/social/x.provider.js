@@ -269,24 +269,30 @@ class XProvider extends SocialProvider {
     const size = await this._videoSize(path);
     const chunkSize = 1024 * 1024; // 1MB
 
-    const initResponse = await client.v2.post('media/upload/initialize', {
+    // X chunked media upload is v1.1-only (v2 has no media/upload endpoints)
+    const initResponse = await client.v1.post('media/upload', {
+      command: 'INIT',
+      total_bytes: size.toString(),
       media_type: lookup(path) || 'video/mp4',
-      total_bytes: size,
       media_category: 'tweet_video',
     });
-    const mediaId = initResponse.data.id;
+    const mediaId = initResponse.media_id_string;
 
     for (let i = 0; i < size; i += chunkSize) {
       const end = Math.min(i + chunkSize, size) - 1;
-      await client.v2.post(
-        `media/upload/${mediaId}/append`,
-        { segment_index: i / chunkSize, media: await this._videoChunk(path, i, end) },
-        { forceBodyMode: 'form-data' }
-      );
+      await client.v1.post('media/upload', {
+        command: 'APPEND',
+        media_id: mediaId,
+        segment_index: (i / chunkSize).toString(),
+        media: await this._videoChunk(path, i, end),
+      });
     }
 
-    const finalizeResponse = await client.v2.post(`media/upload/${mediaId}/finalize`);
-    if (finalizeResponse.data.processing_info) {
+    const finalizeResponse = await client.v1.post('media/upload', {
+      command: 'FINALIZE',
+      media_id: mediaId,
+    });
+    if (finalizeResponse.processing_info) {
       await this._waitForMediaProcessing(client, mediaId);
     }
     return mediaId;

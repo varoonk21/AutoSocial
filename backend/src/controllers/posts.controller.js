@@ -4,6 +4,7 @@ import { makeId } from '../utils/makeId.js';
 import { schedulePost, removeScheduledJobs } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
 import { sendSuccess } from '../utils/response.util.js';
+import { normalizeMediaItem } from '../lib/media-url.js';
 
 async function listPosts(req, res) {
   try {

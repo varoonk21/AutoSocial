@@ -37,8 +37,8 @@ export default function DashboardRoutes() {
         <Route path="connected-accounts" element={<ConnectedAccountsPage />} />
         <Route path="integrations/social/:provider" element={<OAuthCallbackPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="*" element={<NotFoundPage />} />
       </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

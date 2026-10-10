@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { PublicRoute } from "@/routes/PublicRoute";
+import { NotFoundPage } from "@/routes/NotFoundPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
@@ -14,6 +15,7 @@ export default function AuthRoutes() {
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
       </Route>
       <Route path="reset-password" element={<ResetPasswordPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

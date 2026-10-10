@@ -73,7 +73,7 @@ export function CreatePost() {
     accounts[0];
 
   return (
-    <div className="-m-8 p-5 lg:p-6 min-h-screen bg-slate-50/50 text-slate-900 font-sans relative pb-24">
+    <div className="min-h-full text-slate-900 font-sans relative pb-24">
       {/* Toast Notification Container */}
       {toastMessage && (
         <div className="fixed top-16 right-6 z-50 bg-foreground text-background text-xs font-medium px-3.5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
@@ -89,11 +89,12 @@ export function CreatePost() {
       )}
 
       {/* Main Container */}
-      <div className="max-w-[1360px] mx-auto space-y-4 pb-20 lg:pb-8">
-        {/* Page Title Header (Above Left Column) */}
+      <div className="max-w-[1360px] mx-auto space-y-5 pb-20 lg:pb-8">
+        {/* Page Title Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Create post</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Create post</h1>
+            <p className="text-sm text-slate-500 mt-1">Compose and schedule content for your channels.</p>
           </div>
         </div>
 

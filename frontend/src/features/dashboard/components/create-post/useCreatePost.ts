@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { apiGet, apiPost, apiPut } from "../../../../lib/fetcher";
 import { PLATFORMS_CONFIG, DEFAULT_PLATFORM_ID } from "./platformConfig";
 
@@ -31,6 +31,13 @@ export interface ValidationErrors {
 export function useCreatePost() {
   const navigate = useNavigate();
   const { id: draftIdParam } = useParams<{ id?: string }>();
+  const [searchParams] = useSearchParams();
+  // Preset date/time from Schedule page (e.g. ?date=2026-10-15&time=14:00)
+  const presetDate = searchParams.get("date");
+  const presetTime = searchParams.get("time");
+  // Preset media from Media Library (e.g. ?mediaPath=...&mediaType=image)
+  const presetMediaPath = searchParams.get("mediaPath");
+  const presetMediaType = searchParams.get("mediaType") as "image" | "video" | null;
 
   // Accounts state
   const [accounts, setAccounts] = useState<AccountItem[]>([]);
@@ -47,11 +54,11 @@ export function useCreatePost() {
   const [undoHistory, setUndoHistory] = useState<string[]>([]);
 
   // Schedule state
-  const [isScheduleOn, setIsScheduleOn] = useState(false);
+  const [isScheduleOn, setIsScheduleOn] = useState(!!presetDate);
   const [scheduleDate, setScheduleDate] = useState<string>(
-    new Date(Date.now() + 86400000).toISOString().split("T")[0],
+    presetDate || new Date(Date.now() + 86400000).toISOString().split("T")[0],
   );
-  const [scheduleTime, setScheduleTime] = useState("10:00");
+  const [scheduleTime, setScheduleTime] = useState(presetTime || "10:00");
   const [timezone, setTimezone] = useState("Eastern Time (US & Canada) GMT-4");
 
   // Per-account Share-to placements
@@ -205,6 +212,17 @@ export function useCreatePost() {
           }
         })
         .catch(() => {});
+    }
+
+    // Preset media from Media Library "Use in Post"
+    if (presetMediaPath) {
+      setMediaList([
+        {
+          id: `media_preset_${Date.now()}`,
+          path: presetMediaPath,
+          type: presetMediaType === "video" ? "video" : "image",
+        },
+      ]);
     }
   }, [draftIdParam]);
 

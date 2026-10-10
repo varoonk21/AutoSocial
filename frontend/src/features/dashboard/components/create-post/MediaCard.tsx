@@ -37,6 +37,8 @@ export function MediaCard({
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiPreview, setAiPreview] = useState<{ path: string; key?: string; name: string } | null>(null);
+  const [aiSaving, setAiSaving] = useState(false);
   const getImageUrl = useImageStore((s) => s.getImageUrl);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +143,7 @@ export function MediaCard({
   };
 
   // Handle AI Image Generation via Backend API (/api/ai/generate-image)
+  // Generates a preview; user confirms with Add / Regenerate / Skip
   const handleAiGenerate = async () => {
     if (!aiPrompt.trim()) return;
 
@@ -150,19 +153,55 @@ export function MediaCard({
       const res: any = await apiPost("/ai/generate-image", { prompt: aiPrompt });
       if (res?.media) {
         const fullUrl = res.media.key ? getImageUrl(res.media.key) : res.media.path;
-        onAddMedia({
+        setAiPreview({
           path: fullUrl || res.media.path,
-          type: "image",
+          key: res.media.key,
           name: res.media.originalName || "AI Generated Image",
         });
-        setAiModalOpen(false);
-        setAiPrompt("");
       }
     } catch (err: any) {
       setValidationError(err?.message || "Failed to generate image with AI. Please try again.");
     } finally {
       setAiGenerating(false);
     }
+  };
+
+  // Add: save to Media Library, then attach to draft
+  const handleAiAdd = async () => {
+    if (!aiPreview) return;
+    setAiSaving(true);
+    try {
+      // Persist to Media Library
+      if (aiPreview.key) {
+        await apiPost("/media", {
+          key: aiPreview.key,
+          originalName: aiPreview.name,
+          contentType: "image/png",
+          fileSize: 0,
+          source: "ai",
+        });
+      }
+      // Attach to draft
+      onAddMedia({
+        path: aiPreview.path,
+        type: "image",
+        name: aiPreview.name,
+      });
+      setAiModalOpen(false);
+      setAiPrompt("");
+      setAiPreview(null);
+    } catch (err: any) {
+      setValidationError(err?.message || "Failed to save image. Please try again.");
+    } finally {
+      setAiSaving(false);
+    }
+  };
+
+  const handleAiSkip = () => {
+    setAiModalOpen(false);
+    setAiPrompt("");
+    setAiPreview(null);
+    setValidationError(null);
   };
 
   // Drag and drop reorder handlers
@@ -191,7 +230,7 @@ export function MediaCard({
       />
 
       {/* AI Image Generator Modal */}
-      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+      <Dialog open={aiModalOpen} onOpenChange={(open) => { if (!open) handleAiSkip(); else setAiModalOpen(true); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -202,53 +241,120 @@ export function MediaCard({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3 py-1">
-            <p className="text-xs text-slate-500">
-              Describe the image you want to generate. Our AI will create a high-quality visual asset for your post.
-            </p>
+          {!aiPreview ? (
+            <>
+              <div className="space-y-3 py-1">
+                <p className="text-xs text-slate-500">
+                  Describe the image you want to generate. Our AI will create a high-quality visual asset for your post.
+                </p>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-700">Image Prompt</label>
-              <Textarea
-                rows={3}
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="e.g. A vibrant sunset over a modern city skyline with neon aesthetic..."
-                className="text-xs resize-none"
-              />
-            </div>
-          </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">Image Prompt</label>
+                  <Textarea
+                    rows={3}
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g. A vibrant sunset over a modern city skyline with neon aesthetic..."
+                    className="text-xs resize-none"
+                  />
+                </div>
+                {validationError && (
+                  <p className="text-xs text-red-600 font-medium">{validationError}</p>
+                )}
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setAiModalOpen(false)}
-              disabled={aiGenerating}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleAiGenerate}
-              disabled={!aiPrompt.trim() || aiGenerating}
-              className="bg-primary hover:bg-primary-hover text-white font-semibold text-xs rounded-lg"
-            >
-              {aiGenerating ? (
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Generating...</span>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAiSkip}
+                  disabled={aiGenerating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAiGenerate}
+                  disabled={!aiPrompt.trim() || aiGenerating}
+                >
+                  {aiGenerating ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Generating...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Generate Image</span>
+                    </div>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="space-y-3 py-1">
+                <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                  <img
+                    src={aiPreview.path}
+                    alt={aiPreview.name}
+                    className="w-full max-h-72 object-contain"
+                  />
                 </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Generate Image</span>
-                </div>
-              )}
-            </Button>
-          </DialogFooter>
+                <p className="text-xs text-slate-500 truncate" title={aiPrompt}>
+                  Prompt: {aiPrompt}
+                </p>
+                {validationError && (
+                  <p className="text-xs text-red-600 font-medium">{validationError}</p>
+                )}
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAiSkip}
+                  disabled={aiGenerating || aiSaving}
+                >
+                  Skip
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAiGenerate}
+                  disabled={aiGenerating || aiSaving}
+                >
+                  {aiGenerating ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                      <span>Regenerating...</span>
+                    </div>
+                  ) : (
+                    <span>Regenerate</span>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAiAdd}
+                  disabled={aiGenerating || aiSaving}
+                >
+                  {aiSaving ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </div>
+                  ) : (
+                    <span>Add</span>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

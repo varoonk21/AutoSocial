@@ -81,7 +81,7 @@ async function createPost(req, res) {
         state,
         group,
         settings: JSON.stringify(rawPost.settings || {}),
-        image: JSON.stringify(rawPost.media || []),
+        image: JSON.stringify((rawPost.media || []).map(normalizeMediaItem)),
         parentPostId,
       };
       if (rawPost.integrationId) {
@@ -122,7 +122,7 @@ async function updatePost(req, res) {
     if (content !== undefined) updates.content = content;
     if (date) updates.publishDate = new Date(date);
     if (settings !== undefined) updates.settings = JSON.stringify(settings);
-    if (media !== undefined) updates.image = JSON.stringify(media);
+    if (media !== undefined) updates.image = JSON.stringify(media.map(normalizeMediaItem));
     if (req.body.state !== undefined) updates.state = req.body.state;
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
@@ -131,10 +131,6 @@ async function updatePost(req, res) {
     if (updated.state === 'QUEUE' && updated.publishDate) {
       await removeScheduledJobs(post.group);
       await schedulePost(post.group, new Date(updated.publishDate));
-    } else if (post.state === 'QUEUE' && updated.state !== 'QUEUE') {
-      // Leaving QUEUE (e.g. cancelled back to DRAFT): drop the stale job so it
-      // never fires for a post that is no longer queued.
-      await removeScheduledJobs(post.group);
     }
 
     sendSuccess(res, { post: updated });
@@ -337,4 +333,4 @@ async function getAnalytics(req, res) {
   }
 }
 
-export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics , refreshPostInsights };
+export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics };

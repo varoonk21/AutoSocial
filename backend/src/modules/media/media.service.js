@@ -105,3 +105,25 @@ async function renameMedia(userId, mediaId, originalName) {
 }
 
 export { getMedia, getUploadUrl, saveMediaMetadata, deleteMediaPermanently, renameMedia };
+
+/**
+ * Fire-and-forget thumbnail generation so uploads stay fast.
+ */
+function generateThumbnailInBackground(mediaId, userId, videoKey) {
+  (async () => {
+    try {
+      const { generateVideoThumbnail } = await import("../services/thumbnail.service.js");
+      const { getS3Url } = await import("../lib/s3.js");
+      const videoUrl = await getS3Url(videoKey);
+      const thumbKey = await generateVideoThumbnail(videoUrl, userId);
+      if (thumbKey) {
+        const mediaRepository = await import("./media.repository.js");
+        if (mediaRepository.updateMediaById) {
+          await mediaRepository.updateMediaById(mediaId, userId, { thumbnail: thumbKey });
+        }
+      }
+    } catch {
+      // thumbnails are best-effort
+    }
+  })();
+}

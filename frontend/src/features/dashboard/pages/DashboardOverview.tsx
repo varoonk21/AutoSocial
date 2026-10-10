@@ -4,7 +4,7 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, Repeat } from "lucide-react";
+import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
@@ -144,14 +144,6 @@ export function DashboardOverview() {
 
   const activePage = pages[activePageIndex] || pages[0];
 
-  const handleSwitchPage = () => {
-    if (pages.length < 2) return;
-    const nextIndex = (activePageIndex + 1) % pages.length;
-    setActivePageIndex(nextIndex);
-    const nextPage = pages[nextIndex];
-    setCoverUrl(covers[nextPage.id] || null);
-  };
-
   return (
     <div className="space-y-8 -mt-8 -mx-10">
       {/* Cover banner */}
@@ -198,22 +190,9 @@ export function DashboardOverview() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
-                  {activePage?.name || session?.user?.name || "Your Workspace"}
-                </h1>
-                {pages.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={handleSwitchPage}
-                    title={`Switch to ${pages[(activePageIndex + 1) % pages.length].name}`}
-                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600 transition-colors shrink-0"
-                  >
-                    <Repeat className="w-3.5 h-3.5" />
-                    Switch
-                  </button>
-                )}
-              </div>
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
+                {activePage?.name || session?.user?.name || "Your Workspace"}
+              </h1>
               <p className="text-sm text-slate-500 mt-1">
                 {activePage
                   ? `${activePage.platform.charAt(0).toUpperCase() + activePage.platform.slice(1)} ${activePage.platform === "facebook" ? "Page" : "Account"} · ${activePage.status === "active" ? "Connected" : activePage.status.replace("_", " ")}`

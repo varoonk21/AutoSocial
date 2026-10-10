@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiPut, apiPost, apiDelete } from "@/lib/fetcher";
+import { apiGet, apiDelete } from "@/lib/fetcher";
 import { PLATFORM_COLORS, STATUS_CONFIG } from "@/constants/platforms";
 import { queryKeys } from "../hooks/queryKeys";
 import { PlatformIcon } from "../components/PlatformIcon";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Select,
@@ -57,6 +56,43 @@ const MONTH_NAMES = [
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function PostPreviewBody({
+  post,
+  getPlatformFromPost,
+}: {
+  post: Post;
+  getPlatformFromPost: (post: Post) => string;
+}) {
+  const platform = getPlatformFromPost(post);
+  const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT;
+  let mediaUrl: string | null = null;
+  try {
+    const items = JSON.parse(post.image || "[]");
+    const first = items[0];
+    mediaUrl = typeof first === "string" ? first : first?.path || null;
+  } catch { /* ignore */ }
+
+  return (
+    <div className="space-y-4">
+      {mediaUrl && (
+        <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+          <img src={mediaUrl} alt="" className="w-full max-h-64 object-contain" />
+        </div>
+      )}
+      <p className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
+        {post.content || <span className="text-slate-400 italic">No content</span>}
+      </p>
+      <div className="flex items-center gap-2">
+        <PlatformIcon platform={platform} size={16} />
+        <span className="text-xs font-medium text-slate-600 capitalize">{platform}</span>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}>
+          {statusConf.label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function ScheduledPostsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -68,15 +104,7 @@ export function ScheduledPostsPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDateForSchedule, setSelectedDateForSchedule] = useState<Date | null>(null);
-  const [scheduleMode, setScheduleMode] = useState<"draft" | "quick">("draft");
-  const [selectedDraftId, setSelectedDraftId] = useState<string>("");
-  const [selectedHour, setSelectedHour] = useState("10");
-  const [selectedMinute, setSelectedMinute] = useState("00");
-  const [selectedPeriod, setSelectedPeriod] = useState<"AM" | "PM">("AM");
-  const [quickContent, setQuickContent] = useState("");
-  const [quickIntegrationId, setQuickIntegrationId] = useState("");
+  const [previewPost, setPreviewPost] = useState<Post | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Delete confirmation
@@ -86,11 +114,6 @@ export function ScheduledPostsPage() {
   const { data: postsData } = useQuery({
     queryKey: queryKeys.posts,
     queryFn: () => apiGet("/posts"),
-  });
-
-  const { data: draftsData } = useQuery({
-    queryKey: [...queryKeys.posts, { state: "DRAFT" }],
-    queryFn: () => apiGet("/posts?state=DRAFT"),
   });
 
   const { data: intData } = useQuery({
@@ -106,47 +129,9 @@ export function ScheduledPostsPage() {
     },
   });
 
-  const scheduleMutation = useMutation({
-    mutationFn: async ({ targetDate, mode }: { targetDate: Date; mode: "draft" | "quick" }) => {
-      if (mode === "draft") {
-        if (!selectedDraftId) throw new Error("Please select a draft post to schedule.");
-        await apiPut(`/posts/${selectedDraftId}`, {
-          state: "QUEUE",
-          date: targetDate.toISOString(),
-        });
-      } else {
-        if (!quickContent.trim()) throw new Error("Please enter post content.");
-        await apiPost("/posts", {
-          type: "schedule",
-          date: targetDate.toISOString(),
-          posts: [
-            {
-              integrationId: effectiveQuickIntegrationId,
-              content: quickContent,
-              media: [],
-            },
-          ],
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts });
-      setIsModalOpen(false);
-      setQuickContent("");
-      showToast("Post scheduled successfully!", "success");
-    },
-    onError: (err: Error) => {
-      showToast(err.message || "Failed to schedule post", "error");
-    },
-  });
-
   const posts = postsData?.posts || [];
-  const drafts = draftsData?.posts || [];
   const integrations = intData?.integrations || [];
-
-  // Derive default integration from loaded data
-  const defaultIntegrationId = integrations.length > 0 ? integrations[0].id : "";
-  const effectiveQuickIntegrationId = quickIntegrationId || defaultIntegrationId;
+  const drafts = posts.filter((p: Post) => p.state === "DRAFT");
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
@@ -208,30 +193,12 @@ export function ScheduledPostsPage() {
   const weekRangeLabel = `${weekDays[0].toLocaleDateString([], { month: "short", day: "numeric" })} – ${weekDays[6].toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}`;
 
   const handleDayClick = (date: Date, presetHour?: number) => {
-    setSelectedDateForSchedule(date);
-    setSelectedDraftId(drafts.length > 0 ? drafts[0]._id : "");
-    if (presetHour !== undefined) {
-      const h = presetHour % 12 || 12;
-      setSelectedHour(String(h).padStart(2, "0"));
-      setSelectedMinute("00");
-      setSelectedPeriod(presetHour < 12 ? "AM" : "PM");
-    }
-    setIsModalOpen(true);
-  };
-
-  const get24HourTime = () => {
-    let h = parseInt(selectedHour, 10);
-    if (selectedPeriod === "PM" && h < 12) h += 12;
-    if (selectedPeriod === "AM" && h === 12) h = 0;
-    return { hours: h, minutes: parseInt(selectedMinute, 10) };
-  };
-
-  const handleSchedulePost = async () => {
-    if (!selectedDateForSchedule) return;
-    const { hours, minutes } = get24HourTime();
-    const targetDate = new Date(selectedDateForSchedule);
-    targetDate.setHours(hours, minutes, 0, 0);
-    scheduleMutation.mutate({ targetDate, mode: scheduleMode });
+    // Redirect to Create Post with date/time pre-selected
+    const dateStr = date.toISOString().split("T")[0];
+    const timeStr = presetHour !== undefined
+      ? `${String(presetHour).padStart(2, "0")}:00`
+      : "10:00";
+    navigate(`/dashboard/content/create?date=${dateStr}&time=${timeStr}`);
   };
 
   // Filter posts
@@ -344,8 +311,8 @@ export function ScheduledPostsPage() {
                       return (
                         <div
                           key={post._id}
-                          className={`px-2 py-1 rounded-lg text-[11px] font-medium border flex items-center gap-1.5 shadow-2xs truncate ${statusConf.bg} ${statusConf.text} ${statusConf.border}`}
-                          onClick={(e) => e.stopPropagation()}
+                          className={`px-2 py-1 rounded-lg text-[11px] font-medium border flex items-center gap-1.5 shadow-2xs truncate cursor-pointer hover:shadow-sm transition-shadow ${statusConf.bg} ${statusConf.text} ${statusConf.border}`}
+                          onClick={(e) => { e.stopPropagation(); setPreviewPost(post); }}
                         >
                           <PlatformIcon platform={platform} size={11} />
                           <span className="font-semibold shrink-0">{postTime}</span>
@@ -422,8 +389,8 @@ export function ScheduledPostsPage() {
                               return (
                                 <div
                                   key={post._id}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className={`px-1.5 py-1 rounded-md text-[10px] font-medium border truncate flex items-center gap-1 ${statusConf.bg} ${statusConf.text} ${statusConf.border}`}
+                                  onClick={(e) => { e.stopPropagation(); setPreviewPost(post); }}
+                                  className={`px-1.5 py-1 rounded-md text-[10px] font-medium border truncate flex items-center gap-1 cursor-pointer hover:shadow-sm transition-shadow ${statusConf.bg} ${statusConf.text} ${statusConf.border}`}
                                 >
                                   <PlatformIcon platform={platform} size={9} />
                                   <span className="font-semibold shrink-0">{postTime}</span>
@@ -787,160 +754,41 @@ export function ScheduledPostsPage() {
         </div>
       </div>
 
-      {/* Schedule Post Dialog */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Post Preview Modal */}
+      <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              Schedule Post for {selectedDateForSchedule?.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-            </DialogTitle>
-            <DialogDescription>
-              Choose an existing draft or compose a quick post to schedule on this date.
+            <DialogTitle className="text-base font-bold text-slate-900">Post Preview</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {previewPost && new Date(previewPost.publishDate).toLocaleString([], {
+                month: "short", day: "numeric", year: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              })}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 my-2">
-            {/* Mode Switcher */}
-            <ToggleGroup
-              type="single"
-              value={scheduleMode}
-              onValueChange={(value) => value && setScheduleMode(value as "draft" | "quick")}
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
-              <ToggleGroupItem value="draft" className="flex-1 text-xs">
-                Select from Drafts ({drafts.length})
-              </ToggleGroupItem>
-              <ToggleGroupItem value="quick" className="flex-1 text-xs">
-                Quick Create Post
-              </ToggleGroupItem>
-            </ToggleGroup>
-
-            {/* Time Picker */}
-            <div>
-              <label className="text-xs font-semibold text-foreground block mb-1.5">Time of Day</label>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-                <div className="grid grid-cols-3 gap-2 flex-1">
-                  {/* Hour Select */}
-                  <Select value={selectedHour} onValueChange={setSelectedHour}>
-                    <SelectTrigger className="w-full text-xs font-semibold">
-                      <SelectValue placeholder="Hour" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map((h) => (
-                        <SelectItem key={h} value={h}>
-                          {h}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* Minute Select */}
-                  <Select value={selectedMinute} onValueChange={setSelectedMinute}>
-                    <SelectTrigger className="w-full text-xs font-semibold">
-                      <SelectValue placeholder="Minute" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map((m) => (
-                        <SelectItem key={m} value={m}>
-                          {m}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* Period Select */}
-                  <Select value={selectedPeriod} onValueChange={(val) => setSelectedPeriod(val as "AM" | "PM")}>
-                    <SelectTrigger className="w-full text-xs font-semibold">
-                      <SelectValue placeholder="AM/PM" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AM">AM</SelectItem>
-                      <SelectItem value="PM">PM</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {scheduleMode === "draft" ? (
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">Select Draft</label>
-                {drafts.length === 0 ? (
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-center text-xs text-gray-500">
-                    No drafts available. Switch to "Quick Create Post" to compose a new post.
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {drafts.map((draft: Post) => {
-                      const platform = getPlatformFromPost(draft);
-                      const isSelected = selectedDraftId === draft._id;
-
-                      return (
-                        <div
-                          key={draft._id}
-                          onClick={() => setSelectedDraftId(draft._id)}
-                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
-                            isSelected
-                              ? "border-foreground bg-primary-50/40 ring-2 ring-foreground/20"
-                              : "border-gray-200 bg-background hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <PlatformIcon platform={platform} size={16} />
-                            <span className="text-xs font-medium text-foreground truncate">{draft.content || "Draft Content"}</span>
-                          </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1">Account / Platform</label>
-                  <Select value={effectiveQuickIntegrationId} onValueChange={setQuickIntegrationId}>
-                    <SelectTrigger className="w-full text-xs">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {integrations.map((int: any) => (
-                        <SelectItem key={int.id} value={int.id}>
-                          {int.name || int.platform} ({int.platform})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1">Post Content</label>
-                  <Textarea
-                    rows={3}
-                    value={quickContent}
-                    onChange={(e) => setQuickContent(e.target.value)}
-                    placeholder="What would you like to share?"
-                    className="text-xs"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          {previewPost && (
+            <PostPreviewBody
+              post={previewPost}
+              getPlatformFromPost={getPlatformFromPost}
+            />
+          )}
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              Cancel
+            <Button variant="outline" onClick={() => setPreviewPost(null)}>
+              Close
             </Button>
-            <Button
-              onClick={handleSchedulePost}
-              disabled={scheduleMutation.isPending}
-              className="bg-foreground hover:bg-foreground/85 text-white font-semibold"
-            >
-              {scheduleMutation.isPending ? "Scheduling..." : "Schedule Post"}
-            </Button>
+            {previewPost && (previewPost.state === "DRAFT" || previewPost.state === "QUEUE") && (
+              <Button
+                onClick={() => {
+                  const id = previewPost._id;
+                  setPreviewPost(null);
+                  navigate(`/dashboard/content/create/${id}`);
+                }}
+              >
+                Edit Post
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -32,13 +32,21 @@ export function definePublishJob(agenda: Agenda): void {
 
       // Group posts by integration (each integration gets its own publish call)
       const postsByIntegration = new Map<string, any[]>();
+      const orphaned: any[] = [];
       for (const post of posts) {
         const integrationId = post.integrationId?._id?.toString() || post.integrationId?.toString();
-        if (!integrationId) continue;
+        if (!integrationId) {
+          orphaned.push(post);
+          continue;
+        }
         if (!postsByIntegration.has(integrationId)) {
           postsByIntegration.set(integrationId, []);
         }
         postsByIntegration.get(integrationId)!.push(post);
+      }
+      // Posts with no social account must not sit in QUEUE forever
+      if (orphaned.length > 0) {
+        await markPostsError(orphaned, "No social account selected for this post");
       }
 
       // Publish each integration's posts independently

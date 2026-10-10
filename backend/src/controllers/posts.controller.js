@@ -123,9 +123,15 @@ async function updatePost(req, res) {
     if (date) updates.publishDate = new Date(date);
     if (settings !== undefined) updates.settings = JSON.stringify(settings);
     if (media !== undefined) updates.image = JSON.stringify(media.map(normalizeMediaItem));
-    if (req.body.state !== undefined) updates.state = req.body.state;
+    // Only allow user-driven transitions to DRAFT or QUEUE — never PUBLISHED/ERROR directly
+    if (req.body.state !== undefined) {
+      if (!['DRAFT', 'QUEUE'].includes(req.body.state)) {
+        return res.status(400).json({ error: 'Invalid state transition' });
+      }
+      updates.state = req.body.state;
+    }
 
-    const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
+    const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
 
     // If scheduling (changing state to QUEUE with a date), create an Agenda job
     if (updated.state === 'QUEUE' && updated.publishDate) {
@@ -144,12 +150,17 @@ async function deletePost(req, res) {
     const post = await Post.findOne({ _id: req.params.id, userId: req.user._id });
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    // Remove any scheduled Agenda jobs for this group
-    if (post.state === 'QUEUE') {
-      await removeScheduledJobs(post.group);
+    const wasQueued = post.state === 'QUEUE';
+    await Post.deleteOne({ _id: post._id, userId: req.user._id });
+
+    // Remove scheduled Agenda jobs only if no QUEUE posts remain in the group
+    if (wasQueued) {
+      const remaining = await Post.countDocuments({ group: post.group, state: 'QUEUE', userId: req.user._id });
+      if (remaining === 0) {
+        await removeScheduledJobs(post.group);
+      }
     }
 
-    await Post.deleteMany({ group: post.group, userId: req.user._id });
     sendSuccess(res, { success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });

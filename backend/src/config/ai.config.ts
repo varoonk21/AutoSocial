@@ -30,11 +30,22 @@ const parsed = aiEnvSchema.safeParse({
 
 if (!parsed.success) {
   console.error("Invalid AI environment variables:", parsed.error.flatten().fieldErrors);
-  process.exit(1);
+  console.error("AI features will run in template-fallback mode.");
 }
 
-const aiEnv = parsed.data;
+const aiEnv = parsed.success
+  ? parsed.data
+  : {
+      OPENAI_API_KEY: undefined,
+      OPENAI_BASE_URL: undefined,
+      models: { textToText: "gpt-4o", imageToText: "gpt-4o", image: "dall-e-3" },
+      defaults: { temperature: 1, maxTokens: 4096 },
+    };
+
+/** True when a real LLM key is configured; false = template-fallback mode. */
+const aiEnabled = Boolean(aiEnv.OPENAI_API_KEY && aiEnv.OPENAI_API_KEY.length > 0);
 
 export type AiEnv = z.infer<typeof aiEnvSchema>;
 
 export default aiEnv;
+export { aiEnabled };

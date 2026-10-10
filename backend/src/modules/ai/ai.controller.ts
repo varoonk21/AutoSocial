@@ -3,7 +3,7 @@ import * as aiService from "./ai.service.js";
 import { uploadToS3 } from "../../lib/s3.js";
 import { saveMediaMetadata } from "../media/media.service.js";
 import { sendSuccess } from "../../utils/response.util.js";
-import type { GenerateImageInput, GenerateContentFromImageInput, EnhanceContentInput } from "./ai.validation.js";
+import type { GenerateImageInput, GenerateContentFromImageInput, EnhanceContentInput, GenerateVariationsInput, EnhanceContentSafeInput } from "./ai.validation.js";
 
 
 async function generateImageHandler(req: Request, res: Response) {
@@ -51,4 +51,30 @@ export {
   generateImageHandler,
   generateContentFromImageHandler,
   enhanceContentHandler,
+  generateVariationsHandler,
+  enhanceContentSafeHandler,
+  getPromptHistoryHandler,
+  getAiStatusHandler,
 };
+
+async function generateVariationsHandler(req: Request, res: Response) {
+  const { topic, platform, count } = req.body as GenerateVariationsInput;
+  const result = await aiService.generateVariations(topic, req.user!._id, platform, count);
+  sendSuccess(res, result);
+}
+
+async function enhanceContentSafeHandler(req: Request, res: Response) {
+  const { content, enhanceType, platform } = req.body as EnhanceContentSafeInput;
+  const result = await aiService.enhanceContentSafe(content, enhanceType, req.user!._id, platform);
+  sendSuccess(res, result);
+}
+
+async function getPromptHistoryHandler(req: Request, res: Response) {
+  const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 10));
+  const history = await aiService.getPromptHistory(req.user!._id, limit);
+  sendSuccess(res, { prompts: history });
+}
+
+async function getAiStatusHandler(_req: Request, res: Response) {
+  sendSuccess(res, aiService.getAiStatus());
+}

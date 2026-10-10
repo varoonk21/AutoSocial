@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -53,10 +54,12 @@ export function MediaLibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all"); // "all", "image", "video", "document"
   const [sourceFilter, setSourceFilter] = useState("all"); // "all", "user", "ai"
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("recent");
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationMeta, setPaginationMeta] = useState({ page: 1, pageSize: 24, total: 0, pageCount: 1 });
   const [stats, setStats] = useState({ total: 0, images: 0, videos: 0, ai: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [mediaLoading, setMediaLoading] = useState(true);
 
   // Modals & Interactivity
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -100,6 +103,7 @@ export function MediaLibraryPage() {
 
   const fetchStats = async () => {
     try {
+      setStatsLoading(true);
       const [all, images, videos, ai] = await Promise.all([
         apiGetPaginated("/media?page=1&pageSize=1"),
         apiGetPaginated("/media?type=image&page=1&pageSize=1"),
@@ -114,20 +118,24 @@ export function MediaLibraryPage() {
       });
     } catch {
       // Stats stay at zero
+    } finally {
+      setStatsLoading(false);
     }
   };
 
   const fetchBackendMedia = async () => {
     try {
+      setMediaLoading(true);
       const params = new URLSearchParams();
       if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
       if (sourceFilter && sourceFilter !== "all") params.append("source", sourceFilter);
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage.toString());
 
-      if (sortBy === "newest") params.append("sort", "createdAt:desc");
+      if (sortBy === "recent" || sortBy === "newest") params.append("sort", "createdAt:desc");
       else if (sortBy === "oldest") params.append("sort", "createdAt:asc");
-      else if (sortBy === "name") params.append("sort", "originalName:asc");
+      else if (sortBy === "name-asc" || sortBy === "name") params.append("sort", "originalName:asc");
+      else if (sortBy === "name-desc") params.append("sort", "originalName:desc");
 
       const queryString = params.toString();
       const { items, meta } = await apiGetPaginated(`/media${queryString ? `?${queryString}` : ""}`);
@@ -146,7 +154,10 @@ export function MediaLibraryPage() {
         setMediaList(backendItems);
         setPaginationMeta(meta);
       }
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setMediaLoading(false);
+    }
   };
 
   const handleFileUpload = async (files) => {
@@ -295,7 +306,7 @@ export function MediaLibraryPage() {
   const filteredMedia = mediaList;
 
   return (
-    <div className="max-w-[1360px] mx-auto space-y-6  text-neutral-900 pb-16 select-none">
+    <div className="w-full space-y-6  text-neutral-900 pb-16 select-none">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed bottom-6 right-6 z-50 bg-foreground text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
@@ -341,41 +352,57 @@ export function MediaLibraryPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
-          <div className="size-10 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
-            <ImageIcon className="w-5 h-5 text-teal-600" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
+          <div className="size-8 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-4 h-4 text-teal-600" />
           </div>
-          <div>
-            <div className="text-xl font-bold text-slate-900">{stats.total}</div>
-            <div className="text-xs text-slate-500">Total media</div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
-          <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-            <ImageIcon className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <div className="text-xl font-bold text-slate-900">{stats.images}</div>
-            <div className="text-xs text-slate-500">Images</div>
+          <div className="min-w-0">
+            {statsLoading ? (
+              <Skeleton className="h-4 w-6 rounded-md my-0.5" />
+            ) : (
+              <div className="text-base font-bold text-slate-900 leading-tight">{stats.total}</div>
+            )}
+            <div className="text-[11px] font-medium text-slate-500 truncate">Total media</div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
-          <div className="size-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
-            <Video className="w-5 h-5 text-purple-600" />
+        <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
+          <div className="size-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-4 h-4 text-blue-600" />
           </div>
-          <div>
-            <div className="text-xl font-bold text-slate-900">{stats.videos}</div>
-            <div className="text-xs text-slate-500">Videos</div>
+          <div className="min-w-0">
+            {statsLoading ? (
+              <Skeleton className="h-4 w-6 rounded-md my-0.5" />
+            ) : (
+              <div className="text-base font-bold text-slate-900 leading-tight">{stats.images}</div>
+            )}
+            <div className="text-[11px] font-medium text-slate-500 truncate">Images</div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
-          <div className="size-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-amber-600" />
+        <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
+          <div className="size-8 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+            <Video className="w-4 h-4 text-purple-600" />
           </div>
-          <div>
-            <div className="text-xl font-bold text-slate-900">{stats.ai}</div>
-            <div className="text-xs text-slate-500">AI generated</div>
+          <div className="min-w-0">
+            {statsLoading ? (
+              <Skeleton className="h-4 w-6 rounded-md my-0.5" />
+            ) : (
+              <div className="text-base font-bold text-slate-900 leading-tight">{stats.videos}</div>
+            )}
+            <div className="text-[11px] font-medium text-slate-500 truncate">Videos</div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
+          <div className="size-8 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-amber-600" />
+          </div>
+          <div className="min-w-0">
+            {statsLoading ? (
+              <Skeleton className="h-4 w-6 rounded-md my-0.5" />
+            ) : (
+              <div className="text-base font-bold text-slate-900 leading-tight">{stats.ai}</div>
+            )}
+            <div className="text-[11px] font-medium text-slate-500 truncate">AI generated</div>
           </div>
         </div>
       </div>
@@ -384,32 +411,28 @@ export function MediaLibraryPage() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search media..."
-            className="pl-10"
-          />
+          <Input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search media..." className="pl-10" />
         </div>
 
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[170px]">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+        <Select value={sortBy} onValueChange={(v) => v && setSortBy(v)}>
+          <SelectTrigger className="w-[195px]">
+            <ArrowUpDown className="w-4 h-4 text-slate-700" />
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest first</SelectItem>
-            <SelectItem value="oldest">Oldest first</SelectItem>
-            <SelectItem value="name">Name (A-Z)</SelectItem>
+          <SelectContent className="w-[195px]">
+            <SelectItem value="recent">Recently updated</SelectItem>
+            <SelectItem value="name-asc">Name A-Z</SelectItem>
+            <SelectItem value="name-desc">Name Z-A</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
+            <SelectItem value="oldest">Oldest</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={typeFilter} onValueChange={(v) => v && setTypeFilter(v)}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="All media" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="w-[160px]">
             <SelectItem value="all">All media</SelectItem>
             <SelectItem value="image">Images</SelectItem>
             <SelectItem value="video">Videos</SelectItem>
@@ -425,9 +448,7 @@ export function MediaLibraryPage() {
             title="User uploads"
             aria-label="Show user uploads"
             className={`p-2 rounded-lg transition-colors cursor-pointer ${
-              sourceFilter === "user"
-                ? "bg-slate-900 text-white"
-                : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+              sourceFilter === "user" ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
             <UserIcon className="w-4 h-4" />
@@ -438,9 +459,7 @@ export function MediaLibraryPage() {
             title="AI generated"
             aria-label="Show AI generated"
             className={`p-2 rounded-lg transition-colors cursor-pointer ${
-              sourceFilter === "ai"
-                ? "bg-slate-900 text-white"
-                : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+              sourceFilter === "ai" ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -449,142 +468,165 @@ export function MediaLibraryPage() {
       </div>
 
       {/* Media Cards Grid (4 columns) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredMedia.map((asset) => (
-          <div
-            key={asset._id}
-            onClick={() => setSelectedAsset(asset)}
-            className="group bg-background rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col relative"
-          >
-            {/* Thumbnail Box */}
-            <div className="relative aspect-4/3 bg-gray-100 overflow-hidden flex items-center justify-center">
-              {/* Image / Video / Document Visual */}
-              {asset.type === "document" ? (
-                <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-4">
-                  <div className="relative bg-background border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
-                    <FileText className="w-10 h-10 text-gray-400 mb-1" />
-                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">{asset.docType || "PDF"}</span>
-                  </div>
-                </div>
-              ) : (
-                <img
-                  src={asset.path}
-                  alt={asset.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              )}
-
-              {/* Video Play Overlay */}
-              {asset.type === "video" && (
-                <>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xs text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Play className="w-5 h-5 fill-white text-white ml-0.5" />
+      {mediaLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs flex flex-col"
+            >
+              <Skeleton className="aspect-4/3 w-full rounded-none" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-3.5 w-3/4 rounded-md" />
+                <Skeleton className="h-2.5 w-1/2 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredMedia.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center bg-white">
+          <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-slate-800">No media found</h3>
+          <p className="text-xs text-slate-400 mt-1">Upload images or videos to build your media library.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredMedia.map((asset) => (
+            <div
+              key={asset._id}
+              onClick={() => setSelectedAsset(asset)}
+              className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col relative"
+            >
+              {/* Thumbnail Box */}
+              <div className="relative aspect-4/3 bg-gray-100 overflow-hidden flex items-center justify-center">
+                {/* Image / Video / Document Visual */}
+                {asset.type === "document" ? (
+                  <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-4">
+                    <div className="relative bg-background border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
+                      <FileText className="w-10 h-10 text-gray-400 mb-1" />
+                      <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">{asset.docType || "PDF"}</span>
                     </div>
                   </div>
-                  <span className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                    {asset.duration || "00:15"}
+                ) : (
+                  <img
+                    src={asset.path}
+                    alt={asset.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                )}
+
+                {/* Video Play Overlay */}
+                {asset.type === "video" && (
+                  <>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xs text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <Play className="w-5 h-5 fill-white text-white ml-0.5" />
+                      </div>
+                    </div>
+                    <span className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                      {asset.duration || "00:15"}
+                    </span>
+                  </>
+                )}
+
+                {/* Badge Top Left */}
+                <div className="absolute top-2.5 left-2.5">
+                  <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-2xs">
+                    {asset.badge}
                   </span>
-                </>
-              )}
-
-              {/* Badge Top Left */}
-              <div className="absolute top-2.5 left-2.5">
-                <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-2xs">
-                  {asset.badge}
-                </span>
-              </div>
-
-              {/* Three Dots Button Top Right */}
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpenId(menuOpenId === asset._id ? null : asset._id);
-                }}
-                className="absolute top-2.5 right-2.5 bg-black/40 text-white hover:bg-black/60"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-
-              {/* Dropdown Options Menu */}
-              {menuOpenId === asset._id && (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="absolute top-9 right-2.5 bg-background border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
-                >
-                  <Button variant="ghost" size="sm" className="w-full justify-start" onClick={(e) => copyLink(asset.path, asset._id, e)}>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Link</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      setMenuOpenId(null);
-                      navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
-                    }}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Use in Post</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-                    onClick={(e) => handleDeleteClick(asset._id, e)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete</span>
-                  </Button>
                 </div>
-              )}
 
-              {/* HOVER OVERLAY ACTIONS (as requested: "keep the option of hover") */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
+                {/* Three Dots Button Top Right */}
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  onClick={(e) => copyLink(asset.path, asset._id, e)}
-                  className="bg-background/90 hover:bg-background text-gray-800 shadow-md"
-                  title="Copy Link"
-                >
-                  {copiedId === asset._id ? <Check className="w-4 h-4 text-primary-600" /> : <Copy className="w-4 h-4" />}
-                </Button>
-                <Button
-                  size="sm"
+                  size="icon-xs"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
+                    setMenuOpenId(menuOpenId === asset._id ? null : asset._id);
                   }}
-                  className="shadow-md"
+                  className="absolute top-2.5 right-2.5 bg-black/40 text-white hover:bg-black/60"
                 >
-                  Use in Post
+                  <MoreHorizontal className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="icon-sm"
-                  onClick={(e) => handleDeleteClick(asset._id, e)}
-                  className="bg-background/90 hover:bg-red-50 text-red-600 shadow-md"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+
+                {/* Dropdown Options Menu */}
+                {menuOpenId === asset._id && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-9 right-2.5 bg-background border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
+                  >
+                    <Button variant="ghost" size="sm" className="w-full justify-start" onClick={(e) => copyLink(asset.path, asset._id, e)}>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Link</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setMenuOpenId(null);
+                        navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Use in Post</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
+                      onClick={(e) => handleDeleteClick(asset._id, e)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* HOVER OVERLAY ACTIONS (as requested: "keep the option of hover") */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={(e) => copyLink(asset.path, asset._id, e)}
+                    className="bg-background/90 hover:bg-background text-gray-800 shadow-md"
+                    title="Copy Link"
+                  >
+                    {copiedId === asset._id ? <Check className="w-4 h-4 text-primary-600" /> : <Copy className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
+                    }}
+                    className="shadow-md"
+                  >
+                    Use in Post
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon-sm"
+                    onClick={(e) => handleDeleteClick(asset._id, e)}
+                    className="bg-background/90 hover:bg-red-50 text-red-600 shadow-md"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Card Content Footer */}
+              <div className="p-4 space-y-1">
+                <h4 className="font-bold text-xs text-foreground truncate">{asset.name}</h4>
+                <p className="text-[11px] text-gray-400 font-medium">
+                  {asset.size} • {asset.date}
+                </p>
               </div>
             </div>
-
-            {/* Card Content Footer */}
-            <div className="p-4 space-y-1">
-              <h4 className="font-bold text-xs text-foreground truncate">{asset.name}</h4>
-              <p className="text-[11px] text-gray-400 font-medium">
-                {asset.size} • {asset.date}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination & Stats Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200/80">

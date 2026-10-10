@@ -105,10 +105,10 @@ export function currentKeyId(): string {
 
 /**
  * Generates a cryptographically secure random OAuth state token.
- * Uses crypto.randomBytes — never Math.random() — for unguessable states.
+ * Uses randomBytes — never Math.random() — for unguessable states.
  */
 export function generateOAuthState(): string {
-  return crypto.randomBytes(32).toString("hex");
+  return randomBytes(32).toString("hex");
 }
 
 export const TokenService = {

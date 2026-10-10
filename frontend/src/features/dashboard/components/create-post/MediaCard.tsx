@@ -196,7 +196,7 @@ export function MediaCard({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-slate-100 text-slate-700">
-                <Sparkles className="w-4 h-4 text-[#0A7CFF]" />
+                <Sparkles className="w-4 h-4 text-primary" />
               </div>
               <span className="text-sm font-semibold text-slate-900">Create Image with AI</span>
             </DialogTitle>
@@ -234,7 +234,7 @@ export function MediaCard({
               size="sm"
               onClick={handleAiGenerate}
               disabled={!aiPrompt.trim() || aiGenerating}
-              className="bg-[#0A7CFF] hover:bg-[#0066DB] text-white font-semibold text-xs rounded-lg"
+              className="bg-primary hover:bg-primary-hover text-white font-semibold text-xs rounded-lg"
             >
               {aiGenerating ? (
                 <div className="flex items-center gap-1.5">
@@ -261,7 +261,7 @@ export function MediaCard({
         className="hidden"
       />
 
-      <Card className="rounded-xl border border-gray-200 bg-white shadow-xs overflow-visible">
+      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs overflow-visible">
         <CardContent className="p-4 space-y-3 overflow-visible">
           <div className="flex items-center justify-between">
             <div>
@@ -277,7 +277,7 @@ export function MediaCard({
                 onClick={() => setAiModalOpen(true)}
                 className="h-8 px-2.5 border-gray-300 hover:bg-slate-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#0A7CFF]" />
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span>Generate with AI</span>
               </Button>
 
@@ -290,12 +290,12 @@ export function MediaCard({
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="h-8 px-2.5 border-gray-300 hover:bg-gray-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#0A7CFF]" />
+                  <Plus className="w-3.5 h-3.5 text-primary" />
                   <span>Add photo/video</span>
                 </Button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-background rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
                     <button
                       type="button"
                       onClick={() => {
@@ -326,14 +326,14 @@ export function MediaCard({
 
           {/* Upload Progress Bar */}
           {isUploading && (
-            <div className="space-y-1.5 p-2.5 bg-blue-50/50 rounded-lg border border-blue-100">
-              <div className="flex justify-between text-xs font-semibold text-blue-900">
+            <div className="space-y-1.5 p-2.5 bg-primary-50/50 rounded-lg border border-primary-100">
+              <div className="flex justify-between text-xs font-semibold text-primary-900">
                 <span>Uploading asset...</span>
                 <span>{uploadProgress}%</span>
               </div>
-              <div className="w-full h-1.5 bg-blue-200/60 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-primary-200/60 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#0A7CFF] rounded-full transition-all duration-200"
+                  className="h-full bg-primary rounded-full transition-all duration-200"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -368,7 +368,7 @@ export function MediaCard({
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => e.preventDefault()}
                       className={`relative group shrink-0 w-20 h-20 rounded-lg border overflow-hidden bg-gray-100 transition-all cursor-grab active:cursor-grabbing ${
-                        isCover ? "border-[#0A7CFF] ring-2 ring-[#0A7CFF]/15" : "border-gray-200 hover:border-gray-300"
+                        isCover ? "border-primary ring-2 ring-primary/15" : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       {item.type === "video" ? (
@@ -386,7 +386,7 @@ export function MediaCard({
 
                       {/* Cover Badge */}
                       {isCover && (
-                        <span className="absolute bottom-1 left-1 bg-[#0A7CFF] text-white text-[8px] font-extrabold px-1 py-0.5 rounded shadow-xs">
+                        <span className="absolute bottom-1 left-1 bg-primary text-white text-[8px] font-extrabold px-1 py-0.5 rounded shadow-xs">
                           COVER
                         </span>
                       )}

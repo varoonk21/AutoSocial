@@ -24,7 +24,7 @@ export function SchedulePicker({ type, date, onTypeChange, onDateChange }: Sched
               value={option.value}
               checked={type === option.value}
               onChange={() => onTypeChange(option.value)}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
             />
             <span className="text-sm text-gray-700">{option.label}</span>
           </label>
@@ -37,7 +37,7 @@ export function SchedulePicker({ type, date, onTypeChange, onDateChange }: Sched
           min={minDate}
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
-          className="block w-full max-w-sm border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block w-full max-w-sm border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           required
         />
       )}

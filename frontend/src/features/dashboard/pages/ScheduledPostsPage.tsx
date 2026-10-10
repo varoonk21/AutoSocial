@@ -302,7 +302,7 @@ export function ScheduledPostsPage() {
   const renderCalendarView = () => {
     if (viewMode === "month") {
       return (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
           <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/70">
             {DAYS_OF_WEEK.map((day) => (
               <div key={day} className="py-3 text-center text-xs font-semibold text-gray-600">
@@ -318,17 +318,17 @@ export function ScheduledPostsPage() {
                 <div
                   key={idx}
                   onClick={() => handleDayClick(cell.date)}
-                  className={`min-h-[110px] p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-indigo-50/30 ${
-                    !cell.isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-white"
+                  className={`min-h-[110px] p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-primary-50/30 ${
+                    !cell.isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-background"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-xs font-semibold inline-flex items-center justify-center rounded-full ${
                         currentDay
-                          ? "w-6 h-6 bg-[#243746] text-white shadow-xs"
+                          ? "w-6 h-6 bg-foreground text-white shadow-xs"
                           : cell.isCurrentMonth
-                          ? "text-[#1c2b36]"
+                          ? "text-foreground"
                           : "text-gray-400"
                       }`}
                     >
@@ -364,7 +364,7 @@ export function ScheduledPostsPage() {
 
     if (viewMode === "week") {
       return (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
           <div className="flex border-b border-gray-200 bg-gray-50/80 sticky top-0 z-10">
             <div className="w-14 shrink-0" />
             {weekDays.map((day) => {
@@ -376,7 +376,7 @@ export function ScheduledPostsPage() {
                   </div>
                   <div
                     className={`text-sm font-bold mt-0.5 mx-auto w-7 h-7 flex items-center justify-center rounded-full ${
-                      currentDay ? "bg-[#243746] text-white" : "text-[#1c2b36]"
+                      currentDay ? "bg-foreground text-white" : "text-foreground"
                     }`}
                   >
                     {day.getDate()}
@@ -409,8 +409,8 @@ export function ScheduledPostsPage() {
                       <div
                         key={day.toISOString()}
                         onClick={() => handleDayClick(day, hour)}
-                        className={`flex-1 min-h-[48px] border-l border-gray-100 px-1 py-1 cursor-pointer group transition-colors hover:bg-[#243746]/5 ${
-                          currentDay ? "bg-indigo-50/10" : ""
+                        className={`flex-1 min-h-[48px] border-l border-gray-100 px-1 py-1 cursor-pointer group transition-colors hover:bg-foreground/5 ${
+                          currentDay ? "bg-primary-50/10" : ""
                         }`}
                       >
                         {slotPosts.length > 0 ? (
@@ -456,9 +456,9 @@ export function ScheduledPostsPage() {
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in ${
-          toast.type === "success" ? "bg-[#243746]" : "bg-red-600"
+          toast.type === "success" ? "bg-foreground" : "bg-red-600"
         }`}>
-          {toast.type === "success" ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4" />}
+          {toast.type === "success" ? <CheckCircle2 className="w-4 h-4 text-primary-400" /> : <AlertCircle className="w-4 h-4" />}
           <span>{toast.message}</span>
         </div>
       )}
@@ -486,12 +486,12 @@ export function ScheduledPostsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Calendar</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Calendar</h1>
           <p className="text-gray-500 text-sm mt-0.5">Plan, schedule and manage your content calendar.</p>
         </div>
         <Button
           onClick={() => navigate("/dashboard/create-post")}
-          className="bg-[#243746] hover:bg-[#1c2b36] text-white gap-2 shadow-sm"
+          className="bg-foreground hover:bg-foreground/85 text-white gap-2 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span>Create Post</span>
@@ -499,7 +499,7 @@ export function ScheduledPostsPage() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-gray-200 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-background p-3 rounded-2xl border border-gray-200 shadow-xs">
         <div className="flex items-center gap-2">
           <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
             <Button
@@ -522,7 +522,7 @@ export function ScheduledPostsPage() {
           <Button variant="outline" size="sm" onClick={goToToday} className="font-medium">
             Today
           </Button>
-          <span className="text-lg font-bold text-[#1c2b36] ml-2">
+          <span className="text-lg font-bold text-foreground ml-2">
             {viewMode === "week" ? weekRangeLabel : `${MONTH_NAMES[month]} ${year}`}
           </span>
         </div>
@@ -577,38 +577,38 @@ export function ScheduledPostsPage() {
         {/* Right: Sidebar */}
         <div className="space-y-6">
           {/* Monthly Overview */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-[#1c2b36] text-sm">Monthly Overview</h3>
-              <span className="text-xs font-semibold text-[#243746] cursor-pointer hover:underline">View Analytics</span>
+              <h3 className="font-bold text-foreground text-sm">Monthly Overview</h3>
+              <span className="text-xs font-semibold text-foreground cursor-pointer hover:underline">View Analytics</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-blue-50/60 border border-blue-100 p-3.5 rounded-xl flex items-center justify-between">
+              <div className="bg-primary-50/60 border border-primary-100 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-extrabold text-blue-900">{scheduledCount}</div>
-                  <div className="text-[11px] font-medium text-blue-600 mt-0.5">Scheduled</div>
+                  <div className="text-xl font-extrabold text-primary-900">{scheduledCount}</div>
+                  <div className="text-[11px] font-medium text-primary-600 mt-0.5">Scheduled</div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
                   <CalendarIcon className="w-4 h-4" />
                 </div>
               </div>
 
-              <div className="bg-emerald-50/60 border border-emerald-100 p-3.5 rounded-xl flex items-center justify-between">
+              <div className="bg-accent/60 border border-primary-100 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-extrabold text-emerald-900">{publishedCount}</div>
-                  <div className="text-[11px] font-medium text-emerald-600 mt-0.5">Published</div>
+                  <div className="text-xl font-extrabold text-primary-900">{publishedCount}</div>
+                  <div className="text-[11px] font-medium text-primary-600 mt-0.5">Published</div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-accent text-primary-600 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
 
-              <div className="bg-amber-50/60 border border-amber-100 p-3.5 rounded-xl flex items-center justify-between">
+              <div className="bg-primary-50/60 border border-primary-100 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-extrabold text-amber-900">{pendingCount}</div>
-                  <div className="text-[11px] font-medium text-amber-600 mt-0.5">Pending</div>
+                  <div className="text-xl font-extrabold text-primary-900">{pendingCount}</div>
+                  <div className="text-[11px] font-medium text-primary-600 mt-0.5">Pending</div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
                   <Clock className="w-4 h-4" />
                 </div>
               </div>
@@ -626,9 +626,9 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Upcoming Posts */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-[#1c2b36] text-sm">Upcoming Posts</h3>
+              <h3 className="font-bold text-foreground text-sm">Upcoming Posts</h3>
               <span className="text-xs font-semibold text-gray-400">
                 View all
               </span>
@@ -654,7 +654,7 @@ export function ScheduledPostsPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-[#1c2b36] truncate">{post.content || "Scheduled Post"}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{post.content || "Scheduled Post"}</p>
                         <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
@@ -673,9 +673,9 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Recent Published */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-[#1c2b36] text-sm">Recent Published</h3>
+              <h3 className="font-bold text-foreground text-sm">Recent Published</h3>
               <span className="text-xs font-semibold text-gray-400">
                 {publishedCount} total
               </span>
@@ -701,7 +701,7 @@ export function ScheduledPostsPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-[#1c2b36] truncate">{post.content || "Published Post"}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{post.content || "Published Post"}</p>
                         <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
@@ -714,7 +714,7 @@ export function ScheduledPostsPage() {
                           href={post.releaseURL}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[11px] font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                          className="text-[11px] font-medium text-primary-600 hover:text-primary-700 whitespace-nowrap"
                         >
                           View ↗
                         </a>
@@ -727,9 +727,9 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Filters */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-[#1c2b36] text-sm">Filters</h3>
+              <h3 className="font-bold text-foreground text-sm">Filters</h3>
               <button
                 onClick={() => { setSelectedPlatform("all"); setSelectedStatus("all"); }}
                 className="text-xs font-medium text-gray-400 hover:text-gray-600"
@@ -773,8 +773,8 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Legend */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white p-5">
-            <h3 className="font-bold text-[#1c2b36] text-sm mb-3">Legend</h3>
+          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
+            <h3 className="font-bold text-foreground text-sm mb-3">Legend</h3>
             <div className="grid grid-cols-2 gap-2 text-xs font-medium text-gray-600">
               {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                 <div key={key} className="flex items-center gap-2">
@@ -819,7 +819,7 @@ export function ScheduledPostsPage() {
 
             {/* Time Picker */}
             <div>
-              <label className="text-xs font-semibold text-[#1c2b36] block mb-1.5">Time of Day</label>
+              <label className="text-xs font-semibold text-foreground block mb-1.5">Time of Day</label>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-400 shrink-0" />
                 <div className="grid grid-cols-3 gap-2 flex-1">
@@ -867,7 +867,7 @@ export function ScheduledPostsPage() {
 
             {scheduleMode === "draft" ? (
               <div>
-                <label className="text-xs font-semibold text-[#1c2b36] block mb-1">Select Draft</label>
+                <label className="text-xs font-semibold text-foreground block mb-1">Select Draft</label>
                 {drafts.length === 0 ? (
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-center text-xs text-gray-500">
                     No drafts available. Switch to "Quick Create Post" to compose a new post.
@@ -884,15 +884,15 @@ export function ScheduledPostsPage() {
                           onClick={() => setSelectedDraftId(draft._id)}
                           className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
                             isSelected
-                              ? "border-[#243746] bg-indigo-50/40 ring-2 ring-[#243746]/20"
-                              : "border-gray-200 bg-white hover:bg-gray-50"
+                              ? "border-foreground bg-primary-50/40 ring-2 ring-foreground/20"
+                              : "border-gray-200 bg-background hover:bg-gray-50"
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <PlatformIcon platform={platform} size={16} />
-                            <span className="text-xs font-medium text-[#1c2b36] truncate">{draft.content || "Draft Content"}</span>
+                            <span className="text-xs font-medium text-foreground truncate">{draft.content || "Draft Content"}</span>
                           </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-[#243746] shrink-0" />}
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />}
                         </div>
                       );
                     })}
@@ -902,7 +902,7 @@ export function ScheduledPostsPage() {
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-[#1c2b36] block mb-1">Account / Platform</label>
+                  <label className="text-xs font-semibold text-foreground block mb-1">Account / Platform</label>
                   <Select value={effectiveQuickIntegrationId} onValueChange={setQuickIntegrationId}>
                     <SelectTrigger className="w-full text-xs">
                       <SelectValue placeholder="Select account" />
@@ -917,7 +917,7 @@ export function ScheduledPostsPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#1c2b36] block mb-1">Post Content</label>
+                  <label className="text-xs font-semibold text-foreground block mb-1">Post Content</label>
                   <Textarea
                     rows={3}
                     value={quickContent}
@@ -937,7 +937,7 @@ export function ScheduledPostsPage() {
             <Button
               onClick={handleSchedulePost}
               disabled={scheduleMutation.isPending}
-              className="bg-[#243746] hover:bg-[#1c2b36] text-white font-semibold"
+              className="bg-foreground hover:bg-foreground/85 text-white font-semibold"
             >
               {scheduleMutation.isPending ? "Scheduling..." : "Schedule Post"}
             </Button>

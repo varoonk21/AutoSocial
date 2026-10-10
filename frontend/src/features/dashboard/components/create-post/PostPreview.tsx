@@ -29,7 +29,7 @@ export function PostPreview({
   const pConfig = PLATFORMS_CONFIG[activePlatformId] || PLATFORMS_CONFIG.facebook;
 
   return (
-    <Card className="rounded-xl border border-gray-200 bg-white shadow-xs">
+    <Card className="rounded-xl border border-gray-200 bg-background shadow-xs">
       <CardContent className="p-4 space-y-3">
         {/* Header Title & Desktop/Mobile Segmented Toggle */}
         <div className="flex items-center justify-between pb-1 border-b border-gray-100">

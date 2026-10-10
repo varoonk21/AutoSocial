@@ -54,7 +54,7 @@ export function AnalyticsPage() {
       {loading ? (
         <div className="grid grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <div key={i} className="bg-background rounded-xl border border-gray-200 p-6 animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
               <div className="h-8 bg-gray-200 rounded w-1/2 mb-2" />
               <div className="h-3 bg-gray-100 rounded w-1/4" />
@@ -64,20 +64,20 @@ export function AnalyticsPage() {
       ) : data ? (
         <>
           <div className="grid grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-background rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-semibold text-gray-500 mb-4">Total Posts</h3>
               <p className="text-3xl font-bold text-gray-900">{data.totalPosts.toLocaleString()}</p>
               <p className="text-sm text-gray-500 mt-2">
                 {totalAcrossAll.toLocaleString()} total (including drafts, scheduled, errors)
               </p>
               {data.postsGrowth !== 0 && (
-                <p className={`text-sm mt-1 ${data.postsGrowth > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                <p className={`text-sm mt-1 ${data.postsGrowth > 0 ? 'text-primary-600' : 'text-red-500'}`}>
                   {data.postsGrowth > 0 ? '↑' : '↓'} {Math.abs(data.postsGrowth)}% from last month
                 </p>
               )}
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-background rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-semibold text-gray-500 mb-4">Posts by Platform</h3>
               {Object.keys(data.postsByPlatform).length > 0 ? (
                 <div className="space-y-3">
@@ -109,12 +109,12 @@ export function AnalyticsPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-background rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-semibold text-gray-500 mb-4">Post Status Breakdown</h3>
               <div className="space-y-3">
                 {[
-                  { key: "PUBLISHED", label: "Published", color: "bg-emerald-500" },
-                  { key: "QUEUE", label: "Scheduled", color: "bg-blue-500" },
+                  { key: "PUBLISHED", label: "Published", color: "bg-primary-500" },
+                  { key: "QUEUE", label: "Scheduled", color: "bg-primary-500" },
                   { key: "DRAFT", label: "Drafts", color: "bg-yellow-500" },
                   { key: "ERROR", label: "Failed", color: "bg-red-500" },
                 ].map(({ key, label, color }) => {
@@ -134,7 +134,7 @@ export function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-background rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-semibold text-gray-500 mb-4">Quick Stats</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -167,7 +167,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Monthly Posts Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-background rounded-xl border border-gray-200 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Posts Over Time</h3>
             {data.monthlyPosts.length > 0 ? (
               <div className="flex items-end gap-3 h-48">
@@ -194,7 +194,7 @@ export function AnalyticsPage() {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-background rounded-xl border border-gray-200 p-12 text-center">
           <p className="text-gray-500">Unable to load analytics data.</p>
         </div>
       )}

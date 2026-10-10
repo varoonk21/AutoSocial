@@ -100,7 +100,7 @@ export function DraftsPage() {
                       {mediaUrl ? (
                         <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5">
                           <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
                         </svg>
                       )}

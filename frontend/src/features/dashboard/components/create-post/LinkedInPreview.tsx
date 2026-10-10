@@ -16,7 +16,7 @@ export function LinkedInPreview({ account, text, mediaList }: PreviewProps) {
     account?.avatar ||
     (account?.internalId
       ? `https://graph.facebook.com/${account.internalId}/picture?type=large`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0A7CFF&color=fff`);
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2F8587&color=fff`);
 
   const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const img = e.currentTarget;
@@ -25,7 +25,7 @@ export function LinkedInPreview({ account, text, mediaList }: PreviewProps) {
       img.src = `https://graph.facebook.com/${account.internalId}/picture?type=large`;
       return;
     }
-    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0A7CFF&color=fff`;
+    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2F8587&color=fff`;
   };
 
   const shouldTruncate = text.length > 200;
@@ -33,7 +33,7 @@ export function LinkedInPreview({ account, text, mediaList }: PreviewProps) {
 
   return (
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
+    <div className="bg-background rounded-xl border border-gray-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between p-3 pb-2">
         <div className="flex items-center gap-2.5">
@@ -88,7 +88,7 @@ export function LinkedInPreview({ account, text, mediaList }: PreviewProps) {
         </div>
       ) : (
         <div className="bg-slate-50 w-full min-h-[160px] flex items-center justify-center p-4 border-t border-b border-gray-100">
-          <div className="w-20 h-20 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center relative bg-white/40">
+          <div className="w-20 h-20 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center relative bg-background/40">
             <svg className="w-10 h-10 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="8.5" cy="8.5" r="2.5" />
               <path d="M4 19h16l-5-7-4 5-3-4z" />

@@ -43,7 +43,7 @@ export function ScheduleCard({
 
   return (
     <div ref={cardRef}>
-      <Card className="rounded-xl border border-gray-200 bg-white shadow-xs">
+      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs">
         <CardContent className="p-4 space-y-3">
           {/* Card Header & Toggle */}
           <div className="flex items-center justify-between">
@@ -75,7 +75,7 @@ export function ScheduleCard({
                       type="date"
                       value={date}
                       onChange={(e) => onChangeDate(e.target.value)}
-                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white cursor-pointer"
+                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-background cursor-pointer"
                     />
                   </div>
                 </div>
@@ -88,7 +88,7 @@ export function ScheduleCard({
                       type="time"
                       value={time}
                       onChange={(e) => onChangeTime(e.target.value)}
-                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A7CFF] focus:ring-2 focus:ring-[#0A7CFF]/15 text-slate-900 bg-white cursor-pointer"
+                      className="w-full h-8.5 pl-9 pr-3 text-xs font-medium border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-slate-900 bg-background cursor-pointer"
                     />
                   </div>
                 </div>
@@ -97,7 +97,7 @@ export function ScheduleCard({
               {/* Suggested Times */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                  <Sparkles className="w-3 h-3 text-[#0A7CFF]" />
+                  <Sparkles className="w-3 h-3 text-primary" />
                   <span>Suggested times</span>
                 </div>
 
@@ -107,7 +107,7 @@ export function ScheduleCard({
                       key={idx}
                       type="button"
                       onClick={() => handleApplyBestTime(chip.offsetDays, chip.timeVal)}
-                      className="text-xs font-medium text-slate-700 bg-slate-50 hover:bg-blue-50/80 hover:text-[#0A7CFF] border border-slate-200 hover:border-blue-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                      className="text-xs font-medium text-slate-700 bg-slate-50 hover:bg-primary-50/80 hover:text-primary border border-slate-200 hover:border-primary-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                     >
                       {chip.label}
                     </button>

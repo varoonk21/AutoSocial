@@ -58,7 +58,7 @@ export function Header() {
   };
 
   return (
-    <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 sticky top-0 z-30 select-none">
+    <header className="h-14 bg-background border-b border-border flex items-center justify-between px-6 shrink-0 sticky top-0 z-30 select-none">
       {/* Left: Dynamic Context Actions for Active Page */}
       <div className="flex items-center gap-3">{renderDynamicActions()}</div>
 
@@ -66,8 +66,8 @@ export function Header() {
       <div className="flex items-center gap-2.5">
         {/* Notification Bell */}
         <Button variant="ghost" size="icon-sm" title="Notifications" className="relative">
-          <Bell className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+          <Bell className="w-4 h-4 text-muted-foreground" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full ring-2 ring-background" />
         </Button>
 
         {/* Profile Avatar Icon */}
@@ -75,10 +75,10 @@ export function Header() {
           <button
             type="button"
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-1.5 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring group"
+            className="flex items-center gap-1.5 p-1 rounded-full hover:bg-muted transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring group"
             title="User Account"
           >
-            <Avatar className="size-8 ring-1 ring-gray-200 dark:ring-gray-700 group-hover:ring-slate-400 transition-all">
+            <Avatar className="size-8 ring-1 ring-border group-hover:ring-muted-foreground transition-all">
               <AvatarImage
                 src={
                   session?.user?.image
@@ -90,16 +90,16 @@ export function Header() {
               <AvatarFallback className="text-[11px] font-semibold">
                 {session?.user?.name ? session.user.name.slice(0, 2).toUpperCase() : "US"}
               </AvatarFallback>
-              <AvatarBadge className="bg-emerald-500 ring-2 ring-white dark:ring-gray-900" />
+              <AvatarBadge className="bg-primary ring-2 ring-background" />
             </Avatar>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
 
           {/* Dropdown Menu */}
           {showUserMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-              <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50 py-1 text-xs animate-in fade-in">
+              <div className="absolute right-0 top-full mt-1.5 w-48 bg-popover border border-border rounded-lg shadow-md z-50 py-1 text-xs animate-in fade-in">
                 <Button
                   variant="ghost"
                   className="w-full justify-start h-8 px-3 text-xs"
@@ -111,10 +111,10 @@ export function Header() {
                   <User className="w-3.5 h-3.5" />
                   <span>Profile Settings</span>
                 </Button>
-                <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                <div className="my-1 border-t border-border" />
                 <Button
                   variant="ghost"
-                  className="w-full justify-start h-8 px-3 text-xs text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="w-full justify-start h-8 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={handleLogout}
                 >
                   <LogOut className="w-3.5 h-3.5" />

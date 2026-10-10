@@ -104,7 +104,7 @@ export function Popover({
               minWidth: coords ? `${coords.minWidth}px` : undefined,
             }}
             className={cn(
-              "z-[60] rounded-2xl border border-gray-200 bg-white p-1.5 shadow-xl shadow-black/10",
+              "z-[60] rounded-2xl border border-gray-200 bg-background p-1.5 shadow-xl shadow-black/10",
               panelClassName,
             )}
           >

@@ -20,7 +20,7 @@ interface FacebookPage {
 export function OAuthCallbackPage() {
   const { provider } = useParams<{ provider: string }>()
   const navigate = useNavigate()
-  const platform = PLATFORM_INFO[provider || ''] || { name: provider, color: '#6B7280' }
+  const platform = PLATFORM_INFO[provider || ''] || { name: provider, color: 'var(--muted-foreground)' }
 
   const [status, setStatus] = useState<'loading' | 'pages' | 'success' | 'error'>('loading')
   const [error, setError] = useState('')
@@ -130,7 +130,7 @@ export function OAuthCallbackPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
+        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
           <div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full mx-auto mb-4" />
           <p className="text-sm text-gray-600">Connecting to {platform.name}...</p>
         </div>
@@ -142,9 +142,9 @@ export function OAuthCallbackPage() {
   if (status === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
+          <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-primary-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -161,7 +161,7 @@ export function OAuthCallbackPage() {
   if (status === 'pages') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full">
+        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full">
           <h2 className="text-lg font-semibold text-gray-900 mb-1">Select a Page</h2>
           <p className="text-sm text-gray-500 mb-6">
             Choose which {platform.name} page to connect.
@@ -208,7 +208,7 @@ export function OAuthCallbackPage() {
   // Error state
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
+      <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
         <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

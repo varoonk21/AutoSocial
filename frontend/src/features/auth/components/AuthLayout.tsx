@@ -10,13 +10,13 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen w-full relative bg-white text-neutral-900 selection:bg-blue-100 selection:text-blue-900 antialiased">
+    <div className="min-h-screen w-full relative bg-background text-neutral-900 selection:bg-primary-100 selection:text-primary-900 antialiased">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
-            linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
+            linear-gradient(45deg, transparent 49%, var(--border) 49%, var(--border) 51%, transparent 51%),
+            linear-gradient(-45deg, transparent 49%, var(--border) 49%, var(--border) 51%, transparent 51%)
           `,
           backgroundSize: "50px 50px",
           WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)",
@@ -34,7 +34,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="max-w-lg mb-20">
             <h1 className="mb-6 text-5xl font-semibold tracking-tight leading-tight text-neutral-900">
               Unlock limitless <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 font-semibold">content.</span>
+              <span className="text-primary font-semibold">content.</span>
             </h1>
             <p className="text-lg text-neutral-500 font-normal leading-relaxed">
               Turn ideas into posts with an AI partner that understands context, tone, and brand voice. The smartest way to write, schedule, and grow

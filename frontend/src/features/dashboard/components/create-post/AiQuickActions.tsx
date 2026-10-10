@@ -187,10 +187,10 @@ export function AiQuickActions({
   };
 
   return (
-    <div className="space-y-2 p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg">
+    <div className="space-y-2 p-2.5 bg-accent/50 border border-primary-200/70 rounded-lg">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900">
-          <Wand2 className="w-3.5 h-3.5 text-[#0A7CFF]" />
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+          <Wand2 className="w-3.5 h-3.5 text-primary-700" />
           <span>Write with AI</span>
         </div>
 
@@ -198,7 +198,7 @@ export function AiQuickActions({
           <button
             type="button"
             onClick={onUndo}
-            className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Undo AI rewrite</span>
@@ -223,8 +223,8 @@ export function AiQuickActions({
               onClick={() => executeAiAction(action.id, action.label)}
               className={`h-7 px-2.5 text-[11px] font-medium rounded-md cursor-pointer transition-all shadow-2xs ${
                 isPrimary
-                  ? "bg-[#0A7CFF] hover:bg-[#0066DB] text-white border-none"
-                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+                  ? "bg-primary hover:bg-primary-hover text-white border-none"
+                  : "bg-background hover:bg-slate-100 text-slate-700 border-slate-200"
               }`}
             >
               {isLoading ? (
@@ -249,14 +249,14 @@ export function AiQuickActions({
             size="xs"
             disabled={loadingActionId !== null}
             onClick={() => setMoreOpen(!moreOpen)}
-            className="h-7 px-2.5 bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-medium border-slate-200 rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+            className="h-7 px-2.5 bg-background hover:bg-slate-100 text-slate-700 text-[11px] font-medium border-slate-200 rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
           >
             <span>More</span>
             <ChevronDown className="w-3 h-3 text-slate-400" />
           </Button>
 
           {moreOpen && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
+            <div className="absolute right-0 top-full mt-1 w-44 bg-background rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
               {MORE_ACTIONS.map((action) => (
                 <button
                   key={action.id}

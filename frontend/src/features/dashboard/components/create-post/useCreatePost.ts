@@ -108,7 +108,7 @@ export function useCreatePost() {
               avatarUrl = `https://graph.facebook.com/${acc.targetId}/picture?type=large`;
             }
             if (!avatarUrl) {
-              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(acc.name || "User")}&background=0A7CFF&color=fff`;
+              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(acc.name || "User")}&background=2F8587&color=fff`;
             }
 
             return {

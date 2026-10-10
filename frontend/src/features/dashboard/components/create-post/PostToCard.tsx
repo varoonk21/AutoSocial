@@ -58,7 +58,7 @@ export function PostToCard({ accounts, selectedId, onSelect }: PostToCardProps) 
     <Card className="py-0">
       <CardContent className="p-3.5 space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-[#1c2b36]">Post to</label>
+          <label className="text-xs font-bold text-foreground">Post to</label>
           <Button
             variant="ghost"
             size="xs"
@@ -84,13 +84,13 @@ export function PostToCard({ accounts, selectedId, onSelect }: PostToCardProps) 
             trigger={
               <button
                 type="button"
-                className="flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-50/60 cursor-pointer"
+                className="flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-background px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-50/60 cursor-pointer"
               >
                 {selected ? (
                   <span className="flex items-center gap-2.5 min-w-0">
                     <AccountAvatar account={selected} />
                     <span className="min-w-0">
-                      <span className="block text-xs font-bold text-[#1c2b36] truncate">
+                      <span className="block text-xs font-bold text-foreground truncate">
                         {selected.name}
                       </span>
                       <span className="block text-[10px] text-gray-400">
@@ -130,14 +130,14 @@ export function PostToCard({ accounts, selectedId, onSelect }: PostToCardProps) 
                           setOpen(false);
                         }}
                         className={`flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors ${
-                          isActive ? "bg-[#243746]/8" : "hover:bg-gray-50"
+                          isActive ? "bg-foreground/8" : "hover:bg-gray-50"
                         }`}
                       >
                         <AccountAvatar account={account} size={26} />
                         <span className="flex-1 min-w-0 text-xs font-medium text-gray-800 truncate">
                           {account.name}
                         </span>
-                        {isActive && <Check className="w-3.5 h-3.5 text-[#243746] shrink-0" />}
+                        {isActive && <Check className="w-3.5 h-3.5 text-foreground shrink-0" />}
                       </button>
                     );
                   })}

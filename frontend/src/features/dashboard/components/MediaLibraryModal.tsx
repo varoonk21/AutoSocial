@@ -152,7 +152,7 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
                   onClick={() => handleSelect(item)}
                   className={`relative group aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                     selectedId === item._id
-                      ? "border-[#243746] ring-2 ring-gray-200"
+                      ? "border-foreground ring-2 ring-gray-200"
                       : "border-gray-200 hover:border-gray-300 hover:shadow-md"
                   }`}
                 >
@@ -164,7 +164,7 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   {selectedId === item._id && (
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <div className="w-7 h-7 rounded-full bg-[#243746] text-white flex items-center justify-center shadow-lg">
+                      <div className="w-7 h-7 rounded-full bg-foreground text-white flex items-center justify-center shadow-lg">
                         <Check className="w-4 h-4" />
                       </div>
                     </div>

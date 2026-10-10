@@ -76,14 +76,14 @@ export function CreatePost() {
     <div className="-m-8 p-5 lg:p-6 min-h-screen bg-slate-50/50 text-slate-900 font-sans relative pb-24">
       {/* Toast Notification Container */}
       {toastMessage && (
-        <div className="fixed top-16 right-6 z-50 bg-slate-900 text-white text-xs font-medium px-3.5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="fixed top-16 right-6 z-50 bg-foreground text-background text-xs font-medium px-3.5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
           {toastMessage.type === "success" && (
-            <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+            <Check className="w-4 h-4 text-primary-400 stroke-[2.5]" />
           )}
           {toastMessage.type === "error" && (
             <AlertCircle className="w-4 h-4 text-red-400 stroke-[2.5]" />
           )}
-          {toastMessage.type === "info" && <Info className="w-4 h-4 text-blue-400 stroke-[2.5]" />}
+          {toastMessage.type === "info" && <Info className="w-4 h-4 text-primary-400 stroke-[2.5]" />}
           <span>{toastMessage.text}</span>
         </div>
       )}
@@ -197,7 +197,7 @@ export function CreatePost() {
       <Sheet open={isPreviewDrawerOpen} onOpenChange={setIsPreviewDrawerOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md p-4 overflow-y-auto bg-gray-50">
           <SheetHeader className="pb-2 border-b border-gray-200">
-            <SheetTitle className="text-base font-bold text-[#1c2b36]">Post Preview</SheetTitle>
+            <SheetTitle className="text-base font-bold text-foreground">Post Preview</SheetTitle>
           </SheetHeader>
           <div className="pt-4">
             <PostPreview

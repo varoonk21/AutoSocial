@@ -25,7 +25,7 @@ export function ComposerActionBar({
   onPrimary,
 }: ComposerActionBarProps) {
   return (
-    <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-gray-200/80 bg-white pt-3 pb-1">
+    <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-gray-200/80 bg-background pt-3 pb-1">
       <Button variant="ghost" size="sm" onClick={onCancel} className="text-gray-600">
         Cancel
       </Button>
@@ -42,7 +42,7 @@ export function ComposerActionBar({
         size="sm"
         onClick={onPrimary}
         disabled={primaryDisabled || loading}
-        className="ml-auto bg-[#243746] hover:bg-[#1c2b36] text-white"
+        className="ml-auto bg-foreground hover:bg-foreground/85 text-white"
       >
         {loading ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />

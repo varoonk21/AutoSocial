@@ -102,11 +102,11 @@ export function DashboardOverview() {
       </div>
 
       <div className="grid grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-background rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-500">Posts This Month</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a56db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" y1="13" x2="8" y2="13" />
@@ -119,18 +119,18 @@ export function DashboardOverview() {
               {statsLoading ? "—" : stats.postsThisMonth}
             </span>
             {!statsLoading && stats.postsChange !== 0 && (
-              <span className={`text-sm font-medium mb-1 ${stats.postsChange > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <span className={`text-sm font-medium mb-1 ${stats.postsChange > 0 ? 'text-primary-600' : 'text-red-500'}`}>
                 {stats.postsChange > 0 ? '↑' : '↓'} {Math.abs(stats.postsChange)}%
               </span>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-background rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-500">Posts by Platform</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A7CFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
               </svg>
             </div>
@@ -153,11 +153,11 @@ export function DashboardOverview() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-background rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-500">Upcoming Posts</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a56db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
@@ -172,7 +172,7 @@ export function DashboardOverview() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200">
+      <div className="bg-background rounded-xl border border-gray-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900">Recent Activity Feed</h2>
           <Button variant="link" size="sm" onClick={() => navigate("/calendar")}>
@@ -206,7 +206,7 @@ export function DashboardOverview() {
                       {post.image ? (
                         <img src={post.image} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="3" width="18" height="18" rx="2" />
                           <circle cx="8.5" cy="8.5" r="1.5" />
                           <polyline points="21 15 16 10 5 21" />
@@ -242,7 +242,7 @@ export function DashboardOverview() {
                         href={post.releaseURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View

@@ -97,7 +97,7 @@ export function PostDetailsCard({
 
   return (
     <div ref={cardRef}>
-      <Card className="rounded-xl border border-gray-200 bg-white shadow-xs overflow-visible">
+      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs overflow-visible">
         <CardContent className="p-4 space-y-3 overflow-visible">
           {/* Section Header */}
           <div className="flex items-center justify-between">
@@ -109,10 +109,10 @@ export function PostDetailsCard({
             <label className="block text-xs font-semibold text-slate-700">Text</label>
 
             <div
-              className={`rounded-lg border transition-all bg-white ${
+              className={`rounded-lg border transition-all bg-background ${
                 error || isOverLimit
                   ? "border-red-500 ring-2 ring-red-100"
-                  : "border-gray-200 focus-within:border-[#0A7CFF] focus-within:ring-2 focus-within:ring-[#0A7CFF]/15"
+                  : "border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15"
               }`}
             >
               <textarea
@@ -137,7 +137,7 @@ export function PostDetailsCard({
                   </button>
 
                   {emojiOpen && (
-                    <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-white rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
+                    <div className="absolute left-0 bottom-full mb-1.5 w-56 bg-background rounded-lg border border-gray-200 shadow-md p-2 z-50 animate-in fade-in duration-150">
                       <div className="grid grid-cols-7 gap-1 text-center">
                         {EMOJIS.map((emoji) => (
                           <button

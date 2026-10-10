@@ -97,14 +97,14 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Manage Content</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Manage Content</h1>
           <p className="text-gray-500 text-sm mt-0.5">
             View, edit, and filter all your social media posts in one place.
           </p>
         </div>
         <Button
           onClick={() => navigate("/dashboard/content/create")}
-          className="bg-[#243746] hover:bg-[#1c2b36] text-white gap-2 shadow-sm"
+          className="bg-foreground hover:bg-foreground/85 text-white gap-2 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span>Create Post</span>
@@ -122,7 +122,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
               onClick={() => handleTabChange(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
                 isActive
-                  ? "bg-[#243746] text-white shadow-xs"
+                  ? "bg-foreground text-white shadow-xs"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
@@ -141,11 +141,11 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
           </CardContent>
         </Card>
       ) : posts.length === 0 ? (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl bg-white">
+        <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background">
           <CardContent className="p-12 text-center">
             <p className="text-gray-400 text-sm">No posts found in this category.</p>
             <Button
-              className="mt-4 bg-[#243746] hover:bg-[#1c2b36]"
+              className="mt-4 bg-foreground hover:bg-foreground/85"
               onClick={() => navigate("/dashboard/content/create")}
             >
               Create New Post
@@ -153,7 +153,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
           <CardContent className="p-0 divide-y divide-gray-100">
             {posts.map((post) => {
               const integration =
@@ -178,7 +178,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
                       {mediaUrl ? (
                         <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5">
                           <rect x="3" y="3" width="18" height="18" rx="2" />
                           <circle cx="8.5" cy="8.5" r="1.5" />
                           <polyline points="21 15 16 10 5 21" />
@@ -188,7 +188,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
 
                     {/* Content Details */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#1c2b36] line-clamp-2">
+                      <p className="text-sm font-medium text-foreground line-clamp-2">
                         {post.content || <span className="italic text-gray-400">Untitled Post</span>}
                       </p>
                       <div className="flex items-center gap-3 mt-2">
@@ -234,7 +234,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
                           href={post.releaseURL}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                          className="text-xs font-medium text-primary-600 hover:text-primary-700 whitespace-nowrap"
                         >
                           View ↗
                         </a>

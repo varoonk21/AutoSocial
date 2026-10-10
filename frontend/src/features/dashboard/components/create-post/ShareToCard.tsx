@@ -19,10 +19,10 @@ export function ShareToCard({
   }
 
   return (
-    <Card className="rounded-[16px] border border-gray-100 bg-white shadow-xs transition-shadow hover:shadow-sm">
+    <Card className="rounded-[16px] border border-gray-100 bg-background shadow-xs transition-shadow hover:shadow-sm">
       <CardContent className="p-5 sm:p-6 space-y-3">
         <div>
-          <h2 className="text-[17px] font-bold text-[#1c2b36] tracking-tight">Share to</h2>
+          <h2 className="text-[17px] font-bold text-foreground tracking-tight">Share to</h2>
           <p className="text-xs text-gray-500 font-normal mt-0.5">
             Select additional placements for {pConfig.name}.
           </p>
@@ -35,7 +35,7 @@ export function ShareToCard({
             return (
               <div
                 key={placement.id}
-                className="flex items-center justify-between p-3.5 hover:bg-white transition-colors"
+                className="flex items-center justify-between p-3.5 hover:bg-background transition-colors"
               >
                 <div>
                   <p className="text-xs font-bold text-gray-900">{placement.label}</p>

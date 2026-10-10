@@ -273,16 +273,16 @@ export function MediaLibraryPage() {
     <div className="max-w-[1360px] mx-auto space-y-6  text-neutral-900 pb-16 select-none">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
-          <Check className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-6 right-6 z-50 bg-foreground text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 text-primary-400" />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* Upload Progress Indicator */}
       {uploading && (
-        <div className="fixed bottom-6 left-6 z-50 bg-[#243746] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
-          <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+        <div className="fixed bottom-6 left-6 z-50 bg-foreground text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
+          <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
           <span>Uploading... {progress > 0 ? `${progress}%` : ""}</span>
         </div>
       )}
@@ -300,7 +300,7 @@ export function MediaLibraryPage() {
       {/* Header Title Bar */}
       <div className="pb-2 border-b border-gray-200/80 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c2b36] tracking-tight">Media Library</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Media Library</h1>
           <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ export function MediaLibraryPage() {
           {/* Left Segmented Filter Pill Box (Type Filter) */}
           <ToggleGroup type="single" value={typeFilter} onValueChange={(value) => value && setTypeFilter(value)} variant="outline" size="sm">
             <ToggleGroupItem value="all">
-              <ImageIcon className="w-4 h-4 text-[#243746]" />
+              <ImageIcon className="w-4 h-4 text-foreground" />
               <span>All Media</span>
             </ToggleGroupItem>
             <ToggleGroupItem value="image">
@@ -342,11 +342,11 @@ export function MediaLibraryPage() {
           <div className="flex items-center gap-2">
             <ToggleGroup type="single" value={sourceFilter} onValueChange={(value) => value && setSourceFilter(value)} variant="outline" size="sm">
               <ToggleGroupItem value="user">
-                <Sparkles className="w-4 h-4 text-[#243746]" />
+                <Sparkles className="w-4 h-4 text-foreground" />
                 <span>User Uploads</span>
               </ToggleGroupItem>
               <ToggleGroupItem value="ai">
-                <Sparkles className="w-4 h-4 text-amber-500" />
+                <Sparkles className="w-4 h-4 text-primary-500" />
                 <span>AI Generated</span>
               </ToggleGroupItem>
             </ToggleGroup>
@@ -355,9 +355,9 @@ export function MediaLibraryPage() {
               variant="outline"
               size="sm"
               onClick={() => setAiModalOpen(true)}
-              className="border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 ml-1"
+              className="border-primary-300 bg-primary-50 hover:bg-primary-100 text-primary-900 ml-1"
             >
-              <Plus className="w-4 h-4 text-amber-600" />
+              <Plus className="w-4 h-4 text-primary-600" />
               <span>Generate AI</span>
             </Button>
           </div>
@@ -391,14 +391,14 @@ export function MediaLibraryPage() {
           <div
             key={asset._id}
             onClick={() => setSelectedAsset(asset)}
-            className="group bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col relative"
+            className="group bg-background rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col relative"
           >
             {/* Thumbnail Box */}
             <div className="relative aspect-4/3 bg-gray-100 overflow-hidden flex items-center justify-center">
               {/* Image / Video / Document Visual */}
               {asset.type === "document" ? (
                 <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-4">
-                  <div className="relative bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
+                  <div className="relative bg-background border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
                     <FileText className="w-10 h-10 text-gray-400 mb-1" />
                     <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">{asset.docType || "PDF"}</span>
                   </div>
@@ -427,7 +427,7 @@ export function MediaLibraryPage() {
 
               {/* Badge Top Left */}
               <div className="absolute top-2.5 left-2.5">
-                <span className="bg-white/90 backdrop-blur-md text-[#1c2b36] text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-2xs">
+                <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-2xs">
                   {asset.badge}
                 </span>
               </div>
@@ -449,7 +449,7 @@ export function MediaLibraryPage() {
               {menuOpenId === asset._id && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute top-9 right-2.5 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
+                  className="absolute top-9 right-2.5 bg-background border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
                 >
                   <Button variant="ghost" size="sm" className="w-full justify-start" onClick={(e) => copyLink(asset.path, asset._id, e)}>
                     <Copy className="w-3.5 h-3.5" />
@@ -485,10 +485,10 @@ export function MediaLibraryPage() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={(e) => copyLink(asset.path, asset._id, e)}
-                  className="bg-white/90 hover:bg-white text-gray-800 shadow-md"
+                  className="bg-background/90 hover:bg-background text-gray-800 shadow-md"
                   title="Copy Link"
                 >
-                  {copiedId === asset._id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  {copiedId === asset._id ? <Check className="w-4 h-4 text-primary-600" /> : <Copy className="w-4 h-4" />}
                 </Button>
                 <Button
                   size="sm"
@@ -504,7 +504,7 @@ export function MediaLibraryPage() {
                   variant="destructive"
                   size="icon-sm"
                   onClick={(e) => handleDeleteClick(asset._id, e)}
-                  className="bg-white/90 hover:bg-red-50 text-red-600 shadow-md"
+                  className="bg-background/90 hover:bg-red-50 text-red-600 shadow-md"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -514,7 +514,7 @@ export function MediaLibraryPage() {
 
             {/* Card Content Footer */}
             <div className="p-4 space-y-1">
-              <h4 className="font-bold text-xs text-[#1c2b36] truncate">{asset.name}</h4>
+              <h4 className="font-bold text-xs text-foreground truncate">{asset.name}</h4>
               <p className="text-[11px] text-gray-400 font-medium">
                 {asset.size} • {asset.date}
               </p>
@@ -600,11 +600,11 @@ export function MediaLibraryPage() {
       {/* ASSET DETAIL MODAL */}
       {selectedAsset && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
+          <div className="bg-background rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
             <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between gap-3">
               {renamingId === selectedAsset._id ? (
                 <div className="flex items-center gap-2 flex-1 min-w-0 mr-1">
-                  <div className="p-1.5 rounded-xl bg-[#243746]/10 text-[#243746] shrink-0">
+                  <div className="p-1.5 rounded-xl bg-foreground/10 text-foreground shrink-0">
                     {selectedAsset.type === "video" ? (
                       <Video className="w-4 h-4" />
                     ) : selectedAsset.type === "document" ? (
@@ -622,13 +622,13 @@ export function MediaLibraryPage() {
                     }}
                     autoFocus
                     placeholder="Enter file name..."
-                    className="h-8 text-sm font-semibold text-[#1c2b36] bg-white border border-gray-300 focus-visible:border-[#243746] focus-visible:ring-2 focus-visible:ring-[#243746]/20 rounded-xl px-3 flex-1 min-w-0"
+                    className="h-8 text-sm font-semibold text-foreground bg-background border border-gray-300 focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/20 rounded-xl px-3 flex-1 min-w-0"
                   />
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                       size="xs"
                       onClick={() => handleRename(selectedAsset._id)}
-                      className="bg-[#243746] hover:bg-[#1c2b36] text-white gap-1 rounded-xl px-2.5 font-medium shadow-2xs h-8 text-xs"
+                      className="bg-foreground hover:bg-foreground/85 text-white gap-1 rounded-xl px-2.5 font-medium shadow-2xs h-8 text-xs"
                     >
                       <span>Save</span>
                     </Button>
@@ -660,7 +660,7 @@ export function MediaLibraryPage() {
                       setRenameValue(selectedAsset.name);
                     }}
                   >
-                    <h3 className="text-sm font-bold text-[#1c2b36] truncate group-hover:text-[#243746] transition-colors" title="Click to rename">
+                    <h3 className="text-sm font-bold text-foreground truncate group-hover:text-foreground transition-colors" title="Click to rename">
                       {selectedAsset.name}
                     </h3>
                     <Button
@@ -708,19 +708,19 @@ export function MediaLibraryPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-2xl text-xs">
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">Type</span>
-                  <span className="font-bold text-[#1c2b36]">{selectedAsset.badge}</span>
+                  <span className="font-bold text-foreground">{selectedAsset.badge}</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">File Size</span>
-                  <span className="font-bold text-[#1c2b36]">{selectedAsset.size}</span>
+                  <span className="font-bold text-foreground">{selectedAsset.size}</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">Source</span>
-                  <span className="font-bold text-[#1c2b36]">{selectedAsset.source === "ai" ? "AI Generated" : "User Upload"}</span>
+                  <span className="font-bold text-foreground">{selectedAsset.source === "ai" ? "AI Generated" : "User Upload"}</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-bold">Date</span>
-                  <span className="font-bold text-[#1c2b36]">{selectedAsset.date}</span>
+                  <span className="font-bold text-foreground">{selectedAsset.date}</span>
                 </div>
               </div>
             </div>
@@ -766,7 +766,7 @@ export function MediaLibraryPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-[#243746]/10 text-[#243746]">
+              <div className="p-2 rounded-xl bg-foreground/10 text-foreground">
                 <Sparkles className="w-5 h-5" />
               </div>
               AI Image Generator
@@ -821,7 +821,7 @@ export function MediaLibraryPage() {
               Cancel
             </Button>
             <Button size="sm" onClick={handleAiGenerateImage} disabled={aiGenerating || !aiPrompt.trim()}>
-              <Sparkles className="w-4 h-4 text-amber-300" />
+              <Sparkles className="w-4 h-4 text-primary-300" />
               <span>{aiGenerating ? "Generating..." : "Generate Asset"}</span>
             </Button>
           </DialogFooter>

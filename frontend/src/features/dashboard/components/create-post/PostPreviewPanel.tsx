@@ -41,7 +41,7 @@ export function PostPreviewPanel({
     <Card className="py-0">
       <CardContent className="p-4 space-y-3.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#1c2b36]">{PREVIEW_TITLES[platform]}</h3>
+          <h3 className="text-sm font-bold text-foreground">{PREVIEW_TITLES[platform]}</h3>
           <ToggleGroup
             value={[viewMode]}
             onValueChange={(next) => {
@@ -69,7 +69,7 @@ export function PostPreviewPanel({
                 type="button"
                 onClick={() => onPlatformChange(tab.id)}
                 className={`flex items-center gap-1.5 pb-2 text-xs font-semibold transition-colors cursor-pointer relative ${
-                  isActive ? "text-[#1c2b36]" : "text-gray-400 hover:text-gray-600"
+                  isActive ? "text-foreground" : "text-gray-400 hover:text-gray-600"
                 }`}
               >
                 <PlatformIcon platform={tab.id} size={13} />

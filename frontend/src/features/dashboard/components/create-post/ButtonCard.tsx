@@ -23,7 +23,7 @@ export function ButtonCard({ ctaButton, onCtaChange }: ButtonCardProps) {
       <CardContent className="p-3.5 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="space-y-0.5">
-            <label className="text-xs font-bold text-[#1c2b36]">Add a button</label>
+            <label className="text-xs font-bold text-foreground">Add a button</label>
             <p className="text-[10px] text-gray-400">Send viewers to a landing page.</p>
           </div>
           <Switch

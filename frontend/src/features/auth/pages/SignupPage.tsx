@@ -39,7 +39,7 @@ export function SignupPage() {
   return (
     <AuthLayout>
       <div className="w-full max-w-sm flex justify-center">
-        <div className="w-full bg-white rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
+        <div className="w-full bg-background rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
           <div className="text-center space-y-1">
             <h2 className="text-lg font-bold text-neutral-900 tracking-tight">Create an account</h2>
             <p className="text-sm text-neutral-500 font-normal">Enter your details to get started</p>
@@ -55,7 +55,7 @@ export function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
+                className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
                 required
               />
             </div>
@@ -67,7 +67,7 @@ export function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
+                className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
                 required
               />
             </div>
@@ -82,7 +82,7 @@ export function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all pr-12 shadow-2xs"
+                  className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all pr-12 shadow-2xs"
                   required
                   minLength={8}
                 />

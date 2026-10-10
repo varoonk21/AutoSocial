@@ -8,7 +8,7 @@ interface PlatformIconProps {
 }
 
 export function PlatformIcon({ platform, size = 16 }: PlatformIconProps) {
-  const color = PLATFORM_COLORS[platform] || '#6b7280'
+  const color = PLATFORM_COLORS[platform] || 'var(--muted-foreground)'
 
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>

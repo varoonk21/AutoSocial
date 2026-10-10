@@ -53,18 +53,18 @@ export function ConnectedAccountsPage() {
       </div>
 
       {showConnect && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-background rounded-xl border border-gray-200 p-6">
           <SocialConnect connectedProviders={connectedProviders} onConnect={loadIntegrations} />
         </div>
       )}
 
       {integrations.length === 0 && !showConnect ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-background rounded-xl border border-gray-200 p-12 text-center">
           <p className="text-gray-400 mb-4">No accounts connected yet.</p>
           <Button onClick={() => setShowConnect(true)}>Connect your first account</Button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+        <div className="bg-background rounded-xl border border-gray-200 divide-y divide-gray-100">
           {integrations.map((integration) => (
             <div key={integration.id} className="flex items-center gap-4 px-6 py-4">
               <img
@@ -77,10 +77,10 @@ export function ConnectedAccountsPage() {
                 <p className="text-xs text-gray-400 capitalize">{integration.platform}</p>
               </div>
               {integration.status === "reauth_required" && (
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full border border-amber-200">Needs re-auth</span>
+                <span className="px-2.5 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded-full border border-primary-200">Needs re-auth</span>
               )}
               <span
-                className={`px-2.5 py-1 text-xs font-medium rounded-full ${integration.status === "disabled" ? "bg-gray-100 text-gray-500" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}
+                className={`px-2.5 py-1 text-xs font-medium rounded-full ${integration.status === "disabled" ? "bg-gray-100 text-gray-500" : "bg-accent text-primary-700 border border-primary-200"}`}
               >
                 {integration.status === "disabled" ? "Disabled" : "Active"}
               </span>

@@ -35,12 +35,12 @@ function Avatar({ account, platform }: { account: ConnectedAccount | null; platf
   const initials = account ? account.name?.charAt(0)?.toUpperCase() || "?" : "";
   const style: React.CSSProperties =
     platform === "facebook"
-      ? { backgroundColor: "#d8dade" }
+      ? { backgroundColor: "var(--border)" }
       : platform === "linkedin"
         ? { backgroundColor: "#0A66C2" }
         : platform === "x"
           ? { backgroundColor: "#000000" }
-          : { backgroundColor: "#c9ccd1" };
+          : { backgroundColor: "var(--border)" };
   return (
     <span
       className={`w-9 h-9 flex items-center justify-center font-bold text-white text-xs ${
@@ -88,7 +88,7 @@ function MediaBlock({ media, platform }: { media: PostMedia[]; platform: Platfor
               aria-label={`Media ${i + 1}`}
               onClick={() => setIndex(i)}
               className={`w-1.5 h-1.5 rounded-full transition-colors cursor-pointer ${
-                i === safeIndex ? "bg-white" : "bg-white/50"
+                i === safeIndex ? "bg-background" : "bg-background/50"
               }`}
             />
           ))}
@@ -104,7 +104,7 @@ function CtaBar({ ctaLabel, bordered = true }: { ctaLabel: string; bordered?: bo
     <div className="px-3.5 pb-3">
       <div
         className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold text-gray-700 ${
-          bordered ? "border border-gray-300 bg-white" : "bg-gray-100"
+          bordered ? "border border-gray-300 bg-background" : "bg-gray-100"
         }`}
       >
         {ctaLabel}
@@ -137,7 +137,7 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
   );
   const tags = hashtags ? (
     <p
-      className={`text-[11px] font-medium mt-1 ${platform === "facebook" ? "text-[#1877F2]" : platform === "linkedin" ? "text-[#0A66C2]" : platform === "x" ? "text-blue-500" : "text-indigo-600"}`}
+      className={`text-[11px] font-medium mt-1 ${platform === "facebook" ? "text-[#1877F2]" : platform === "linkedin" ? "text-[#0A66C2]" : platform === "x" ? "text-primary-500" : "text-primary-600"}`}
     >
       {hashtags}
     </p>
@@ -148,9 +148,9 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
       <div>
         <div className="flex items-center justify-between px-3.5 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full border border-gray-200 p-[1px] bg-white">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                <div className="w-full h-full rounded-full overflow-hidden bg-[#243746] flex items-center justify-center text-white text-[10px] font-bold">
+            <div className="w-8 h-8 rounded-full border border-gray-200 p-[1px] bg-background">
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
+                <div className="w-full h-full rounded-full overflow-hidden bg-foreground flex items-center justify-center text-white text-[10px] font-bold">
                   {account?.picture ? (
                     <img src={account.picture} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -337,7 +337,7 @@ export function PreviewCard({
   ctaLabel,
 }: PreviewCardProps) {
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-background shadow-2xs">
       <PreviewBody
         platform={platform}
         account={account}

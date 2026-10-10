@@ -47,7 +47,7 @@ export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
     <div className="space-y-3">
       <div
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-          dragOver ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-gray-300 bg-gray-50"
+          dragOver ? "border-primary-400 bg-primary-50" : "border-gray-200 hover:border-gray-300 bg-gray-50"
         } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {

@@ -106,7 +106,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center px-3 py-2 cursor-pointer" onClick={() => navigate("/dashboard")}>
           <img src="/Icon.png" alt="AutoSocial Icon" className="w-14 h-14 object-contain rounded-lg" />
-          <span className="font-bold text-slate-900 text-lg tracking-tight">AutoSocial</span>
+          <span className="font-bold text-foreground text-lg tracking-tight">AutoSocial</span>
         </div>
       </SidebarHeader>
 
@@ -114,7 +114,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {/* Dashboard - Item 1 */}

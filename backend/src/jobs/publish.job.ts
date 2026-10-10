@@ -1,11 +1,13 @@
 import { Agenda, Job } from "agenda";
-import { Post, Integration } from "../models/index.js";
+import { Post, Integration, BrandKit } from "../models/index.js";
 import { getProvider } from "../services/scheduler.service.js";
+import { applyWatermark } from "../services/watermark.service.js";
+import { resolveMediaUrl, extractS3Key } from "../lib/media-url.js";
+import { getS3Url, uploadToS3 } from "../lib/s3.js";
 import { RefreshTokenError } from "../social/base/SocialProvider.js";
 import { timer } from "../utils/timer.js";
 import { logger } from "../utils/logger.util.js";
 import { decryptToken, encryptToken, currentKeyId } from "../lib/token.service.js";
-import { resolveMediaUrl } from "../lib/media-url.js";
 
 const JOB_NAME = "publish-post";
 
@@ -82,14 +84,20 @@ async function publishToIntegration(posts: any[]): Promise<void> {
           path: await resolveMediaUrl(m),
         }))
       );
+      const settings = JSON.parse(p.settings || "{}");
       return {
         id: p._id.toString(),
         message: p.content,
-        settings: JSON.parse(p.settings || "{}"),
+        settings,
         media,
+        _watermark: settings.watermark === true,
+        _userId: p.userId?.toString(),
       };
     })
   );
+
+  // Apply brand-kit watermark to opted-in posts (best-effort, never blocks publish)
+  await applyWatermarks(postDetails);
 
   const provider = getProvider(integration.providerIdentifier);
 
@@ -171,3 +179,55 @@ async function markPostsError(posts: any[], errorMessage: string): Promise<void>
 }
 
 export { publishToIntegration as publishGroup, JOB_NAME };
+
+/**
+ * Applies the user's brand-kit watermark to opted-in post images.
+ * Best-effort: any failure leaves the original media untouched so
+ * watermarking never blocks publishing.
+ */
+async function applyWatermarks(postDetails: any[]): Promise<void> {
+  const optedIn = postDetails.filter((p) => p._watermark && p.media?.length);
+  if (!optedIn.length) return;
+
+  const userId = optedIn[0]._userId;
+  if (!userId) return;
+
+  try {
+    const brandKit: any = await BrandKit.findOne({ userId }).populate("watermarkLogo");
+    const logoKey = brandKit?.watermarkLogo?.key;
+    if (!logoKey) {
+      logger.info({ userId }, "Watermark requested but no watermark logo in brand kit");
+      return;
+    }
+
+    const logoUrl = await getS3Url(logoKey);
+    const logoRes = await fetch(logoUrl);
+    if (!logoRes.ok) return;
+    const logoBuffer = Buffer.from(await logoRes.arrayBuffer());
+
+    for (const post of optedIn) {
+      for (const m of post.media) {
+        try {
+          const imgRes = await fetch(m.path);
+          if (!imgRes.ok) continue;
+          const contentType = imgRes.headers.get("content-type") || "";
+          if (!contentType.startsWith("image/")) continue;
+
+          const imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+          const watermarked = await applyWatermark(imageBuffer, logoBuffer);
+          if (!watermarked) continue;
+
+          const origKey = extractS3Key(m.path) || `users/${userId}/watermarked/${Date.now()}.png`;
+          const wmKey = origKey.replace(/(\.[a-z]+)?$/, "") + "-wm.png";
+          const wmUrl = await uploadToS3(`users/${userId}/watermarked/${wmKey.split("/").pop()}`, watermarked, "image/png");
+          m.path = wmUrl;
+          logger.info({ postId: post.id }, "Watermark applied to post image");
+        } catch (err) {
+          logger.warn({ err, postId: post.id }, "Watermark failed for media, using original");
+        }
+      }
+    }
+  } catch (err) {
+    logger.warn({ err, userId }, "Watermark pass failed, publishing originals");
+  }
+}

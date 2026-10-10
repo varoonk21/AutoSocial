@@ -273,4 +273,19 @@ export {
   RefreshTokenError,
   BadBodyError,
   NotEnoughScopesError,
+  /**
+   * Fetches engagement metrics for a published post from the platform.
+   * Optional: providers implement this when the platform exposes a metrics API.
+   * Must never throw — return null when metrics are unavailable (bad token,
+   * missing scopes, unsupported post type) so refresh jobs degrade gracefully.
+   *
+   * @param {string} postId       - The platform-native post ID (Post.postId)
+   * @param {string} accessToken  - The platform access token
+   * @param {object} integration  - The full integration DB record
+   * @returns {Promise<{impressions:number,reach:number,likes:number,comments:number,shares:number,clicks:number}|null>}
+   */
+  async getPostInsights(postId, accessToken, integration) {
+    return null;
+  }
+
 };

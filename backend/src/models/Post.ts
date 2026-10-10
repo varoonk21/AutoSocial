@@ -1,5 +1,15 @@
 import mongoose, { Document } from "mongoose";
 
+export interface IEngagement {
+  impressions?: number;
+  reach?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  clicks?: number;
+  updatedAt?: Date;
+}
+
 export interface IPost extends Document {
   userId: mongoose.Types.ObjectId;
   integrationId: mongoose.Types.ObjectId;
@@ -13,6 +23,7 @@ export interface IPost extends Document {
   postId?: string;
   error?: string;
   parentPostId?: mongoose.Types.ObjectId;
+  engagement?: IEngagement;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -35,6 +46,15 @@ const PostSchema = new mongoose.Schema<IPost>(
     postId: { type: String },
     error: { type: String },
     parentPostId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
+    engagement: {
+      impressions: { type: Number, default: 0 },
+      reach: { type: Number, default: 0 },
+      likes: { type: Number, default: 0 },
+      comments: { type: Number, default: 0 },
+      shares: { type: Number, default: 0 },
+      clicks: { type: Number, default: 0 },
+      updatedAt: { type: Date },
+    },
   },
   { timestamps: true },
 );

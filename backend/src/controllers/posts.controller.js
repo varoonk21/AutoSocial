@@ -4,7 +4,6 @@ import { makeId } from '../utils/makeId.js';
 import { schedulePost, removeScheduledJobs } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
 import { sendSuccess } from '../utils/response.util.js';
-import { normalizeMediaItem } from '../lib/media-url.js';
 
 async function listPosts(req, res) {
   try {
@@ -82,10 +81,7 @@ async function createPost(req, res) {
         state,
         group,
         settings: JSON.stringify(rawPost.settings || {}),
-        // Normalize media: always { path, key? } objects. The S3 key is
-        // captured now so publish time can mint a fresh presigned URL —
-        // the presigned URL in `path` expires within minutes.
-        image: JSON.stringify((rawPost.media || []).map(normalizeMediaItem)),
+        image: JSON.stringify(rawPost.media || []),
         parentPostId,
       };
       if (rawPost.integrationId) {
@@ -126,7 +122,7 @@ async function updatePost(req, res) {
     if (content !== undefined) updates.content = content;
     if (date) updates.publishDate = new Date(date);
     if (settings !== undefined) updates.settings = JSON.stringify(settings);
-    if (media !== undefined) updates.image = JSON.stringify(media.map(normalizeMediaItem));
+    if (media !== undefined) updates.image = JSON.stringify(media);
     if (req.body.state !== undefined) updates.state = req.body.state;
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, { new: true });
@@ -135,6 +131,10 @@ async function updatePost(req, res) {
     if (updated.state === 'QUEUE' && updated.publishDate) {
       await removeScheduledJobs(post.group);
       await schedulePost(post.group, new Date(updated.publishDate));
+    } else if (post.state === 'QUEUE' && updated.state !== 'QUEUE') {
+      // Leaving QUEUE (e.g. cancelled back to DRAFT): drop the stale job so it
+      // never fires for a post that is no longer queued.
+      await removeScheduledJobs(post.group);
     }
 
     sendSuccess(res, { post: updated });
@@ -337,4 +337,4 @@ async function getAnalytics(req, res) {
   }
 }
 
-export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics };
+export { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics , refreshPostInsights };

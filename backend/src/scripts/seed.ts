@@ -12,7 +12,6 @@
  *
  * Requires a valid backend/.env (DATABASE_URL, S3, OPENAI_API_KEY, ...).
  */
-import { encryptToken } from "../lib/token.service.js";
 import mongoose from "mongoose";
 import "../config/env.config.js"; // validates env, fails fast
 import { connectDB } from "../lib/mongoose.js";
@@ -20,8 +19,10 @@ import { auth } from "../config/auth.js";
 import { Integration, Media, Post } from "../models/index.js";
 import { uploadToS3, getS3Url } from "../lib/s3.js";
 import { schedulePost } from "../services/scheduler.service.js";
-import { stopAgenda } from "../lib/agenda.js";
+import { getAgenda, stopAgenda } from "../lib/agenda.js";
+import { JOB_NAME } from "../jobs/publish.job.js";
 import { makeId } from "../utils/makeId.js";
+import { encryptToken } from "../lib/token.service.js";
 import { logger } from "../utils/logger.util.js";
 
 const DEMO_EMAIL = "demo@autosocial.local";
@@ -39,7 +40,7 @@ async function getOrCreateDemoUser() {
     return result.user;
   } catch (err) {
     // Assume the user already exists — look it up directly.
-    const existing = await mongoose.connection.collection("user").findOne({ email: DEMO_EMAIL });
+    const existing = await mongoose.connection.collection("users").findOne({ email: DEMO_EMAIL });
     if (!existing) throw err;
     logger.info(`Demo user already exists: ${DEMO_EMAIL}`);
     return existing;
@@ -120,12 +121,30 @@ async function seedPosts(userId: mongoose.Types.ObjectId, media: Array<{ key: st
   const daysAgo = (d: number) => new Date(Date.now() - d * 24 * 3600 * 1000);
   const mediaJson = JSON.stringify(media.slice(0, 2).map((m) => ({ path: m.url })));
 
+  // Plausible demo engagement — varied publish hours so best-time-to-post has signal
+  const engagement = (impressions: number, likes: number, comments: number, shares: number) => ({
+    impressions,
+    reach: Math.round(impressions * 0.7),
+    likes,
+    comments,
+    shares,
+    clicks: Math.round(impressions * 0.02),
+    updatedAt: new Date(),
+  });
+
+  const atHour = (d: number, hour: number) => {
+    const dt = daysAgo(d);
+    dt.setHours(hour, 15, 0, 0);
+    return dt;
+  };
+
   const specs: Array<{
     content: string;
     publishDate: Date;
     state: "DRAFT" | "QUEUE" | "PUBLISHED" | "ERROR";
     image?: string;
     error?: string;
+    engagement?: ReturnType<typeof engagement>;
   }> = [
     {
       content: "Draft idea: behind-the-scenes of our launch week. Still tweaking the caption…",
@@ -150,20 +169,35 @@ async function seedPosts(userId: mongoose.Types.ObjectId, media: Array<{ key: st
     },
     {
       content: "We shipped our new media library this week. Here's a peek at the new grid view.",
-      publishDate: daysAgo(2),
+      publishDate: atHour(2, 9),
       state: "PUBLISHED",
       image: JSON.stringify([{ path: PICSUM("published-1") }]),
+      engagement: engagement(2450, 187, 24, 31),
     },
     {
       content: "Throwback to the team offsite — already planning the next one.",
-      publishDate: daysAgo(6),
+      publishDate: atHour(6, 18),
       state: "PUBLISHED",
       image: JSON.stringify([{ path: PICSUM("published-2") }]),
+      engagement: engagement(3120, 245, 38, 42),
     },
     {
       content: "Text-only announcement: office hours are changing next month.",
-      publishDate: daysAgo(9),
+      publishDate: atHour(9, 9),
       state: "PUBLISHED",
+      engagement: engagement(980, 45, 6, 8),
+    },
+    {
+      content: "Quick tip: schedule your week of content in one sitting. Future you says thanks.",
+      publishDate: atHour(4, 12),
+      state: "PUBLISHED",
+      engagement: engagement(4210, 312, 51, 67),
+    },
+    {
+      content: "Behind the scenes: how we plan our content calendar each month.",
+      publishDate: atHour(7, 18),
+      state: "PUBLISHED",
+      engagement: engagement(2870, 198, 29, 35),
     },
     {
       content: "This post failed to publish (simulated seed error) — check the error state UI.",
@@ -173,8 +207,21 @@ async function seedPosts(userId: mongoose.Types.ObjectId, media: Array<{ key: st
     },
   ];
 
-  // Clear previous seed posts so re-running stays idempotent.
-  await Post.deleteMany({ userId, content: /\(Seed data|seed error|Draft idea|Another draft|Queued post|We shipped|Throwback|Text-only announcement|This post failed/ });
+  // Clear previous seed posts so re-running stays idempotent. Cancel their
+  // scheduled publish jobs first so stale jobs don't pile up in Agenda.
+  const staleGroups = await Post.distinct("group", {
+    userId,
+    content: /\(Seed data|seed error|Draft idea|Another draft|Queued post|We shipped|Throwback|Text-only announcement|This post failed|Quick tip|Behind the scenes/,
+  });
+  if (staleGroups.length > 0) {
+    const agenda = await getAgenda();
+    let cancelled = 0;
+    for (const groupId of staleGroups) {
+      cancelled += await agenda.cancel({ name: JOB_NAME, data: { groupId } });
+    }
+    logger.info(`Cancelled ${cancelled} stale seed publish job(s)`);
+  }
+  await Post.deleteMany({ userId, content: /\(Seed data|seed error|Draft idea|Another draft|Queued post|We shipped|Throwback|Text-only announcement|This post failed|Quick tip|Behind the scenes/ });
 
   for (const spec of specs) {
     const group = makeId(8);
@@ -187,6 +234,7 @@ async function seedPosts(userId: mongoose.Types.ObjectId, media: Array<{ key: st
       settings: "{}",
       image: spec.image ?? "[]",
       error: spec.error,
+      engagement: spec.engagement,
     });
     if (spec.state === "QUEUE") {
       await schedulePost(group, spec.publishDate);

@@ -7,6 +7,7 @@ import {
   savePage,
   deleteIntegration,
   toggleDisable,
+  getPageCover,
 } from "../controllers/integrations.controller.js";
 import { validateBody, validateParams, validateQuery } from "../middleware/validate.middleware.js";
 import {
@@ -39,6 +40,7 @@ router.post(
   savePage,
 );
 router.delete("/:id", validateParams(integrationIdParamSchema), deleteIntegration);
+router.get("/:id/cover", validateParams(integrationIdParamSchema), getPageCover);
 router.put(
   "/:id/disable",
   validateParams(integrationIdParamSchema),

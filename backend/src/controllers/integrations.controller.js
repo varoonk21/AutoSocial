@@ -13,7 +13,7 @@ import { Integration } from '../models/index.js';
 import { getProvider } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
 import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
-import { encryptToken, currentKeyId, generateOAuthState } from '../lib/token.service.js';
+import { encryptToken, currentKeyId, generateOAuthState, decryptToken } from '../lib/token.service.js';
 import { sendSuccess } from '../utils/response.util.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
@@ -289,6 +289,42 @@ async function saveIntegration(userId, provider, authResult, extraData = {}) {
   });
 }
 
+
+// ─── GET /integrations/:id/cover ─────────────────────────────────────────────
+// Fetch the Facebook Page cover photo via Graph API.
+
+async function getPageCover(req, res) {
+  try {
+    const { id } = req.params;
+    const integration = await Integration.findOne({
+      _id: id,
+      userId: req.user._id,
+    });
+
+    if (!integration) {
+      return res.status(404).json({ error: "Integration not found" });
+    }
+
+    if (integration.providerIdentifier !== "facebook") {
+      return res.status(400).json({ error: "Cover photos are only available for Facebook Pages" });
+    }
+
+    const pageId = integration.internalId;
+    const token = decryptToken(integration.token);
+
+    const fbRes = await fetch(
+      `https://graph.facebook.com/v21.0/${pageId}?fields=cover&access_token=${token}`
+    );
+    const data = await fbRes.json();
+
+    const coverUrl = data?.cover?.source || null;
+    sendSuccess(res, { cover: coverUrl });
+  } catch (err) {
+    logger.error({ err }, "getPageCover failed");
+    res.status(500).json({ error: err.message });
+  }
+}
+
 export {
   listIntegrations,
   getOAuthUrl,
@@ -297,4 +333,5 @@ export {
   savePage,
   deleteIntegration,
   toggleDisable,
+  getPageCover,
 };

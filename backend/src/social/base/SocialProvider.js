@@ -227,6 +227,15 @@ class SocialProvider {
     }
     return !!value;
   }
+  /**
+   * Fetches engagement metrics for a published post from the platform.
+   * Optional: providers implement this when the platform exposes a metrics API.
+   * Must never throw — return null when metrics are unavailable (bad token,
+   * missing scopes, unsupported post type) so refresh jobs degrade gracefully.
+   */
+  async getPostInsights(postId, accessToken, integration) {
+    return null;
+  }
 }
 
 // ─── Type Documentation (JSDoc) ──────────────────────────────────────────────
@@ -273,13 +282,4 @@ export {
   RefreshTokenError,
   BadBodyError,
   NotEnoughScopesError,
-  /**
-   * Fetches engagement metrics for a published post from the platform.
-   * Optional: providers implement this when the platform exposes a metrics API.
-   * Must never throw — return null when metrics are unavailable (bad token,
-   * missing scopes, unsupported post type) so refresh jobs degrade gracefully.
-   */
-  async getPostInsights(postId, accessToken, integration) {
-    return null;
-  }
-}
+};

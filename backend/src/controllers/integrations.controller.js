@@ -13,7 +13,7 @@ import { Integration } from '../models/index.js';
 import { getProvider } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
 import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
-import { encryptToken, currentKeyId } from '../lib/token.service.js', generateOAuthState } from '../lib/token.service.js';
+import { encryptToken, currentKeyId, generateOAuthState } from '../lib/token.service.js';
 import { sendSuccess } from '../utils/response.util.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)

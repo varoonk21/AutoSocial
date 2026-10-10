@@ -19,7 +19,7 @@ const envSchema = z.object({
     }),
 
   // ─── AI (required: caption/hashtag/image generation are core features) ───
-  OPENAI_API_KEY: <redacted>
+  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY is required"),
 
   // ─── Media storage (required: media library + scheduled posts need it) ───
   AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required for the media library"),
@@ -28,11 +28,11 @@ const envSchema = z.object({
 
   // ─── Social providers (optional: each network can be connected later) ───
   FACEBOOK_APP_ID: z.string().optional(),
-  FACEBOOK_APP_SECRET: <redacted>
+  FACEBOOK_APP_SECRET: z.string().optional(),
   LINKEDIN_CLIENT_ID: z.string().optional(),
-  LINKEDIN_CLIENT_SECRET: <redacted>
-  X_API_KEY: <redacted>
-  X_API_SECRET: <redacted>
+  LINKEDIN_CLIENT_SECRET: z.string().optional(),
+  X_API_KEY: z.string().optional(),
+  X_API_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

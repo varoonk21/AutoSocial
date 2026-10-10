@@ -287,5 +287,4 @@ export {
   async getPostInsights(postId, accessToken, integration) {
     return null;
   }
-
-};
+}

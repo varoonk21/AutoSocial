@@ -63,13 +63,13 @@ for (const [label, keys] of providerChecks) {
 if (!process.env.S3_PUBLIC_URL) {
   console.warn(
     "[env] S3_PUBLIC_URL is not set: media links will be presigned URLs expiring after " +
-      `${process.env.S3_PRESIGNED_URL_EXPIRY ?? 300}s. Scheduled posts with media may fail to publish. ` +
+      `${process.env.S3_PRESIGNED_URL_EXPIRY ?? 300}s. Posts store the S3 key and the publish job ` +
       "re-signs at publish time, so scheduled posts keep working; set S3_PUBLIC_URL to a public " +
       "bucket/CDN base URL for permanent links.",
   );
 }
 
-const env = parsed.data;
+
 
 export type Env = z.infer<typeof envSchema>;
 

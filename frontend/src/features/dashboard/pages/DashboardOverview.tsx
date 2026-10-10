@@ -4,10 +4,10 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, User as UserIcon } from "lucide-react";
+import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Stats {
   postsThisMonth: number;
@@ -28,11 +28,13 @@ interface MappedPost {
   releaseURL: string | null;
 }
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+interface PageInfo {
+  id: string;
+  platform: string;
+  name: string;
+  avatar: string;
+  status: string;
+  targetId: string;
 }
 
 export function DashboardOverview() {
@@ -48,10 +50,13 @@ export function DashboardOverview() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [pages, setPages] = useState<PageInfo[]>([]);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadStats();
     loadPosts();
+    loadPages();
   }, []);
 
   async function loadStats() {
@@ -104,47 +109,111 @@ export function DashboardOverview() {
     }
   }
 
-  const userName = session?.user?.name || "there";
-  const firstName = userName.split(" ")[0];
+  async function loadPages() {
+    try {
+      const data = await apiGet("/integrations/list");
+      const integrations: PageInfo[] = data.integrations || [];
+      // Prefer Facebook pages for the Business Suite header
+      const fbPages = integrations.filter((i) => i.platform === "facebook");
+      const displayPages = fbPages.length > 0 ? fbPages : integrations;
+      setPages(displayPages);
+
+      // Fetch cover photo for the first Facebook page
+      if (fbPages.length > 0) {
+        try {
+          const coverData = await apiGet(`/integrations/${fbPages[0].id}/cover`);
+          if (coverData?.cover) setCoverUrl(coverData.cover);
+        } catch {
+          // Cover stays null -> gradient fallback
+        }
+      }
+    } catch {
+      // Pages stay empty
+    }
+  }
+
+  const primaryPage = pages[0];
 
   return (
     <div className="space-y-8 -mt-8 -mx-10">
-      {/* Greeting */}
-      <div className="px-10 pt-8">
-        <p className="text-sm text-slate-500">{getGreeting()},</p>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{firstName}</h1>
+      {/* Cover banner */}
+      <div className="relative mx-10 mt-8 rounded-2xl overflow-hidden">
+        {coverUrl ? (
+          <img src={coverUrl} alt="Page cover" className="h-48 w-full object-cover" />
+        ) : (
+          <div
+            className="h-48 w-full"
+            style={{
+              background: "linear-gradient(120deg, #2f8587 0%, #5fa4a6 55%, #8cc2c3 100%)",
+            }}
+          />
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/25 to-transparent" />
       </div>
 
-      {/* Facebook-style cover */}
-      <div className="relative mx-10 rounded-2xl overflow-hidden">
-        <div
-          className="h-44 w-full"
-          style={{
-            background: "linear-gradient(120deg, #2f8587 0%, #5fa4a6 55%, #8cc2c3 100%)",
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
-        <div className="absolute left-6 -bottom-0 translate-y-1/2 flex items-end gap-4">
-          <Avatar className="size-20 ring-4 ring-white shadow-md">
-            <AvatarImage
-              src={session?.user?.image ? getImageUrl(session.user.image) : undefined}
-              alt={userName}
-            />
-            <AvatarFallback className="bg-teal-50 text-teal-700">
-              <UserIcon className="w-8 h-8" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="absolute left-32 bottom-4 right-6">
-          <h2 className="text-xl font-bold text-white tracking-tight drop-shadow-sm">
-            {userName}'s Workspace
-          </h2>
-          <p className="text-sm text-white/85">Create. Schedule. Grow.</p>
+      {/* Page card overlapping the cover */}
+      <div className="px-10">
+        <div className="-mt-16 relative rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+          <div className="flex flex-wrap items-center gap-5">
+            <Avatar className="size-20 ring-4 ring-white shadow-md shrink-0">
+              <AvatarImage
+                src={
+                  primaryPage?.avatar
+                    ? primaryPage.avatar
+                    : session?.user?.image
+                      ? getImageUrl(session.user.image)
+                      : undefined
+                }
+                alt={primaryPage?.name || session?.user?.name || "Page"}
+              />
+              <AvatarFallback className="bg-teal-50 text-teal-700">
+                <UserIcon className="w-8 h-8" />
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
+                {primaryPage?.name || session?.user?.name || "Your Workspace"}
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                {primaryPage
+                  ? `${primaryPage.platform.charAt(0).toUpperCase() + primaryPage.platform.slice(1)} Page · ${primaryPage.status === "active" ? "Connected" : primaryPage.status.replace("_", " ")}`
+                  : "Connect an account to start creating and scheduling posts"}
+              </p>
+              {pages.length > 1 && (
+                <div className="flex items-center gap-2 mt-3">
+                  {pages.slice(1, 5).map((p) => (
+                    <Avatar key={p.id} className="size-8 ring-2 ring-white" title={p.name}>
+                      <AvatarImage src={p.avatar || undefined} alt={p.name} />
+                      <AvatarFallback className="bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                        {p.name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {pages.length > 5 && (
+                    <span className="text-xs font-medium text-slate-500">+{pages.length - 5} more</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Button onClick={() => navigate("/dashboard/content/create")}>
+                <Plus className="w-4 h-4" />
+                Create Post
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/dashboard/analytics")}>
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/dashboard/content/manage")}>
+                <FolderKanban className="w-4 h-4" />
+                Manage Content
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Spacer for overlapping avatar */}
-      <div className="h-8" />
 
       <div className="px-10 space-y-8">
         {/* Minimal insights */}

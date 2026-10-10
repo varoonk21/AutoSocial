@@ -31,8 +31,8 @@
  * npm install: mime-types
  */
 
+import { generateOAuthState } from '../lib/token.service.js';
 import { SocialProvider, BadBodyError } from './base/SocialProvider.js';
-import { makeId } from '../utils/makeId.js';
 import { timer } from '../utils/timer.js';
 import { hasExtension } from '../utils/hasExtension.js';
 import { lookup } from 'mime-types';
@@ -114,7 +114,7 @@ class LinkedInProvider extends SocialProvider {
    * Source: linkedin.provider.ts → generateAuthUrl()
    */
   async generateAuthUrl() {
-    const state = makeId(6);
+    const state = generateOAuthState();
     const codeVerifier = makeId(30);
     const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code` +
       `&client_id=${process.env.LINKEDIN_CLIENT_ID}` +

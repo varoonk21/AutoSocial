@@ -1,3 +1,4 @@
+import { AppError } from "../../utils/appError.util.js";
 import crypto from "crypto";
 import { getPresignedUploadUrl, getS3Url, deleteS3Object } from "../../lib/s3.js";
 import * as mediaRepository from "./media.repository.js";
@@ -52,7 +53,23 @@ async function getUploadUrl(userId, { fileName, contentType, fileSize }) {
   return { presignedUrl, key };
 }
 
+/**
+ * S3 keys are namespaced per user (`users/<userId>/...`). The upload-URL
+ * endpoint only issues keys under the caller's prefix, but the metadata
+ * endpoint takes a client-supplied key — reject anything outside the caller's
+ * own namespace or containing path traversal.
+ */
+function assertUserScopedKey(userId, key) {
+  const prefix = `users/${userId}/`;
+  if (typeof key !== "string" || !key.startsWith(prefix) || key.includes("..") || key.includes("\\")) {
+    throw new AppError("Invalid media key: must be an upload key issued for your account", 400, "INVALID_MEDIA_KEY");
+  }
+}
+
 async function saveMediaMetadata(userId, { key, originalName, contentType, fileSize, source = "user" }) {
+  // The key is client-supplied: enforce that it lives under this user's own
+  // prefix and contains no path traversal.
+  assertUserScopedKey(userId, key);
   const type = contentType.startsWith("video") ? "video" : "image";
 
   const media = await mediaRepository.createMedia({

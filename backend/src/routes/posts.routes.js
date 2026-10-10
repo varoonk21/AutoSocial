@@ -1,14 +1,16 @@
 import express from "express";
 import { listPosts, getPost, createPost, updatePost, deletePost, getStats, getAnalytics } from "../controllers/posts.controller.js";
+import { validateBody, validateParams } from "../middleware/validate.middleware.js";
+import { createPostSchema, updatePostSchema, postIdParamSchema } from "./posts.validation.js";
 
 const router = express.Router();
 
 router.get("/stats", getStats);
 router.get("/analytics", getAnalytics);
 router.get("/", listPosts);
-router.get("/:id", getPost);
-router.post("/", createPost);
-router.put("/:id", updatePost);
-router.delete("/:id", deletePost);
+router.get("/:id", validateParams(postIdParamSchema), getPost);
+router.post("/", validateBody(createPostSchema), createPost);
+router.put("/:id", validateParams(postIdParamSchema), validateBody(updatePostSchema), updatePost);
+router.delete("/:id", validateParams(postIdParamSchema), deletePost);
 
 export default router;

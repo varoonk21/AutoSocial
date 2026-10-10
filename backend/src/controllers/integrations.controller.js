@@ -11,10 +11,9 @@
 
 import { Integration } from '../models/index.js';
 import { getProvider } from '../services/scheduler.service.js';
-import { makeId } from '../utils/makeId.js';
 import { logger } from '../utils/logger.util.js';
 import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
-import { encryptToken, currentKeyId } from '../lib/token.service.js';
+import { encryptToken, currentKeyId } from '../lib/token.service.js', generateOAuthState } from '../lib/token.service.js';
 import { sendSuccess } from '../utils/response.util.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
@@ -111,7 +110,7 @@ async function oauthCallback(req, res) {
     // Tokens stay server-side in the stored state — never in the response.
     if (socialProvider.isBetweenSteps) {
       // Save a temporary state for the page selection callback
-      const tempState = makeId(20);
+      const tempState = generateOAuthState();
       setOAuthState(tempState, {
         userId: stateData.userId,
         provider,
@@ -235,7 +234,7 @@ async function toggleDisable(req, res) {
     const integration = await Integration.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       { disabled: !!disabled },
-      { new: true }
+      { new: true, runValidators: true }
     ).select('-token -refreshToken');
     sendSuccess(res, { integration: toIntegrationDTO(integration) });
   } catch (err) {
@@ -270,7 +269,7 @@ async function saveIntegration(userId, provider, authResult, extraData = {}) {
         refreshNeeded: false,
         ...extraData,
       },
-      { new: true }
+      { new: true, runValidators: true }
     ).select('-token -refreshToken');
   }
 

@@ -12,6 +12,7 @@
  *
  * Requires a valid backend/.env (DATABASE_URL, S3, OPENAI_API_KEY, ...).
  */
+import { encryptToken } from "../lib/token.service.js";
 import mongoose from "mongoose";
 import "../config/env.config.js"; // validates env, fails fast
 import { connectDB } from "../lib/mongoose.js";
@@ -62,13 +63,14 @@ async function seedIntegrations(userId: mongoose.Types.ObjectId) {
         providerIdentifier: p.providerIdentifier,
         name: p.name,
         picture: PICSUM(`avatar-${p.providerIdentifier}`, 200, 200),
-        token: "SEED_PLACEHOLDER_NOT_A_REAL_TOKEN",
+        // Placeholder tokens are encrypted like real ones (reconnect to publish for real)
+        token: encryptToken("SEED_PLACEHOLDER_NOT_A_REAL_TOKEN"),
         profile: "demo",
         disabled: false,
         refreshNeeded: false,
         additionalSettings: "[]",
       },
-      { upsert: true, setDefaultsOnInsert: true },
+      { upsert: true, setDefaultsOnInsert: true, runValidators: true },
     );
   }
   logger.info("Seeded 4 placeholder integrations (reconnect them to publish for real)");

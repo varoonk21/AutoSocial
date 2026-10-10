@@ -30,8 +30,8 @@
  *   pages_manage_engagement, pages_read_engagement, read_insights
  */
 
+import { generateOAuthState } from '../lib/token.service.js';
 import { SocialProvider, RefreshTokenError, BadBodyError } from './base/SocialProvider.js';
-import { makeId } from '../utils/makeId.js';
 import { timer } from '../utils/timer.js';
 import { hasExtension } from '../utils/hasExtension.js';
 import { logger } from '../utils/logger.util.js';
@@ -140,7 +140,7 @@ class FacebookProvider extends SocialProvider {
    * Source: facebook.provider.ts → generateAuthUrl()
    */
   async generateAuthUrl() {
-    const state = makeId(6);
+    const state = generateOAuthState();
     const url =
       'https://www.facebook.com/v20.0/dialog/oauth' +
       `?client_id=${process.env.FACEBOOK_APP_ID}` +

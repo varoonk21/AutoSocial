@@ -56,4 +56,17 @@ IntegrationSchema.index({ userId: 1, internalId: 1 }, { unique: true });
 
 const Integration = mongoose.model<IIntegration>("Integration", IntegrationSchema);
 
+
+// Defense in depth: OAuth tokens must never leave the server in an API
+// response. Stripping them at serialization covers every current and future
+// endpoint, even if a controller forgets `.select('-token -refreshToken')`.
+IntegrationSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    const record = ret as unknown as Record<string, unknown>;
+    delete record.token;
+    delete record.refreshToken;
+    return ret;
+  },
+});
+
 export default Integration;

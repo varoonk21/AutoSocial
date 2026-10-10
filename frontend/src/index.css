@@ -15,8 +15,8 @@ body::-webkit-scrollbar {
      Primary Teal         #2F8587
      Soft Green Accent    #DDF3D4
      White                #FFFFFF
-     Near Black           #171717
-   All other values are derived shades/neutrals for contrast and usability. */
+     Slate 900            #0F172B
+   Neutrals follow the slate scale (QuizPen-style clean aesthetic). */
 :root {
   /* Core palette */
   --brand-teal: #2f8587;
@@ -25,29 +25,29 @@ body::-webkit-scrollbar {
   --brand-green: #ddf3d4;
   --brand-green-strong: #c3e6b3;
   --brand-white: #ffffff;
-  --brand-ink: #171717;
+  --brand-ink: #0f172b;
 
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   /* Semantic tokens */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172b;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #0f172b;
   --popover: #ffffff;
-  --popover-foreground: #171717;
+  --popover-foreground: #0f172b;
   --primary: #2f8587;
   --primary-foreground: #ffffff;
   --primary-hover: #276f71;
   --secondary: #ddf3d4;
-  --secondary-foreground: #171717;
-  --muted: #f5f6f6;
-  --muted-foreground: #5c6366;
+  --secondary-foreground: #0f172b;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
   --accent: #ddf3d4;
-  --accent-foreground: #171717;
+  --accent-foreground: #0f172b;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #e3e5e6;
-  --input: #d8dbdc;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
   --ring: #2f8587;
 
   /* Charts: derived from the core palette */
@@ -59,12 +59,12 @@ body::-webkit-scrollbar {
 
   /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #171717;
+  --sidebar-foreground: #0f172b;
   --sidebar-primary: #2f8587;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edf6f6;
-  --sidebar-accent-foreground: #1f5a5c;
-  --sidebar-border: #e3e5e6;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172b;
+  --sidebar-border: #e2e8f0;
   --sidebar-ring: #2f8587;
 }
 
@@ -145,4 +145,13 @@ body::-webkit-scrollbar {
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+/* ─── QuizPen-style soft ambient shadows (teal-tinted) ─── */
+@utility shadow-soft {
+  box-shadow: 0 3px 12px rgba(30, 60, 100, 0.04), 0 1px 3px rgba(30, 60, 100, 0.06);
+}
+
+@utility shadow-card {
+  box-shadow: 0 10px 20px rgba(20, 40, 80, 0.08), 0 2px 6px rgba(20, 40, 80, 0.04);
 }

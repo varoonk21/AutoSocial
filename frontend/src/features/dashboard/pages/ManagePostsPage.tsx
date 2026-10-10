@@ -6,7 +6,7 @@ import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, Calendar, FileText, CheckCircle2, Clock, AlertCircle, Layers } from "lucide-react";
+import { Plus, Edit2, Trash2, Calendar, FileText, CheckCircle2, Clock, AlertCircle, Layers, ArrowDownWideNarrow } from "lucide-react";
 
 interface ManagePostsPageProps {
   initialTab?: string;
@@ -37,6 +37,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
     loadData();
@@ -92,6 +93,12 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
     navigate(`/dashboard/content/create/${post._id}`);
   };
 
+  const sortedPosts = [...posts].sort((a, b) => {
+    const aTime = a.publishDate ? new Date(a.publishDate).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+    const bTime = b.publishDate ? new Date(b.publishDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+    return sortOrder === "newest" ? bTime - aTime : aTime - bTime;
+  });
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -111,26 +118,41 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
         </Button>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-2">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
-                isActive
-                  ? "bg-foreground text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      {/* Tabs Bar + Sort */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+                  isActive
+                    ? "bg-foreground text-white shadow-xs"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ArrowDownWideNarrow className="w-4 h-4 text-slate-400" />
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+            className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 outline-none cursor-pointer hover:border-slate-300 focus:border-primary"
+            aria-label="Sort posts"
+          >
+            <option value="newest">Newest to Oldest</option>
+            <option value="oldest">Oldest to Newest</option>
+          </select>
+        </div>
       </div>
 
       {/* Posts List */}
@@ -155,7 +177,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
       ) : (
         <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
           <CardContent className="p-0 divide-y divide-gray-100">
-            {posts.map((post) => {
+            {sortedPosts.map((post) => {
               const integration =
                 typeof post.integrationId === "object" && post.integrationId !== null
                   ? post.integrationId

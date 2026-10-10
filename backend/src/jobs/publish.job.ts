@@ -5,6 +5,7 @@ import { RefreshTokenError } from "../social/base/SocialProvider.js";
 import { timer } from "../utils/timer.js";
 import { logger } from "../utils/logger.util.js";
 import { decryptToken, encryptToken, currentKeyId } from "../lib/token.service.js";
+import { resolveMediaUrl } from "../lib/media-url.js";
 
 const JOB_NAME = "publish-post";
 
@@ -70,12 +71,25 @@ async function publishToIntegration(posts: any[]): Promise<void> {
     return 0;
   });
 
-  const postDetails = sorted.map((p: any) => ({
-    id: p._id.toString(),
-    message: p.content,
-    settings: JSON.parse(p.settings || "{}"),
-    media: JSON.parse(p.image || "[]"),
-  }));
+  const postDetails = await Promise.all(
+    sorted.map(async (p: any) => {
+      const rawMedia = JSON.parse(p.image || "[]");
+      // Mint fresh presigned URLs for our S3 media: the URL stored at
+      // schedule time expires within minutes, so re-sign at publish time.
+      const media = await Promise.all(
+        rawMedia.map(async (m: any) => ({
+          ...(typeof m === "object" && m !== null ? m : {}),
+          path: await resolveMediaUrl(m),
+        }))
+      );
+      return {
+        id: p._id.toString(),
+        message: p.content,
+        settings: JSON.parse(p.settings || "{}"),
+        media,
+      };
+    })
+  );
 
   const provider = getProvider(integration.providerIdentifier);
 

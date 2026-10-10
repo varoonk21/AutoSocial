@@ -64,7 +64,8 @@ if (!process.env.S3_PUBLIC_URL) {
   console.warn(
     "[env] S3_PUBLIC_URL is not set: media links will be presigned URLs expiring after " +
       `${process.env.S3_PRESIGNED_URL_EXPIRY ?? 300}s. Scheduled posts with media may fail to publish. ` +
-      "Set S3_PUBLIC_URL to a public bucket/CDN base URL to fix this.",
+      "re-signs at publish time, so scheduled posts keep working; set S3_PUBLIC_URL to a public " +
+      "bucket/CDN base URL for permanent links.",
   );
 }
 

@@ -15,7 +15,11 @@ export const savePageSchema = z.object({
   pageData: z.object({
     id: z.string().min(1, 'pageData.id is required'),
     name: z.string().min(1, 'pageData.name is required'),
-    access_token: z.string().min(1, 'pageData.access_token is required'),
+    // Facebook's pages() entries include access_token; Instagram's do not —
+    // the page token is resolved server-side via fetchPageInformation.
+    access_token: z.string().min(1).optional(),
+    // Instagram's pages() entries carry the parent Facebook Page id here.
+    pageId: z.string().min(1).optional(),
     picture: z
       .object({ data: z.object({ url: z.string() }).optional() })
       .optional(),

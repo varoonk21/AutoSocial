@@ -31,8 +31,8 @@
  * npm install: mime-types
  */
 
-import { generateOAuthState } from '../lib/token.service.js';
 import { SocialProvider, BadBodyError } from './base/SocialProvider.js';
+import { makeId } from '../utils/makeId.js';
 import { timer } from '../utils/timer.js';
 import { hasExtension } from '../utils/hasExtension.js';
 import { lookup } from 'mime-types';
@@ -96,9 +96,16 @@ class LinkedInProvider extends SocialProvider {
       })
     ).json();
 
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
-    ).json();
+    const { vanityName } = await (async () => {
+      // /v2/me needs the legacy r_basicprofile product, retired for new apps.
+      try {
+        return await (
+          await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+        ).json();
+      } catch {
+        return { vanityName: '' };
+      }
+    })();
 
     const { name, sub: id, picture } = await (
       await fetch('https://api.linkedin.com/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
@@ -114,7 +121,7 @@ class LinkedInProvider extends SocialProvider {
    * Source: linkedin.provider.ts → generateAuthUrl()
    */
   async generateAuthUrl() {
-    const state = generateOAuthState();
+    const state = makeId(6);
     const codeVerifier = makeId(30);
     const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code` +
       `&client_id=${process.env.LINKEDIN_CLIENT_ID}` +
@@ -151,9 +158,16 @@ class LinkedInProvider extends SocialProvider {
       await fetch('https://api.linkedin.com/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
     ).json();
 
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
-    ).json();
+    const { vanityName } = await (async () => {
+      // /v2/me needs the legacy r_basicprofile product, retired for new apps.
+      try {
+        return await (
+          await fetch('https://api.linkedin.com/v2/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+        ).json();
+      } catch {
+        return { vanityName: '' };
+      }
+    })();
 
     return { id, accessToken, refreshToken, expiresIn, name, picture, username: vanityName };
   }

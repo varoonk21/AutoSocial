@@ -34,7 +34,6 @@ import {
   CheckCircle2,
   AlertCircle,
   MoreVertical,
-  Filter,
   LayoutGrid,
   CalendarDays,
 } from "lucide-react";
@@ -269,15 +268,15 @@ export function ScheduledPostsPage() {
   const renderCalendarView = () => {
     if (viewMode === "month") {
       return (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
-          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/70">
+        <Card className="border border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/70">
             {DAYS_OF_WEEK.map((day) => (
-              <div key={day} className="py-3 text-center text-xs font-semibold text-gray-600">
+              <div key={day} className="py-3 text-center text-xs font-semibold text-slate-600">
                 {day}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 bg-gray-50/30">
+          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 bg-slate-50/30">
             {calendarCells.map((cell, idx) => {
               const cellPosts = getPostsForDate(cell.date);
               const currentDay = isToday(cell.date);
@@ -286,22 +285,22 @@ export function ScheduledPostsPage() {
                   key={idx}
                   onClick={() => handleDayClick(cell.date)}
                   className={`min-h-[110px] p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-primary-50/30 ${
-                    !cell.isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-background"
+                    !cell.isCurrentMonth ? "bg-slate-50/50 text-slate-400" : "bg-white"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-xs font-semibold inline-flex items-center justify-center rounded-full ${
                         currentDay
-                          ? "w-6 h-6 bg-foreground text-white shadow-xs"
+                          ? "w-6 h-6 bg-slate-900 text-white shadow-xs"
                           : cell.isCurrentMonth
-                          ? "text-foreground"
-                          : "text-gray-400"
+                          ? "text-slate-900"
+                          : "text-slate-400"
                       }`}
                     >
                       {cell.dayNum}
                     </span>
-                    <Plus className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Plus className="w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="mt-1 space-y-1.5 flex-1 overflow-y-auto max-h-[80px] scrollbar-none">
                     {cellPosts.map((post: Post) => {
@@ -331,19 +330,19 @@ export function ScheduledPostsPage() {
 
     if (viewMode === "week") {
       return (
-        <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-background">
-          <div className="flex border-b border-gray-200 bg-gray-50/80 sticky top-0 z-10">
+        <Card className="border border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+          <div className="flex border-b border-slate-200 bg-slate-50/80 sticky top-0 z-10">
             <div className="w-14 shrink-0" />
             {weekDays.map((day) => {
               const currentDay = isToday(day);
               return (
-                <div key={day.toISOString()} className="flex-1 py-3 text-center border-l border-gray-100">
-                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <div key={day.toISOString()} className="flex-1 py-3 text-center border-l border-slate-100">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                     {DAYS_OF_WEEK[day.getDay()]}
                   </div>
                   <div
                     className={`text-sm font-bold mt-0.5 mx-auto w-7 h-7 flex items-center justify-center rounded-full ${
-                      currentDay ? "bg-foreground text-white" : "text-foreground"
+                      currentDay ? "bg-slate-900 text-white" : "text-slate-900"
                     }`}
                   >
                     {day.getDate()}
@@ -357,8 +356,8 @@ export function ScheduledPostsPage() {
               const hour = hourIndex;
               const label = hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`;
               return (
-                <div key={hour} className="flex border-b border-gray-100 last:border-b-0">
-                  <div className="w-14 shrink-0 py-2 pr-2 text-right text-[10px] font-semibold text-gray-400 leading-none pt-2.5">
+                <div key={hour} className="flex border-b border-slate-100 last:border-b-0">
+                  <div className="w-14 shrink-0 py-2 pr-2 text-right text-[10px] font-semibold text-slate-400 leading-none pt-2.5">
                     {label}
                   </div>
                   {weekDays.map((day) => {
@@ -376,7 +375,7 @@ export function ScheduledPostsPage() {
                       <div
                         key={day.toISOString()}
                         onClick={() => handleDayClick(day, hour)}
-                        className={`flex-1 min-h-[48px] border-l border-gray-100 px-1 py-1 cursor-pointer group transition-colors hover:bg-foreground/5 ${
+                        className={`flex-1 min-h-[48px] border-l border-slate-100 px-1 py-1 cursor-pointer group transition-colors hover:bg-slate-900/5 ${
                           currentDay ? "bg-primary-50/10" : ""
                         }`}
                       >
@@ -401,7 +400,7 @@ export function ScheduledPostsPage() {
                           </div>
                         ) : (
                           <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus className="w-3 h-3 text-gray-400" />
+                            <Plus className="w-3 h-3 text-slate-400" />
                           </div>
                         )}
                       </div>
@@ -453,48 +452,45 @@ export function ScheduledPostsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Calendar</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Plan, schedule and manage your content calendar.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Schedule</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Plan and manage your content calendar.</p>
         </div>
-        <Button
-          onClick={() => navigate("/dashboard/create-post")}
-          className="bg-foreground hover:bg-foreground/85 text-white gap-2 shadow-sm"
-        >
+        <Button onClick={() => navigate("/dashboard/content/create")}>
           <Plus className="w-4 h-4" />
           <span>Create Post</span>
         </Button>
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-background p-3 rounded-2xl border border-gray-200 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={viewMode === "week" ? prevWeek : prevMonth}
-              className="rounded-none border-r border-gray-200"
+              className="text-slate-500"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={viewMode === "week" ? nextWeek : nextMonth}
-              className="rounded-none"
+              className="text-slate-500"
             >
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
           <Button variant="outline" size="sm" onClick={goToToday} className="font-medium">
             Today
           </Button>
-          <span className="text-lg font-bold text-foreground ml-2">
+          <span className="text-lg font-bold text-slate-900 ml-1">
             {viewMode === "week" ? weekRangeLabel : `${MONTH_NAMES[month]} ${year}`}
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* View Mode Toggle */}
           <ToggleGroup
             value={[viewMode]}
@@ -516,21 +512,31 @@ export function ScheduledPostsPage() {
             </ToggleGroupItem>
           </ToggleGroup>
 
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <SelectValue placeholder="All Accounts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Accounts</SelectItem>
-                <SelectItem value="facebook">Facebook</SelectItem>
-                <SelectItem value="instagram">Instagram</SelectItem>
-                <SelectItem value="x">X (Twitter)</SelectItem>
-                <SelectItem value="linkedin">LinkedIn</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-[140px] h-9 text-xs">
+              <SelectValue placeholder="All Accounts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Accounts</SelectItem>
+              <SelectItem value="facebook">Facebook</SelectItem>
+              <SelectItem value="instagram">Instagram</SelectItem>
+              <SelectItem value="x">X (Twitter)</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-[130px] h-9 text-xs">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="QUEUE">Scheduled</SelectItem>
+              <SelectItem value="PUBLISHED">Published</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="ERROR">Failed</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -544,10 +550,10 @@ export function ScheduledPostsPage() {
         {/* Right: Sidebar */}
         <div className="space-y-6">
           {/* Monthly Overview */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-foreground text-sm">Monthly Overview</h3>
-              <span className="text-xs font-semibold text-foreground cursor-pointer hover:underline">View Analytics</span>
+              <h3 className="font-bold text-slate-900 text-sm">Monthly Overview</h3>
+              <span className="text-xs font-semibold text-slate-900 cursor-pointer hover:underline">View Analytics</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-primary-50/60 border border-primary-100 p-3.5 rounded-xl flex items-center justify-between">
@@ -593,15 +599,15 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Upcoming Posts */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-foreground text-sm">Upcoming Posts</h3>
-              <span className="text-xs font-semibold text-gray-400">
+              <h3 className="font-bold text-slate-900 text-sm">Upcoming Posts</h3>
+              <span className="text-xs font-semibold text-slate-400">
                 View all
               </span>
             </div>
             {upcomingPosts.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">No upcoming posts scheduled.</p>
+              <p className="text-xs text-slate-400 text-center py-4">No upcoming posts scheduled.</p>
             ) : (
               <div className="space-y-3">
                 {upcomingPosts.map((post: Post) => {
@@ -612,8 +618,8 @@ export function ScheduledPostsPage() {
                   const mediaUrl = typeof firstMedia === 'string' ? firstMedia : firstMedia?.path;
 
                   return (
-                    <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center border border-gray-200">
+                    <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center border border-slate-200">
                         {mediaUrl ? (
                           <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -621,8 +627,8 @@ export function ScheduledPostsPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{post.content || "Scheduled Post"}</p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-xs font-semibold text-slate-900 truncate">{post.content || "Scheduled Post"}</p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
                             {pubDate.toLocaleDateString([], { month: "short", day: "numeric" })} • {pubDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -630,7 +636,7 @@ export function ScheduledPostsPage() {
                         </div>
                       </div>
                       <Button variant="ghost" size="icon-xs" onClick={() => handleDelete(post._id)}>
-                        <MoreVertical className="w-3.5 h-3.5 text-gray-400" />
+                        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
                       </Button>
                     </div>
                   );
@@ -640,15 +646,15 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Recent Published */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-foreground text-sm">Recent Published</h3>
-              <span className="text-xs font-semibold text-gray-400">
+              <h3 className="font-bold text-slate-900 text-sm">Recent Published</h3>
+              <span className="text-xs font-semibold text-slate-400">
                 {publishedCount} total
               </span>
             </div>
             {recentPublished.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">No published posts yet.</p>
+              <p className="text-xs text-slate-400 text-center py-4">No published posts yet.</p>
             ) : (
               <div className="space-y-3">
                 {recentPublished.map((post: Post) => {
@@ -659,8 +665,8 @@ export function ScheduledPostsPage() {
                   const mediaUrl = typeof firstMedia === 'string' ? firstMedia : firstMedia?.path;
 
                   return (
-                    <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center border border-gray-200">
+                    <div key={post._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center border border-slate-200">
                         {mediaUrl ? (
                           <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -668,8 +674,8 @@ export function ScheduledPostsPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{post.content || "Published Post"}</p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-xs font-semibold text-slate-900 truncate">{post.content || "Published Post"}</p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
                             {pubDate.toLocaleDateString([], { month: "short", day: "numeric" })}
@@ -693,64 +699,6 @@ export function ScheduledPostsPage() {
             )}
           </Card>
 
-          {/* Filters */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-foreground text-sm">Filters</h3>
-              <button
-                onClick={() => { setSelectedPlatform("all"); setSelectedStatus("all"); }}
-                className="text-xs font-medium text-gray-400 hover:text-gray-600"
-              >
-                Clear all
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Accounts</label>
-                <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="All Accounts" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Accounts</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="x">X (Twitter)</SelectItem>
-                    <SelectItem value="linkedin">LinkedIn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Status</label>
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="All Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="QUEUE">Scheduled</SelectItem>
-                    <SelectItem value="PUBLISHED">Published</SelectItem>
-                    <SelectItem value="DRAFT">Draft</SelectItem>
-                    <SelectItem value="ERROR">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </Card>
-
-          {/* Legend */}
-          <Card className="border border-gray-200 shadow-sm rounded-2xl bg-background p-5">
-            <h3 className="font-bold text-foreground text-sm mb-3">Legend</h3>
-            <div className="grid grid-cols-2 gap-2 text-xs font-medium text-gray-600">
-              {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${config.dot}`} />
-                  <span>{config.label}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
         </div>
       </div>
 

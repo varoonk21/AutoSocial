@@ -11,7 +11,6 @@ import {
   Palette,
   Share2,
   Settings,
-  HelpCircle,
   ChevronDown,
   ChevronUp,
   User,
@@ -190,17 +189,8 @@ export function AppSidebar() {
         ))}
       </nav>
 
-      {/* Footer: help + user */}
+      {/* Footer: user */}
       <div className="px-3 pb-4 pt-2 space-y-1">
-        <button
-          type="button"
-          onClick={() => navigate("/dashboard/settings")}
-          className={navItemClass(false) + " w-full"}
-        >
-          <HelpCircle className="w-[18px] h-[18px]" />
-          <span>Help</span>
-        </button>
-
         {/* User profile */}
         <div className="relative pt-2" ref={menuRef}>
           <button

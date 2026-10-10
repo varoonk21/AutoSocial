@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   Pagination,
@@ -56,6 +56,7 @@ export function MediaLibraryPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationMeta, setPaginationMeta] = useState({ page: 1, pageSize: 24, total: 0, pageCount: 1 });
+  const [stats, setStats] = useState({ total: 0, images: 0, videos: 0, ai: 0 });
 
   // Modals & Interactivity
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -92,6 +93,29 @@ export function MediaLibraryPage() {
   useEffect(() => {
     fetchBackendMedia();
   }, [typeFilter, sourceFilter, searchQuery, sortBy, currentPage]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [all, images, videos, ai] = await Promise.all([
+        apiGetPaginated("/media?page=1&pageSize=1"),
+        apiGetPaginated("/media?type=image&page=1&pageSize=1"),
+        apiGetPaginated("/media?type=video&page=1&pageSize=1"),
+        apiGetPaginated("/media?source=ai&page=1&pageSize=1"),
+      ]);
+      setStats({
+        total: all.meta?.total || 0,
+        images: images.meta?.total || 0,
+        videos: videos.meta?.total || 0,
+        ai: ai.meta?.total || 0,
+      });
+    } catch {
+      // Stats stay at zero
+    }
+  };
 
   const fetchBackendMedia = async () => {
     try {
@@ -299,106 +323,128 @@ export function MediaLibraryPage() {
       />
 
       {/* Header Title Bar */}
-      <div className="pb-2 border-b border-gray-200/80 flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Media Library</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Store and manage all your media files in one place.</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Media Library</h1>
+          <p className="text-slate-500 mt-2 max-w-md">Store and manage all your media files in one place. Upload, organize and reuse them anytime.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setAiModalOpen(true)}>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" onClick={() => setAiModalOpen(true)}>
             <Sparkles className="w-4 h-4" />
             <span>AI Generator</span>
           </Button>
-          <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+          <Button onClick={() => fileInputRef.current?.click()}>
             <Upload className="w-4 h-4" />
             <span>Upload Media</span>
           </Button>
         </div>
       </div>
 
-      {/* Filters & Control Toolbar */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* Left Segmented Filter Pill Box (Type Filter) */}
-          <ToggleGroup type="single" value={typeFilter} onValueChange={(value) => value && setTypeFilter(value)} variant="outline" size="sm">
-            <ToggleGroupItem value="all">
-              <ImageIcon className="w-4 h-4 text-foreground" />
-              <span>All Media</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="image">
-              <ImageIcon className="w-4 h-4 text-gray-500" />
-              <span>Images</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="video">
-              <Video className="w-4 h-4 text-gray-500" />
-              <span>Videos</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="document">
-              <FileText className="w-4 h-4 text-gray-500" />
-              <span>Documents</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-
-          {/* Source filter: minimal 2-icon toggle (click active again for all) */}
-          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 gap-1">
-            <button
-              type="button"
-              onClick={() => setSourceFilter(sourceFilter === "user" ? "all" : "user")}
-              title="User uploads"
-              aria-label="Show user uploads"
-              className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                sourceFilter === "user"
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <UserIcon className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setSourceFilter(sourceFilter === "ai" ? "all" : "ai")}
-              title="AI generated"
-              aria-label="Show AI generated"
-              className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                sourceFilter === "ai"
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-            </button>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-5 h-5 text-teal-600" />
           </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAiModalOpen(true)}
-              className="border-primary-300 bg-primary-50 hover:bg-primary-100 text-primary-900 ml-1"
-            >
-              <Plus className="w-4 h-4 text-primary-600" />
-              <span>Generate AI</span>
-            </Button>
-
-          {/* Right Sort Dropdown */}
-          <div className="flex items-center gap-2">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[150px]">
-                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div>
+            <div className="text-xl font-bold text-slate-900">{stats.total}</div>
+            <div className="text-xs text-slate-500">Total media</div>
           </div>
         </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <div className="text-xl font-bold text-slate-900">{stats.images}</div>
+            <div className="text-xs text-slate-500">Images</div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+            <Video className="w-5 h-5 text-purple-600" />
+          </div>
+          <div>
+            <div className="text-xl font-bold text-slate-900">{stats.videos}</div>
+            <div className="text-xs text-slate-500">Videos</div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <div className="text-xl font-bold text-slate-900">{stats.ai}</div>
+            <div className="text-xs text-slate-500">AI generated</div>
+          </div>
+        </div>
+      </div>
 
-        {/* Search Bar Row */}
-        <div className="relative w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search media..." className="pl-10" />
+      {/* Search + Filters Row (QuizPen style) */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search media..."
+            className="pl-10"
+          />
+        </div>
+
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[170px]">
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">Newest first</SelectItem>
+            <SelectItem value="oldest">Oldest first</SelectItem>
+            <SelectItem value="name">Name (A-Z)</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={typeFilter} onValueChange={(v) => v && setTypeFilter(v)}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="All media" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All media</SelectItem>
+            <SelectItem value="image">Images</SelectItem>
+            <SelectItem value="video">Videos</SelectItem>
+            <SelectItem value="document">Documents</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Source filter: minimal 2-icon toggle (click active again for all) */}
+        <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 gap-1">
+          <button
+            type="button"
+            onClick={() => setSourceFilter(sourceFilter === "user" ? "all" : "user")}
+            title="User uploads"
+            aria-label="Show user uploads"
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${
+              sourceFilter === "user"
+                ? "bg-slate-900 text-white"
+                : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <UserIcon className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSourceFilter(sourceFilter === "ai" ? "all" : "ai")}
+            title="AI generated"
+            aria-label="Show AI generated"
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${
+              sourceFilter === "ai"
+                ? "bg-slate-900 text-white"
+                : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

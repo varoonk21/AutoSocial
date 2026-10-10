@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Camera,
   User as UserIcon,
@@ -171,10 +172,58 @@ export function SettingsPage() {
   if (loading) {
     return (
       <div className="max-w-5xl">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
-        <p className="text-slate-500 mt-1.5">Manage your account and preferences.</p>
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-8">
-          <p className="text-slate-400">Loading...</p>
+        {/* Page header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
+            <p className="text-slate-500 mt-1.5">Manage your account and preferences.</p>
+          </div>
+          <Skeleton className="h-10 w-32 rounded-lg shrink-0" />
+        </div>
+
+        <div className="mt-6 space-y-6">
+          {/* Tab row */}
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-slate-200 bg-white w-fit">
+            {NAV_ITEMS.map((item) => (
+              <div key={item.id} className="flex items-center gap-2 px-4 py-2">
+                <Skeleton className="size-4 rounded" />
+                <Skeleton className="h-4 w-16 rounded-md" />
+              </div>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="space-y-6">
+            {/* Profile header card */}
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <Skeleton className="h-28 w-full rounded-none" />
+              <div className="px-6 pb-6">
+                <div className="-mt-10 flex items-end justify-between gap-4">
+                  <Skeleton className="size-20 rounded-full ring-4 ring-white" />
+                  <div className="pb-1">
+                    <Skeleton className="h-3 w-40 rounded-md" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <Skeleton className="h-5 w-48 rounded-md" />
+                  <Skeleton className="h-4 w-64 rounded-md" />
+                </div>
+              </div>
+            </div>
+
+            {/* Profile fields */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+              <Skeleton className="h-4 w-44 rounded-md" />
+              <div className="grid sm:grid-cols-2 gap-5">
+                {[0, 1].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-12 rounded-md" />
+                    <Skeleton className="h-9 w-full rounded-lg" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -383,31 +432,29 @@ export function SettingsPage() {
           )}
 
           {activeSection === "danger" && (
-            <section className="rounded-2xl border border-red-200 bg-red-50/50 overflow-hidden">
-              <div className="px-6 py-5 border-b border-red-100">
-                <h3 className="text-base font-bold text-red-700 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
+            <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500" />
                   Danger Zone
                 </h3>
-                <p className="text-sm text-red-600/70 mt-0.5">Irreversible actions — proceed with caution.</p>
+                <p className="text-sm text-slate-500 mt-0.5">Irreversible actions — proceed with caution.</p>
               </div>
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-white border border-red-100 p-4">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Delete account</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Permanently delete your account and all associated data.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 shrink-0"
-                    onClick={() => setToast({ type: "error", msg: "Account deletion is not available yet" })}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </Button>
+              <div className="px-6 py-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Delete account</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Permanently delete your account and all associated data.
+                  </p>
                 </div>
+                <Button
+                  variant="outline"
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 shrink-0 cursor-pointer"
+                  onClick={() => setToast({ type: "error", msg: "Account deletion is not available yet" })}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
               </div>
             </section>
           )}

@@ -109,7 +109,7 @@ class InstagramProvider extends SocialProvider {
   async generateAuthUrl() {
     const state = makeId(6);
     const url =
-      'https://www.facebook.com/v20.0/dialog/oauth' +
+      'https://www.facebook.com/v21.0/dialog/oauth' +
       `?client_id=${process.env.FACEBOOK_APP_ID}` +
       `&redirect_uri=${encodeURIComponent(`${process.env.FRONTEND_URL}/integrations/social/instagram`)}` +
       `&state=${state}` +
@@ -124,7 +124,7 @@ class InstagramProvider extends SocialProvider {
   async authenticate({ code, codeVerifier, refresh }) {
     const { access_token: shortToken } = await (
       await fetch(
-        'https://graph.facebook.com/v20.0/oauth/access_token' +
+        'https://graph.facebook.com/v21.0/oauth/access_token' +
           `?client_id=${process.env.FACEBOOK_APP_ID}` +
           `&redirect_uri=${encodeURIComponent(
             `${process.env.FRONTEND_URL}/integrations/social/instagram${refresh ? `?refresh=${refresh}` : ''}`
@@ -136,7 +136,7 @@ class InstagramProvider extends SocialProvider {
 
     const { access_token } = await (
       await fetch(
-        'https://graph.facebook.com/v20.0/oauth/access_token' +
+        'https://graph.facebook.com/v21.0/oauth/access_token' +
           '?grant_type=fb_exchange_token' +
           `&client_id=${process.env.FACEBOOK_APP_ID}` +
           `&client_secret=${process.env.FACEBOOK_APP_SECRET}` +
@@ -146,13 +146,13 @@ class InstagramProvider extends SocialProvider {
 
     // Verify scopes
     const { data } = await (
-      await fetch(`https://graph.facebook.com/v20.0/me/permissions?access_token=${access_token}`)
+      await fetch(`https://graph.facebook.com/v21.0/me/permissions?access_token=${access_token}`)
     ).json();
     const permissions = data.filter((d) => d.status === 'granted').map((p) => p.permission);
     this.checkScopes(this.scopes, permissions);
 
     const { id, name, picture } = await (
-      await fetch(`https://graph.facebook.com/v20.0/me?fields=id,name,picture&access_token=${access_token}`)
+      await fetch(`https://graph.facebook.com/v21.0/me?fields=id,name,picture&access_token=${access_token}`)
     ).json();
 
     return {
@@ -196,23 +196,23 @@ class InstagramProvider extends SocialProvider {
     };
 
     await fetchPaginated(
-      `https://graph.facebook.com/v20.0/me/accounts?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
+      `https://graph.facebook.com/v21.0/me/accounts?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
     );
 
     try {
-      let bizUrl = `https://graph.facebook.com/v20.0/me/businesses?access_token=${accessToken}`;
+      let bizUrl = `https://graph.facebook.com/v21.0/me/businesses?access_token=${accessToken}`;
       while (bizUrl) {
         const bizResponse = await (await fetch(bizUrl)).json();
         if (bizResponse.data) {
           for (const business of bizResponse.data) {
             try {
               await fetchPaginated(
-                `https://graph.facebook.com/v20.0/${business.id}/owned_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
+                `https://graph.facebook.com/v21.0/${business.id}/owned_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
               );
             } catch { /* Continue */ }
             try {
               await fetchPaginated(
-                `https://graph.facebook.com/v20.0/${business.id}/client_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
+                `https://graph.facebook.com/v21.0/${business.id}/client_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
               );
             } catch { /* Continue */ }
           }
@@ -227,7 +227,7 @@ class InstagramProvider extends SocialProvider {
         .map(async (p) => {
           const igInfo = await (
             await fetch(
-              `https://graph.facebook.com/v20.0/${p.instagram_business_account.id}?fields=name,profile_picture_url&access_token=${accessToken}`
+              `https://graph.facebook.com/v21.0/${p.instagram_business_account.id}?fields=name,profile_picture_url&access_token=${accessToken}`
             )
           ).json();
           return {
@@ -252,13 +252,13 @@ class InstagramProvider extends SocialProvider {
     const [accessToken] = token.split('___');
     const { access_token } = await (
       await fetch(
-        `https://graph.facebook.com/v20.0/${data.pageId}?fields=access_token,name,picture.type(large)&access_token=${accessToken}`
+        `https://graph.facebook.com/v21.0/${data.pageId}?fields=access_token,name,picture.type(large)&access_token=${accessToken}`
       )
     ).json();
 
     const { id, name, profile_picture_url, username } = await (
       await fetch(
-        `https://graph.facebook.com/v20.0/${data.id}?fields=username,name,profile_picture_url&access_token=${accessToken}`
+        `https://graph.facebook.com/v21.0/${data.id}?fields=username,name,profile_picture_url&access_token=${accessToken}`
       )
     ).json();
 
@@ -317,7 +317,7 @@ class InstagramProvider extends SocialProvider {
 
         const { id: containerId } = await (
           await this.fetch(
-            `https://graph.facebook.com/v20.0/${id}/media?${mediaType}${isCarousel}&access_token=${accessToken}${caption}`,
+            `https://graph.facebook.com/v21.0/${id}/media?${mediaType}${isCarousel}&access_token=${accessToken}${caption}`,
             { method: 'POST' }
           )
         ).json();
@@ -341,7 +341,7 @@ class InstagramProvider extends SocialProvider {
         await this._waitForContainer(containerId, accessToken);
         const { id: mediaId } = await (
           await this.fetch(
-            `https://graph.facebook.com/v20.0/${id}/media_publish?creation_id=${containerId}&access_token=${accessToken}`,
+            `https://graph.facebook.com/v21.0/${id}/media_publish?creation_id=${containerId}&access_token=${accessToken}`,
             { method: 'POST' }
           )
         ).json();
@@ -360,7 +360,7 @@ class InstagramProvider extends SocialProvider {
       }
       const { id: carouselId } = await (
         await this.fetch(
-          `https://graph.facebook.com/v20.0/${id}/media?media_type=CAROUSEL&children=${containers.join(',')}&caption=${encodeURIComponent(firstPost.message)}&access_token=${accessToken}`,
+          `https://graph.facebook.com/v21.0/${id}/media?media_type=CAROUSEL&children=${containers.join(',')}&caption=${encodeURIComponent(firstPost.message)}&access_token=${accessToken}`,
           { method: 'POST' }
         )
       ).json();
@@ -374,7 +374,7 @@ class InstagramProvider extends SocialProvider {
     // Step 3: Publish the container
     const { id: mediaId } = await (
       await this.fetch(
-        `https://graph.facebook.com/v20.0/${id}/media_publish?creation_id=${publishContainerId}&access_token=${accessToken}`,
+        `https://graph.facebook.com/v21.0/${id}/media_publish?creation_id=${publishContainerId}&access_token=${accessToken}`,
         { method: 'POST' }
       )
     ).json();
@@ -396,7 +396,7 @@ class InstagramProvider extends SocialProvider {
       }
       const { status_code, status } = await (
         await this.fetch(
-          `https://graph.facebook.com/v20.0/${containerId}?access_token=${accessToken}&fields=status_code,status`,
+          `https://graph.facebook.com/v21.0/${containerId}?access_token=${accessToken}&fields=status_code,status`,
           undefined, '', 0, true
         )
       ).json();
@@ -415,7 +415,7 @@ class InstagramProvider extends SocialProvider {
   async _getPermalink(mediaId, accessToken, integration) {
     try {
       const { permalink } = await (
-        await this.fetch(`https://graph.facebook.com/v20.0/${mediaId}?fields=permalink&access_token=${accessToken}`)
+        await this.fetch(`https://graph.facebook.com/v21.0/${mediaId}?fields=permalink&access_token=${accessToken}`)
       ).json();
       return permalink;
     } catch {
@@ -434,7 +434,7 @@ class InstagramProvider extends SocialProvider {
 
     const { id: commentId } = await (
       await this.fetch(
-        `https://graph.facebook.com/v20.0/${replyToId}/replies?message=${encodeURIComponent(commentPost.message)}&access_token=${accessToken}`,
+        `https://graph.facebook.com/v21.0/${replyToId}/replies?message=${encodeURIComponent(commentPost.message)}&access_token=${accessToken}`,
         { method: 'POST' }
       )
     ).json();
@@ -448,7 +448,7 @@ class InstagramProvider extends SocialProvider {
   async generateAuthUrl() {
     const state = generateOAuthState();
     const url =
-      'https://www.facebook.com/v20.0/dialog/oauth' +
+      'https://www.facebook.com/v21.0/dialog/oauth' +
       `?client_id=${process.env.FACEBOOK_APP_ID}` +
       `&redirect_uri=${encodeURIComponent(`${process.env.FRONTEND_URL}/integrations/social/instagram`)}` +
       `&state=${state}` +

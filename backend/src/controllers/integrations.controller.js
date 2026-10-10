@@ -15,6 +15,7 @@ import { makeId } from '../utils/makeId.js';
 import { logger } from '../utils/logger.util.js';
 import { toIntegrationDTO, toIntegrationDTOs, sanitizePages } from '../dto/integration.dto.js';
 import { encryptToken, currentKeyId } from '../lib/token.service.js';
+import { sendSuccess } from '../utils/response.util.js';
 
 // In-memory OAuth state store (TTL: 10 minutes)
 // For production with multiple servers, replace with Redis
@@ -53,7 +54,7 @@ async function listIntegrations(req, res) {
       userId: req.user._id,
     }).select('-token -refreshToken');
 
-    res.json({ integrations: toIntegrationDTOs(integrations) });
+    sendSuccess(res, { integrations: toIntegrationDTOs(integrations) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,7 +77,7 @@ async function getOAuthUrl(req, res) {
       provider,
     });
 
-    res.json({ url });
+    sendSuccess(res, { url });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -116,12 +117,12 @@ async function oauthCallback(req, res) {
         provider,
         authResult,
       });
-      return res.json({ inBetweenSteps: true, tempState });
+      return sendSuccess(res, { inBetweenSteps: true, tempState });
     }
 
     // Save the integration directly
     const integration = await saveIntegration(stateData.userId, provider, authResult, {});
-    res.json({ success: true, integration: toIntegrationDTO(integration) });
+    sendSuccess(res, { success: true, integration: toIntegrationDTO(integration) });
   } catch (err) {
     logger.error({ err, provider }, 'OAuth callback failed');
     res.status(400).json({ error: err.message });
@@ -177,7 +178,7 @@ async function savePage(req, res) {
     );
 
     logger.info({ provider, integrationId: integration._id }, 'savePage: integration saved');
-    res.json({ success: true, integration: toIntegrationDTO(integration) });
+    sendSuccess(res, { success: true, integration: toIntegrationDTO(integration) });
   } catch (err) {
     logger.error({ err, provider }, 'savePage failed');
     res.status(400).json({ error: err.message });
@@ -208,7 +209,7 @@ async function getPages(req, res) {
     setOAuthState(tempState, { ...stateData, pages });
 
     logger.info({ provider, pageCount: pages.length }, 'getPages: returning pages');
-    res.json({ pages: sanitizePages(pages) });
+    sendSuccess(res, { pages: sanitizePages(pages) });
   } catch (err) {
     logger.error({ err, provider }, 'getPages failed');
     res.status(400).json({ error: err.message });
@@ -220,7 +221,7 @@ async function getPages(req, res) {
 async function deleteIntegration(req, res) {
   try {
     await Integration.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -236,7 +237,7 @@ async function toggleDisable(req, res) {
       { disabled: !!disabled },
       { new: true }
     ).select('-token -refreshToken');
-    res.json({ integration: toIntegrationDTO(integration) });
+    sendSuccess(res, { integration: toIntegrationDTO(integration) });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

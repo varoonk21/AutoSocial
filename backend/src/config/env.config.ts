@@ -17,13 +17,55 @@ const envSchema = z.object({
     .refine((v) => ["trace", "debug", "info", "warn", "error", "fatal"].includes(v), {
       message: "Invalid log level. Use trace/debug/info/warn/error/fatal",
     }),
+
+  // ─── AI (required: caption/hashtag/image generation are core features) ───
+  OPENAI_API_KEY: <redacted>
+
+  // ─── Media storage (required: media library + scheduled posts need it) ───
+  AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required for the media library"),
+  AWS_ACCESS_KEY_ID: z.string().min(1, "AWS_ACCESS_KEY_ID is required for the media library"),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1, "AWS_SECRET_ACCESS_KEY is required for the media library"),
+
+  // ─── Social providers (optional: each network can be connected later) ───
+  FACEBOOK_APP_ID: z.string().optional(),
+  FACEBOOK_APP_SECRET: <redacted>
+  LINKEDIN_CLIENT_ID: z.string().optional(),
+  LINKEDIN_CLIENT_SECRET: <redacted>
+  X_API_KEY: <redacted>
+  X_API_SECRET: <redacted>
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
+  console.error("See backend/.example.env for the full list of required variables.");
   process.exit(1);
+}
+
+const env = parsed.data;
+
+// Warn (don't crash) about social providers that can't be connected yet.
+const providerChecks: Array<[string, string[]]> = [
+  ["Facebook/Instagram", ["FACEBOOK_APP_ID", "FACEBOOK_APP_SECRET"]],
+  ["LinkedIn", ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"]],
+  ["X/Twitter", ["X_API_KEY", "X_API_SECRET"]],
+];
+for (const [label, keys] of providerChecks) {
+  const missing = keys.filter((k) => !(parsed.data as Record<string, unknown>)[k]);
+  if (missing.length > 0 && missing.length < keys.length) {
+    console.warn(`[env] ${label}: partially configured (missing ${missing.join(", ")}). OAuth for ${label} will fail until all keys are set.`);
+  } else if (missing.length === keys.length) {
+    console.warn(`[env] ${label}: not configured. Connect flows for ${label} are disabled until its keys are set.`);
+  }
+}
+
+if (!process.env.S3_PUBLIC_URL) {
+  console.warn(
+    "[env] S3_PUBLIC_URL is not set: media links will be presigned URLs expiring after " +
+      `${process.env.S3_PRESIGNED_URL_EXPIRY ?? 300}s. Scheduled posts with media may fail to publish. ` +
+      "Set S3_PUBLIC_URL to a public bucket/CDN base URL to fix this.",
+  );
 }
 
 const env = parsed.data;

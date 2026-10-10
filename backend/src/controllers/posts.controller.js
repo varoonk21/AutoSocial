@@ -3,6 +3,7 @@ import { Post, Integration } from '../models/index.js';
 import { makeId } from '../utils/makeId.js';
 import { schedulePost, removeScheduledJobs } from '../services/scheduler.service.js';
 import { logger } from '../utils/logger.util.js';
+import { sendSuccess } from '../utils/response.util.js';
 
 async function listPosts(req, res) {
   try {
@@ -20,7 +21,7 @@ async function listPosts(req, res) {
       .populate('integrationId', 'name picture providerIdentifier profile')
       .sort({ publishDate: 1 });
 
-    res.json({ posts });
+    sendSuccess(res, { posts });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -33,7 +34,7 @@ async function getPost(req, res) {
       'name picture providerIdentifier profile'
     );
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    res.json({ post });
+    sendSuccess(res, { post });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -132,7 +133,7 @@ async function updatePost(req, res) {
       await schedulePost(post.group, new Date(updated.publishDate));
     }
 
-    res.json({ post: updated });
+    sendSuccess(res, { post: updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -149,7 +150,7 @@ async function deletePost(req, res) {
     }
 
     await Post.deleteMany({ group: post.group, userId: req.user._id });
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -209,7 +210,7 @@ async function getStats(req, res) {
       },
     ]);
 
-    res.json({
+    sendSuccess(res, {
       postsThisMonth,
       postsChange,
       upcomingPosts,
@@ -313,7 +314,7 @@ async function getAnalytics(req, res) {
     // Total errors
     const totalErrors = await Post.countDocuments({ userId, state: "ERROR" });
 
-    res.json({
+    sendSuccess(res, {
       totalPosts,
       postsGrowth,
       postsByPlatform: platformMap,

@@ -66,9 +66,6 @@
   --sidebar-ring: #2f8587;
 }
 
-/* Inter is applied globally here — no component needs to declare it.
-   --font-sans must live in :root (not only @theme inline) so Tailwind's
-   preflight resolves --default-font-family and every element inherits it. */
 :root {
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
 }

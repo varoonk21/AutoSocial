@@ -8,8 +8,6 @@ import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/ui/toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -208,9 +206,6 @@ export function ScheduledPostsPage() {
     navigate(`/dashboard/content/create?date=${dateStr}&time=${timeStr}`);
   };
 
-  // Resolve a post's platform: prefer the live integration, fall back to the
-  // platform snapshot stored on the post (survives deleted integrations).
-  // Returns null when neither exists — never guess "x".
   const getPlatformFromPost = (post: Post): string | null => {
     const integration =
       post.integrationId && typeof post.integrationId === "object"
@@ -297,8 +292,8 @@ export function ScheduledPostsPage() {
                 <div
                   key={idx}
                   onClick={() => handleDayClick(cell.date)}
-                  className={`min-h-[110px] p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-primary-50/30 ${
-                    !cell.isCurrentMonth ? "bg-slate-50/50 text-slate-400" : "bg-white"
+                  className={`min-h-27.5 p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-primary-50/30 ${
+                    cell.isCurrentMonth ? "bg-slate-50/50 text-slate-400" : "bg-white"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -315,7 +310,7 @@ export function ScheduledPostsPage() {
                     </span>
                     <Plus className="w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <div className="mt-1 space-y-1.5 flex-1 overflow-y-auto max-h-[80px] scrollbar-none">
+                  <div className="mt-1 space-y-1.5 flex-1 overflow-y-auto max-h-20 *:scrollbar-none">
                     {cellPosts.map((post: Post) => {
                       const platform = getPlatformFromPost(post);
                       const postTime = new Date(post.publishDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -779,7 +774,7 @@ export function ScheduledPostsPage() {
             />
           )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-3">
             <Button variant="outline" onClick={() => setPreviewPost(null)}>
               Close
             </Button>

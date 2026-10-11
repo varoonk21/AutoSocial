@@ -14,8 +14,8 @@ export function NotFoundPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-white px-6">
       <div className="text-center max-w-md">
-        <div className="mx-auto size-16 rounded-2xl bg-teal-50 flex items-center justify-center mb-6">
-          <MapPinOff className="w-8 h-8 text-teal-600" />
+        <div className="mx-auto size-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-6">
+          <MapPinOff className="w-8 h-8 text-primary-600" />
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
           Oops wrong turn

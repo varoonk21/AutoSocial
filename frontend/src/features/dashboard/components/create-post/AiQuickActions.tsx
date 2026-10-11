@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Hash, ChevronDown, RotateCcw, Wand2 } from "lucide-react";
+import { Sparkles, Hash, ChevronDown, RotateCcw, Wand2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiPost } from "../../../../lib/fetcher";
 import { MediaItem } from "./useCreatePost";
@@ -11,6 +11,19 @@ interface AiQuickActionsProps {
   onUndo: () => void;
   canUndo: boolean;
 }
+
+type EnhanceType =
+  | "caption"
+  | "hashtags"
+  | "general"
+  | "fix_grammar"
+  | "rephrase"
+  | "shorter"
+  | "longer"
+  | "funny"
+  | "casual"
+  | "inspirational"
+  | "translate_es";
 
 const PRIMARY_ACTIONS = [
   { id: "write_caption", label: "Generate caption", icon: Sparkles, primary: true },
@@ -37,6 +50,7 @@ export function AiQuickActions({
 }: AiQuickActionsProps) {
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const moreRef = useRef<HTMLDivElement>(null);
 
   // Close "More" dropdown when clicking outside
@@ -54,130 +68,94 @@ export function AiQuickActions({
     };
   }, [moreOpen]);
 
+  // Calls /ai/enhance-safe — brand-aware, never throws; falls back to
+  // templates server-side when the AI key is unconfigured.
+  const enhanceSafe = async (content: string, enhanceType: EnhanceType): Promise<string | null> => {
+    const res: any = await apiPost("/ai/enhance-safe", { content, enhanceType });
+    return res?.suggestion?.trim() || null;
+  };
+
   const executeAiAction = async (actionId: string, label: string) => {
     setLoadingActionId(actionId);
     setMoreOpen(false);
+    setAiError(null);
 
     try {
       const firstImage = mediaList.find((m) => m.type === "image") || mediaList[0];
       const hasImage = Boolean(firstImage?.path);
+      const hasText = Boolean(currentText.trim());
 
       if (actionId === "write_caption") {
-        // Option 1: Write Caption (From image or older text caption)
+        // Caption from the attached image when available
         if (hasImage) {
-          try {
-            const res: any = await apiPost("/ai/generate-content-from-image", {
-              imageUrl: firstImage.path,
-            });
-            if (res?.description) {
-              const fullCaption = res.hashtags
-                ? `${res.description}\n\n${res.hashtags}`
-                : res.description;
-              onApplyRewrite(fullCaption);
-              setLoadingActionId(null);
-              return;
-            }
-          } catch {
-            /* Fallback to text enhance if image URL is blob/local */
-          }
-        }
-
-        if (currentText.trim()) {
-          const res: any = await apiPost("/ai/enhance", {
-            content: currentText,
-            enhanceType: "caption",
+          const res: any = await apiPost("/ai/generate-content-from-image", {
+            imageUrl: firstImage.path,
           });
-          if (res?.post) {
-            onApplyRewrite(res.post);
-            setLoadingActionId(null);
+          const description = res?.description?.trim();
+          if (description) {
+            const hashtags = res.hashtags?.trim();
+            onApplyRewrite(hashtags ? `${description}\n\n${hashtags}` : description);
             return;
           }
         }
 
-        // Default smart caption generation
-        onApplyRewrite(
-          "🚀 Exciting news! We're elevating our content strategy to bring you top-tier insights and value. Stay tuned for what's coming next! What are your thoughts? Drop a comment below! 👇 #Innovation #Growth",
+        // Otherwise enhance whatever the user already typed
+        if (hasText) {
+          const suggestion = await enhanceSafe(currentText, "caption");
+          if (suggestion) {
+            onApplyRewrite(suggestion);
+            return;
+          }
+        }
+
+        setAiError(
+          hasImage
+            ? "Couldn't generate a caption from this image. Please try again."
+            : "Add an image or type a topic first, then generate a caption.",
         );
-      } else if (actionId === "add_hashtags") {
-        // Option 2: Add Hashtags (From image or text, appended on a new line)
-        let generatedHashtags = "";
+        return;
+      }
 
-        if (currentText.trim()) {
-          try {
-            const res: any = await apiPost("/ai/enhance", {
-              content: currentText,
-              enhanceType: "hashtags",
-            });
-            if (res?.post) {
-              generatedHashtags = res.post;
-            }
-          } catch {}
-        } else if (hasImage) {
-          try {
-            const res: any = await apiPost("/ai/generate-content-from-image", {
-              imageUrl: firstImage.path,
-            });
-            if (res?.hashtags) {
-              generatedHashtags = res.hashtags;
-            }
-          } catch {}
-        }
-
-        if (!generatedHashtags) {
-          generatedHashtags = "#SocialMedia #DigitalMarketing #ContentCreator #AutoSocial #Automation";
-        }
-
-        // Append hashtags on a new line
-        const newText = !currentText.trim()
-          ? generatedHashtags
-          : currentText.endsWith("\n")
-          ? `${currentText}${generatedHashtags}`
-          : `${currentText}\n\n${generatedHashtags}`;
-
-        onApplyRewrite(newText);
-      } else {
-        // General text enhancements (Fix grammar, rephrase, tone, etc.)
-        if (!currentText.trim()) {
-          setLoadingActionId(null);
-          return;
-        }
-
-        try {
-          const res: any = await apiPost("/ai/enhance", {
-            content: currentText,
-            enhanceType: actionId === "fix_grammar" ? "general" : "caption",
-          });
-          if (res?.post) {
-            onApplyRewrite(res.post);
-            setLoadingActionId(null);
+      if (actionId === "add_hashtags") {
+        if (hasText) {
+          const suggestion = await enhanceSafe(currentText, "hashtags");
+          if (suggestion) {
+            onApplyRewrite(suggestion);
             return;
           }
-        } catch {}
-
-        // Fallback local rewrites if backend AI key is unconfigured
-        let rewritten = currentText;
-        if (actionId === "fix_grammar") {
-          rewritten = currentText.replace(/\b(i)\b/g, "I").replace(/\s+/g, " ").trim();
-          if (!/[.!?]$/.test(rewritten)) rewritten += ".";
-        } else if (actionId === "shorter") {
-          const words = currentText.split(" ");
-          rewritten = words.slice(0, Math.max(5, Math.floor(words.length * 0.6))).join(" ") + "...";
-        } else if (actionId === "longer") {
-          rewritten = `${currentText}\n\nKey takeaway: Consistency and innovation drive long-term business growth. What are your thoughts on this approach? Let us know below! 🚀`;
-        } else if (actionId === "funny") {
-          rewritten = `${currentText} (Yes, we actually posted this before our morning coffee ☕😂)`;
-        } else if (actionId === "casual") {
-          rewritten = `Hey everyone! ${currentText} Let us know what you think in the comments! 👇`;
-        } else if (actionId === "translate_es") {
-          rewritten = `¡Hola! ${currentText} (Publicación en español)`;
-        } else {
-          rewritten = `✨ ${currentText} #AutoSocial #Growth`;
+        } else if (hasImage) {
+          const res: any = await apiPost("/ai/generate-content-from-image", {
+            imageUrl: firstImage.path,
+          });
+          if (res?.hashtags?.trim()) {
+            onApplyRewrite(res.hashtags.trim());
+            return;
+          }
         }
 
-        onApplyRewrite(rewritten);
+        setAiError(
+          hasText || hasImage
+            ? "Couldn't generate hashtags. Please try again."
+            : "Type some content or add an image first to generate hashtags.",
+        );
+        return;
       }
-    } catch (err) {
+
+      // Text refinements (fix grammar, rephrase, tone, length, translate…)
+      if (!hasText) {
+        setAiError(`Type some content first to use "${label}".`);
+        return;
+      }
+
+      const suggestion = await enhanceSafe(currentText, actionId as EnhanceType);
+      if (suggestion) {
+        onApplyRewrite(suggestion);
+      } else {
+        setAiError(`Couldn't ${label.toLowerCase()} this text. Please try again.`);
+      }
+    } catch (err: any) {
       console.error("AI action failed:", err);
+      setAiError(err?.message || "AI request failed. Please try again.");
     } finally {
       setLoadingActionId(null);
     }
@@ -258,6 +236,13 @@ export function AiQuickActions({
           )}
         </div>
       </div>
+
+      {aiError && (
+        <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>{aiError}</span>
+        </div>
+      )}
     </div>
   );
 }

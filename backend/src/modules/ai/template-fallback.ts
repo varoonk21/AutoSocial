@@ -63,7 +63,29 @@ export function templateEnhance(content: string, enhanceType: string, platform?:
     return truncate(`${clean}\n\n✨ What do you think? Let us know in the comments!`, rules.maxLength);
   }
 
-  // general: tighten + add a hook
+  if (enhanceType === "shorter") {
+    const words = clean.split(/\s+/);
+    return truncate(words.slice(0, Math.max(5, Math.floor(words.length * 0.6))).join(" "), rules.maxLength);
+  }
+
+  if (enhanceType === "longer") {
+    return truncate(`${clean}\n\nWhat do you think? Share your thoughts below 👇`, rules.maxLength);
+  }
+
+  if (enhanceType === "casual") {
+    return truncate(`Hey everyone! ${clean} Let us know what you think 👇`, rules.maxLength);
+  }
+
+  if (enhanceType === "inspirational") {
+    return truncate(`✨ ${clean}\n\nSmall steps every day lead to big results. Keep going! 🚀`, rules.maxLength);
+  }
+
+  if (enhanceType === "translate_es") {
+    // Templates can't translate — return unchanged rather than inventing text
+    return truncate(clean, rules.maxLength);
+  }
+
+  // general, fix_grammar, rephrase, funny: tighten + add a hook
   const sentences = clean.split(/(?<=[.!?])\s+/);
   const hook = sentences.length > 1 ? sentences[0] : clean;
   return truncate(`💡 ${hook}\n\n${sentences.slice(1).join(" ")}`.trim(), rules.maxLength);

@@ -10,9 +10,23 @@ export const generateContentFromImageSchema = z.object({
   imageUrl: z.url("Invalid image URL"),
 });
 
+export const ENHANCE_TYPES = [
+  "caption",
+  "hashtags",
+  "general",
+  "fix_grammar",
+  "rephrase",
+  "shorter",
+  "longer",
+  "funny",
+  "casual",
+  "inspirational",
+  "translate_es",
+] as const;
+
 export const enhanceContentSchema = z.object({
   content: z.string().min(1, "Content is required"),
-  enhanceType: z.enum(["caption", "hashtags", "general"]).optional().default("general"),
+  enhanceType: z.enum(ENHANCE_TYPES).optional().default("general"),
 });
 
 export const generateVariationsSchema = z.object({
@@ -23,7 +37,7 @@ export const generateVariationsSchema = z.object({
 
 export const enhanceContentSafeSchema = z.object({
   content: z.string().min(1, "Content is required"),
-  enhanceType: z.enum(["caption", "hashtags", "general"]).optional().default("general"),
+  enhanceType: z.enum(ENHANCE_TYPES).optional().default("general"),
   platform: z.string().max(50).optional(),
 });
 

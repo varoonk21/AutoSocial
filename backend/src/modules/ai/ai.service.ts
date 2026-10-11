@@ -3,7 +3,7 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import aiEnv, { aiEnabled } from "../../config/ai.config.js";
 import openai from "../../lib/openai.js";
 import { findByUserId } from "../brandkit/brandkit.repository.js";
-import { getGenerateSinglePostFromImagePrompt, getEnhanceCaptionPrompt, getEnhanceHashtagsPrompt, getEnhanceGeneralPrompt } from "./prompts/index.js";
+import { getGenerateSinglePostFromImagePrompt, getEnhanceCaptionPrompt, getEnhanceHashtagsPrompt, getEnhanceGeneralPrompt, getEnhanceActionPrompt } from "./prompts/index.js";
 import { getPlatformRules, platformPromptSection } from "./platform-rules.js";
 import { templateVariations, templateEnhance } from "./template-fallback.js";
 import { checkTone, type ToneCheck } from "./tone-check.js";
@@ -91,8 +91,10 @@ export async function enhanceContent(content: string, enhanceType: string, userI
     systemPrompt = getEnhanceCaptionPrompt(brandContext);
   } else if (enhanceType === "hashtags") {
     systemPrompt = getEnhanceHashtagsPrompt(brandContext);
-  } else {
+  } else if (enhanceType === "general") {
     systemPrompt = getEnhanceGeneralPrompt(brandContext);
+  } else {
+    systemPrompt = getEnhanceActionPrompt(enhanceType, brandContext);
   }
 
   const result = await openai.chat.completions.parse({

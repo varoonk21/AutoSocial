@@ -48,7 +48,7 @@ function Avatar({ account, platform }: { account: ConnectedAccount | null; platf
       }`}
       style={style}
     >
-      {initials || <span className="w-4 h-4 rounded-full border-2 border-gray-400" />}
+      {initials || <span className="w-4 h-4 rounded-full border-2 border-slate-400" />}
     </span>
   );
 }
@@ -62,10 +62,10 @@ function MediaBlock({ media, platform }: { media: PostMedia[]; platform: Platfor
     return (
       <div className={isX ? "px-3.5 pb-3" : ""}>
         <div
-          className={`flex flex-col items-center justify-center gap-1.5 bg-gray-50 text-gray-400 ${
+          className={`flex flex-col items-center justify-center gap-1.5 bg-slate-50 text-slate-400 ${
             isX
-              ? "min-h-[140px] rounded-lg border border-dashed border-gray-200"
-              : "min-h-[160px] border-y border-gray-100"
+              ? "min-h-[140px] rounded-lg border border-dashed border-slate-200"
+              : "min-h-[160px] border-y border-slate-100"
           }`}
         >
           <ImagePlus className="w-5 h-5" />
@@ -77,7 +77,7 @@ function MediaBlock({ media, platform }: { media: PostMedia[]; platform: Platfor
 
   const current = media[safeIndex];
   return (
-    <div className="relative bg-gray-50">
+    <div className="relative bg-slate-50">
       <img src={current.path} alt="" className="w-full h-56 object-cover" />
       {media.length > 1 && (
         <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1.5">
@@ -103,8 +103,8 @@ function CtaBar({ ctaLabel, bordered = true }: { ctaLabel: string; bordered?: bo
   return (
     <div className="px-3.5 pb-3">
       <div
-        className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold text-gray-700 ${
-          bordered ? "border border-gray-300 bg-background" : "bg-gray-100"
+        className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold text-slate-700 ${
+          bordered ? "border border-slate-300 bg-background" : "bg-slate-100"
         }`}
       >
         {ctaLabel}
@@ -115,13 +115,13 @@ function CtaBar({ ctaLabel, bordered = true }: { ctaLabel: string; bordered?: bo
 }
 
 function EmptyText({ placeholder }: { placeholder: string }) {
-  return <span className="text-gray-300 italic">{placeholder}</span>;
+  return <span className="text-slate-300 italic">{placeholder}</span>;
 }
 
 function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: PreviewCardProps) {
   const name = displayName(account);
   const hasAccount = Boolean(account);
-  const nameClass = hasAccount ? "text-gray-900" : "text-gray-400";
+  const nameClass = hasAccount ? "text-slate-900" : "text-slate-400";
   const body = text ? (
     <span className="whitespace-pre-wrap">{text}</span>
   ) : (
@@ -148,14 +148,14 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
       <div>
         <div className="flex items-center justify-between px-3.5 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full border border-gray-200 p-[1px] bg-background">
+            <div className="w-8 h-8 rounded-full border border-slate-200 p-[1px] bg-background">
               <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
                 <div className="w-full h-full rounded-full overflow-hidden bg-foreground flex items-center justify-center text-white text-[10px] font-bold">
                   {account?.picture ? (
                     <img src={account.picture} alt="" className="w-full h-full object-cover" />
                   ) : (
                     account?.name?.charAt(0)?.toUpperCase() || (
-                      <span className="w-3 h-3 rounded-full border-2 border-gray-400" />
+                      <span className="w-3 h-3 rounded-full border-2 border-slate-400" />
                     )
                   )}
                 </div>
@@ -163,13 +163,13 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
             </div>
             <span className={`text-xs font-bold ${nameClass}`}>{name}</span>
           </div>
-          <MoreHorizontal className="w-4 h-4 text-gray-500" />
+          <MoreHorizontal className="w-4 h-4 text-slate-500" />
         </div>
 
         <MediaBlock media={media} platform={platform} />
 
         <div className="p-3.5 space-y-2.5">
-          <div className="flex items-center justify-between text-gray-800">
+          <div className="flex items-center justify-between text-slate-800">
             <div className="flex items-center gap-3.5">
               <Heart className="w-5 h-5" />
               <MessageCircle className="w-5 h-5" />
@@ -178,8 +178,8 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
             <Bookmark className="w-5 h-5" />
           </div>
           <CtaBar ctaLabel={ctaLabel} bordered={false} />
-          <div className="text-xs leading-relaxed text-gray-900">
-            <span className={`font-bold mr-1.5 ${hasAccount ? "" : "text-gray-400"}`}>{name}</span>
+          <div className="text-xs leading-relaxed text-slate-900">
+            <span className={`font-bold mr-1.5 ${hasAccount ? "" : "text-slate-400"}`}>{name}</span>
             {body}
             {tags}
           </div>
@@ -196,39 +196,39 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
             <Avatar account={account} platform={platform} />
             <div>
               <p
-                className={`text-xs font-bold leading-tight ${hasAccount ? "text-[#1877F2]" : "text-gray-400"}`}
+                className={`text-xs font-bold leading-tight ${hasAccount ? "text-[#1877F2]" : "text-slate-400"}`}
               >
                 {name}
               </p>
-              <div className="flex items-center gap-1 text-[10px] text-gray-400">
+              <div className="flex items-center gap-1 text-[10px] text-slate-400">
                 <span>Now</span>
                 <span>•</span>
                 <Globe className="w-2.5 h-2.5" />
               </div>
             </div>
           </div>
-          <MoreHorizontal className="w-4 h-4 text-gray-500" />
+          <MoreHorizontal className="w-4 h-4 text-slate-500" />
         </div>
 
         <div className="px-3.5 pb-3 space-y-1">
-          <p className="text-xs text-gray-900 leading-relaxed">{body}</p>
+          <p className="text-xs text-slate-900 leading-relaxed">{body}</p>
           {tags}
         </div>
 
         <MediaBlock media={media} platform={platform} />
         <CtaBar ctaLabel={ctaLabel} />
 
-        <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-around text-xs text-gray-600 font-medium">
+        <div className="px-3 py-2 border-t border-slate-100 flex items-center justify-around text-xs text-slate-600 font-medium">
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-md">
-            <ThumbsUp className="w-4 h-4 text-gray-500" />
+            <ThumbsUp className="w-4 h-4 text-slate-500" />
             <span>Like</span>
           </span>
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-md">
-            <MessageSquare className="w-4 h-4 text-gray-500" />
+            <MessageSquare className="w-4 h-4 text-slate-500" />
             <span>Comment</span>
           </span>
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-md">
-            <Share2 className="w-4 h-4 text-gray-500" />
+            <Share2 className="w-4 h-4 text-slate-500" />
             <span>Share</span>
           </span>
         </div>
@@ -244,7 +244,7 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
             <Avatar account={account} platform={platform} />
             <div>
               <p className={`text-xs font-bold leading-tight ${nameClass}`}>{name}</p>
-              <div className="flex items-center gap-1 text-[10px] text-gray-400">
+              <div className="flex items-center gap-1 text-[10px] text-slate-400">
                 <span>{hasAccount ? "12,480 followers" : "Followers"}</span>
                 <span>•</span>
                 <span>Now</span>
@@ -253,32 +253,32 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
               </div>
             </div>
           </div>
-          <MoreHorizontal className="w-4 h-4 text-gray-500" />
+          <MoreHorizontal className="w-4 h-4 text-slate-500" />
         </div>
 
         <div className="px-3.5 pb-3 space-y-1">
-          <p className="text-xs text-gray-900 leading-relaxed">{body}</p>
+          <p className="text-xs text-slate-900 leading-relaxed">{body}</p>
           {tags}
         </div>
 
         <MediaBlock media={media} platform={platform} />
         <CtaBar ctaLabel={ctaLabel} />
 
-        <div className="px-2 py-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600 font-medium">
+        <div className="px-2 py-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-medium">
           <span className="flex items-center gap-1 px-2 py-1 rounded">
-            <ThumbsUp className="w-3.5 h-3.5 text-gray-500" />
+            <ThumbsUp className="w-3.5 h-3.5 text-slate-500" />
             <span>Like</span>
           </span>
           <span className="flex items-center gap-1 px-2 py-1 rounded">
-            <MessageSquare className="w-3.5 h-3.5 text-gray-500" />
+            <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
             <span>Comment</span>
           </span>
           <span className="flex items-center gap-1 px-2 py-1 rounded">
-            <Repeat className="w-3.5 h-3.5 text-gray-500" />
+            <Repeat className="w-3.5 h-3.5 text-slate-500" />
             <span>Repost</span>
           </span>
           <span className="flex items-center gap-1 px-2 py-1 rounded">
-            <Send className="w-3.5 h-3.5 text-gray-500" />
+            <Send className="w-3.5 h-3.5 text-slate-500" />
             <span>Send</span>
           </span>
         </div>
@@ -295,22 +295,22 @@ function PreviewBody({ platform, account, text, hashtags, media, ctaLabel }: Pre
           <Avatar account={account} platform={platform} />
           <div className="flex items-center gap-1 text-xs">
             <span className={`font-bold ${nameClass}`}>{name}</span>
-            {handle && <span className="text-gray-400">{handle}</span>}
-            <span className="text-gray-400">• Now</span>
+            {handle && <span className="text-slate-400">{handle}</span>}
+            <span className="text-slate-400">• Now</span>
           </div>
         </div>
         <span className="font-bold text-black text-xs">𝕏</span>
       </div>
 
       <div className="px-3.5 pb-3 space-y-1">
-        <p className="text-xs text-gray-900 leading-relaxed">{body}</p>
+        <p className="text-xs text-slate-900 leading-relaxed">{body}</p>
         {tags}
       </div>
 
       <MediaBlock media={media} platform={platform} />
       <CtaBar ctaLabel={ctaLabel} />
 
-      <div className="px-3.5 py-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+      <div className="px-3.5 py-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
         <span className="flex items-center gap-1">
           <MessageSquare className="w-3.5 h-3.5" /> 12
         </span>
@@ -337,7 +337,7 @@ export function PreviewCard({
   ctaLabel,
 }: PreviewCardProps) {
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-background shadow-2xs">
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-background shadow-2xs">
       <PreviewBody
         platform={platform}
         account={account}

@@ -1,5 +1,5 @@
-import { Plus, Image } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { Plus, Image, Check, X } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useBrandKit, useSaveBrandKit } from "../hooks/useBrandKitQueries";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useImageStore } from "@/store/imageStore";
@@ -31,6 +31,35 @@ export function BrandKitPage() {
   const [selectedTones, setSelectedTones] = useState(["Professional", "Bold"]);
   const [styleNotes, setStyleNotes] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [hexError, setHexError] = useState<string | null>(null);
+  const savedSnapshot = useRef<string>("");
+
+  const buildSnapshot = (v: {
+    primaryLogoId: unknown;
+    watermarkLogoId: unknown;
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    primaryFont: string;
+    secondaryFont: string;
+    selectedTones: string[];
+    styleNotes: string;
+  }) => JSON.stringify(v);
+
+  const currentSnapshot = () =>
+    buildSnapshot({
+      primaryLogoId,
+      watermarkLogoId,
+      primaryColor,
+      secondaryColor,
+      accentColor,
+      primaryFont,
+      secondaryFont,
+      selectedTones,
+      styleNotes,
+    });
+
+  const isDirty = savedSnapshot.current !== "" && savedSnapshot.current !== currentSnapshot();
 
   // Populate state from fetched brand kit data
   useEffect(() => {
@@ -47,6 +76,17 @@ export function BrandKitPage() {
     setSecondaryFont(bk.fonts?.[1] || "Roboto");
     setSelectedTones(bk.tones?.length ? bk.tones : ["Professional", "Bold"]);
     setStyleNotes(bk.styleNotes || "");
+    savedSnapshot.current = buildSnapshot({
+      primaryLogoId: bk.primaryLogo?._id || null,
+      watermarkLogoId: bk.watermarkLogo?._id || null,
+      primaryColor: bk.primaryColor || "#2F8587",
+      secondaryColor: bk.secondaryColor || "#FFFFFF",
+      accentColor: bk.accentColor || "#DDF3D4",
+      primaryFont: bk.fonts?.[0] || "Inter",
+      secondaryFont: bk.fonts?.[1] || "Roboto",
+      selectedTones: bk.tones?.length ? bk.tones : ["Professional", "Bold"],
+      styleNotes: bk.styleNotes || "",
+    });
   }, [brandKitData]);
 
   const handleSave = useCallback(() => {
@@ -63,6 +103,7 @@ export function BrandKitPage() {
       },
       {
         onSuccess: () => {
+          savedSnapshot.current = currentSnapshot();
           setSavedSuccess(true);
           setTimeout(() => setSavedSuccess(false), 3000);
         },
@@ -81,6 +122,24 @@ export function BrandKitPage() {
     styleNotes,
   ]);
 
+  // Hex inputs: strip invalid characters, require a leading #, cap at 7 chars.
+  // A value that isn't a full #RRGGBB is kept editable but flagged, and the
+  // preview falls back to the last valid color instead of breaking.
+  const handleHexChange =
+    (setter: (v: string) => void, label: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const cleaned = e.target.value.replace(/[^0-9a-fA-F#]/g, "").slice(0, 7);
+      const normalized = cleaned && !cleaned.startsWith("#") ? `#${cleaned}` : cleaned;
+      setter(normalized);
+      setHexError(
+        normalized !== "" && !/^#[0-9a-fA-F]{6}$/.test(normalized)
+          ? `${label} needs a 6-digit hex code (e.g. #2F8587)`
+          : null,
+      );
+    };
+
+  const previewColor = (v: string, fallback: string) =>
+    /^#[0-9a-fA-F]{6}$/.test(v) ? v : fallback;
+
   const primaryLogoUpload = useFileUpload({
     onUpload: (media) => {
       setPrimaryLogoId(media._id);
@@ -98,20 +157,27 @@ export function BrandKitPage() {
   if (isLoading) {
     return (
       <div className="w-full flex items-center justify-center py-20">
-        <div className="text-sm text-gray-500">Loading brand kit...</div>
+        <div className="text-sm text-slate-500">Loading brand kit...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-4 antialiased">
+    <div className="w-full space-y-6 antialiased">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Brand Kit</h1>
-          <p className="text-xs text-gray-500 font-normal mt-0.5">This brand kit will automatically be applied to all future AI-generated content.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Brand Kit</h1>
+          <p className="text-sm text-slate-500 mt-1">This brand kit will automatically be applied to all future AI-generated content.</p>
         </div>
         <div className="flex items-center gap-3">
-          {savedSuccess && <span className="text-xs font-semibold text-primary-600 animate-fade-in flex items-center gap-1">✓ Saved!</span>}
+          {savedSuccess && (
+            <span className="text-xs font-semibold text-primary-600 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> Saved!
+            </span>
+          )}
+          {!savedSuccess && isDirty && (
+            <span className="text-xs font-medium text-slate-400">Unsaved changes</span>
+          )}
           <Button onClick={handleSave} disabled={saveMutation.isPending}>
             {saveMutation.isPending ? "Saving..." : "Save Brand Kit"}
           </Button>
@@ -126,8 +192,8 @@ export function BrandKitPage() {
             </div>
             <p className="text-xs font-medium text-foreground">Complete your Brand Kit to unlock personalized AI generation.</p>
           </div>
-          <Button variant="ghost" size="icon-sm" onClick={() => setShowNotice(false)} title="Dismiss notice">
-            ✕
+          <Button variant="ghost" size="icon-sm" onClick={() => setShowNotice(false)} title="Dismiss notice" aria-label="Dismiss notice">
+            <X className="w-4 h-4" />
           </Button>
         </div>
       )}
@@ -142,10 +208,10 @@ export function BrandKitPage() {
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Primary Logo</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Primary Logo</label>
                   <div
                     onClick={primaryLogoUpload.openPicker}
-                    className="border-2 border-dashed border-gray-200 hover:border-primary-400 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[120px] bg-gray-50/50 hover:bg-primary-50/20 group relative overflow-hidden"
+                    className="border-2 border-dashed border-slate-200 hover:border-primary-400 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[120px] bg-slate-50/50 hover:bg-primary-50/20 group relative overflow-hidden"
                   >
                     <input
                       type="file"
@@ -158,27 +224,27 @@ export function BrandKitPage() {
                       <img src={primaryLogoUrl} alt="Primary Logo" className="max-h-16 object-contain" />
                     ) : (
                       <>
-                        <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-primary-100 group-hover:text-primary-600 flex items-center justify-center text-gray-400 mb-1.5 transition-colors">
+                        <div className="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-primary-100 group-hover:text-primary-600 flex items-center justify-center text-slate-400 mb-1.5 transition-colors">
                           <Plus className="w-4 h-4" />
                         </div>
-                        <p className="text-[11px] font-medium text-gray-700">
+                        <p className="text-[11px] font-medium text-slate-700">
                           Drag and drop or <span className="text-primary-600">click to upload</span>
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">PNG, SVG (Max 5MB)</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">PNG, SVG (Max 5MB)</p>
                       </>
                     )}
                     {primaryLogoUpload.uploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                        <p className="text-xs font-medium text-gray-600">Uploading...</p>
+                        <p className="text-xs font-medium text-slate-600">Uploading...</p>
                       </div>
                     )}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Watermark / Icon</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Watermark / Icon</label>
                   <div
                     onClick={watermarkUpload.openPicker}
-                    className="border-2 border-dashed border-gray-200 hover:border-primary-400 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[120px] bg-gray-50/50 hover:bg-primary-50/20 group relative overflow-hidden"
+                    className="border-2 border-dashed border-slate-200 hover:border-primary-400 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[120px] bg-slate-50/50 hover:bg-primary-50/20 group relative overflow-hidden"
                   >
                     <input
                       type="file"
@@ -191,15 +257,15 @@ export function BrandKitPage() {
                       <img src={watermarkLogoUrl} alt="Watermark Icon" className="max-h-14 object-contain" />
                     ) : (
                       <>
-                        <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-primary-100 group-hover:text-primary-600 flex items-center justify-center text-gray-400 mb-1.5 transition-colors">
+                        <div className="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-primary-100 group-hover:text-primary-600 flex items-center justify-center text-slate-400 mb-1.5 transition-colors">
                           <Image className="w-4 h-4" />
                         </div>
-                        <p className="text-[11px] font-medium text-gray-600">Square ratio</p>
+                        <p className="text-[11px] font-medium text-slate-600">Square ratio</p>
                       </>
                     )}
                     {watermarkUpload.uploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                        <p className="text-xs font-medium text-gray-600">Uploading...</p>
+                        <p className="text-xs font-medium text-slate-600">Uploading...</p>
                       </div>
                     )}
                   </div>
@@ -212,10 +278,10 @@ export function BrandKitPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Brand Colors</CardTitle>
-                <div className="flex rounded-md overflow-hidden h-4 w-20 border border-gray-200">
-                  <div className="w-1/3 h-full" style={{ backgroundColor: primaryColor }} />
-                  <div className="w-1/3 h-full" style={{ backgroundColor: secondaryColor }} />
-                  <div className="w-1/3 h-full" style={{ backgroundColor: accentColor }} />
+                <div className="flex rounded-lg overflow-hidden h-4 w-20 border border-slate-200">
+                  <div className="w-1/3 h-full" style={{ backgroundColor: previewColor(primaryColor, "#2F8587") }} />
+                  <div className="w-1/3 h-full" style={{ backgroundColor: previewColor(secondaryColor, "#FFFFFF") }} />
+                  <div className="w-1/3 h-full" style={{ backgroundColor: previewColor(accentColor, "#DDF3D4") }} />
                 </div>
               </div>
             </CardHeader>
@@ -227,27 +293,31 @@ export function BrandKitPage() {
                   { label: "Accent", value: accentColor, set: setAccentColor },
                 ].map((c) => (
                   <div key={c.label} className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-gray-500 w-16">{c.label}</span>
+                    <span className="text-xs font-medium text-slate-500 w-16">{c.label}</span>
                     <div className="flex items-center gap-2.5 flex-1">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-xs shrink-0 cursor-pointer">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-200 shadow-xs shrink-0 cursor-pointer">
                         <input
                           type="color"
-                          value={c.value}
+                          value={previewColor(c.value, "#2F8587")}
                           onChange={(e) => c.set(e.target.value)}
                           className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                          aria-label={`${c.label} color picker`}
                         />
-                        <div className="w-full h-full rounded-full" style={{ backgroundColor: c.value }} />
+                        <div className="w-full h-full rounded-full" style={{ backgroundColor: previewColor(c.value, "#2F8587") }} />
                       </div>
                       <input
                         type="text"
                         value={c.value.toUpperCase()}
-                        onChange={(e) => c.set(e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-gray-50/70 border border-gray-200 rounded-lg text-xs font-mono text-gray-800 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        onChange={handleHexChange(c.set, c.label)}
+                        spellCheck={false}
+                        className="flex-1 px-3 py-1.5 bg-slate-50/70 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary-500 aria-invalid:border-red-400"
+                        aria-invalid={c.value !== "" && !/^#[0-9a-fA-F]{6}$/.test(c.value)}
                       />
                     </div>
                   </div>
                 ))}
               </div>
+              {hexError && <p className="text-xs text-red-600 mt-2">{hexError}</p>}
             </CardContent>
           </Card>
         </div>
@@ -261,7 +331,7 @@ export function BrandKitPage() {
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Primary Font</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5">Primary Font</label>
                   <Select value={primaryFont} onValueChange={setPrimaryFont}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -276,7 +346,7 @@ export function BrandKitPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Secondary Font</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5">Secondary Font</label>
                   <Select value={secondaryFont} onValueChange={setSecondaryFont}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -309,7 +379,7 @@ export function BrandKitPage() {
                 </ToggleGroup>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Content Style Notes (Optional)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1.5">Content Style Notes (Optional)</label>
                 <Textarea
                   rows={2}
                   value={styleNotes}

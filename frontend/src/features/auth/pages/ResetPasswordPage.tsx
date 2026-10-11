@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authClient } from "../../../lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState("");
+  const [tokenMissing, setTokenMissing] = useState(false);
 
   useEffect(() => {
     // Better Auth passes the token in the URL search params as `token`
@@ -21,7 +23,7 @@ export function ResetPasswordPage() {
     if (urlToken) {
       setToken(urlToken);
     } else {
-      setError("Invalid or missing reset token. Please request a new password reset link.");
+      setTokenMissing(true);
     }
   }, [location]);
 
@@ -59,7 +61,7 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative bg-background text-neutral-900 selection:bg-primary-100 selection:text-primary-900 antialiased flex items-center justify-center p-4">
+    <div className="min-h-screen w-full relative bg-background text-slate-900 selection:bg-primary-100 selection:text-primary-900 antialiased flex items-center justify-center p-4">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -74,13 +76,13 @@ export function ResetPasswordPage() {
       />
 
       <div className="w-full max-w-sm relative z-10">
-        <div className="w-full bg-background rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
+        <div className="w-full bg-background rounded-2xl border border-slate-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
           <div className="text-center space-y-1 mb-6">
             <div className="flex justify-center mb-4">
               <img src="/Icon.png" alt="AutoSocial Icon" className="w-20 h-20 object-contain rounded-lg shadow-sm" />
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Set New Password</h2>
-            <p className="text-sm text-neutral-500 font-normal">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Set New Password</h2>
+            <p className="text-sm text-slate-500 font-normal">
               Enter your new password below to regain access to your account.
             </p>
           </div>
@@ -89,24 +91,35 @@ export function ResetPasswordPage() {
           
           {success ? (
             <div className="text-center space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
+              <div className="p-4 bg-accent border border-primary-200 rounded-xl text-sm text-primary-700">
                 Your password has been successfully reset.
               </div>
               <Button type="button" className="w-full" onClick={() => navigate("/login")}>
                 Go to Login
               </Button>
             </div>
+          ) : tokenMissing ? (
+            <div className="text-center space-y-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                This reset link is invalid or has expired. Please request a new one.
+              </div>
+              <Button type="button" className="w-full" onClick={() => navigate("/forgot-password")}>
+                Request new link
+              </Button>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">New Password</label>
+                <label htmlFor="new-password" className="block text-[13px] font-semibold text-slate-700 mb-1.5">New Password</label>
                 <div className="relative">
-                  <input
+                  <Input
+                    id="new-password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all pr-12 shadow-2xs"
+                    placeholder="Minimum 8 characters"
+                    className="pr-16"
                     required
                     minLength={8}
                     disabled={!token}
@@ -116,7 +129,7 @@ export function ResetPasswordPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     variant="ghost"
                     size="sm"
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 text-xs text-slate-500"
                     disabled={!token}
                   >
                     {showPassword ? "Hide" : "Show"}
@@ -125,13 +138,14 @@ export function ResetPasswordPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Confirm Password</label>
-                <input
+                <label htmlFor="confirm-password" className="block text-[13px] font-semibold text-slate-700 mb-1.5">Confirm Password</label>
+                <Input
+                  id="confirm-password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
                   required
                   minLength={8}
                   disabled={!token}
@@ -148,8 +162,8 @@ export function ResetPasswordPage() {
             </form>
           )}
 
-          <div className="pt-4 border-t border-neutral-100 text-center">
-            <Button type="button" variant="link" onClick={() => navigate("/login")} className="text-sm font-medium text-neutral-900 p-0 h-auto">
+          <div className="pt-4 border-t border-slate-100 text-center">
+            <Button type="button" variant="link" onClick={() => navigate("/login")} className="text-sm font-medium text-slate-900 p-0 h-auto">
               Back to Login
             </Button>
           </div>

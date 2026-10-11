@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { apiPost } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 interface MediaItem {
   path: string
@@ -47,7 +48,7 @@ export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
     <div className="space-y-3">
       <div
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-          dragOver ? "border-primary-400 bg-primary-50" : "border-gray-200 hover:border-gray-300 bg-gray-50"
+          dragOver ? "border-primary-400 bg-primary-50" : "border-slate-200 hover:border-slate-300 bg-slate-50"
         } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
@@ -58,11 +59,11 @@ export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
         onDrop={handleDrop}
       >
         {uploading ? (
-          <p className="text-sm text-gray-500">Uploading...</p>
+          <p className="text-sm text-slate-500">Uploading...</p>
         ) : (
           <div className="space-y-2">
             <svg
-              className="mx-auto text-gray-300"
+              className="mx-auto text-slate-300"
               width="32"
               height="32"
               viewBox="0 0 24 24"
@@ -76,8 +77,8 @@ export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <p className="text-sm text-gray-500">Drop files here or click to upload</p>
-            <p className="text-xs text-gray-400">Images (JPG, PNG, GIF, WebP) or MP4 videos</p>
+            <p className="text-sm text-slate-500">Drop files here or click to upload</p>
+            <p className="text-xs text-slate-400">Images (JPG, PNG, GIF, WebP) or MP4 videos</p>
           </div>
         )}
       </div>
@@ -102,12 +103,13 @@ export function MediaUpload({ media = [], onMediaChange }: MediaUploadProps) {
               )}
               <Button
                 variant="destructive"
-                size="icon-xs"
+                size="icon"
                 type="button"
-                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100"
+                aria-label="Remove media"
+                className="absolute -top-2 -right-2 size-8 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
                 onClick={() => onMediaChange(media.filter((_, i) => i !== idx))}
               >
-                ×
+                <X className="w-3.5 h-3.5" />
               </Button>
             </div>
           ))}

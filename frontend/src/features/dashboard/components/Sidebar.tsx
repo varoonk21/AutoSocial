@@ -207,7 +207,7 @@ export function AppSidebar() {
                 }
                 alt={session?.user?.name || "User"}
               />
-              <AvatarFallback className="text-xs font-semibold bg-teal-50 text-teal-700">
+              <AvatarFallback className="text-xs font-semibold bg-primary-50 text-primary-700">
                 {session?.user?.name
                   ? session.user.name.slice(0, 2).toUpperCase()
                   : "US"}

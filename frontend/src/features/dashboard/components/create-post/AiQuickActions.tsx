@@ -243,7 +243,7 @@ export function AiQuickActions({
           </Button>
 
           {moreOpen && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-background rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
+            <div className="absolute right-0 top-full mt-1 w-44 bg-background rounded-lg border border-slate-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
               {MORE_ACTIONS.map((action) => (
                 <button
                   key={action.id}

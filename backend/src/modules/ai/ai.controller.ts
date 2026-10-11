@@ -32,7 +32,7 @@ async function generateImageHandler(req: Request, res: Response) {
     source: "ai",
   });
 
-  sendSuccess(res, { media: media.toObject() });
+  sendSuccess(res, { media });
 }
 
 async function generateContentFromImageHandler(req: Request, res: Response) {

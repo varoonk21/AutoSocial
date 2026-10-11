@@ -171,16 +171,8 @@ export function MediaCard({
     if (!aiPreview) return;
     setAiSaving(true);
     try {
-      // Persist to Media Library
-      if (aiPreview.key) {
-        await apiPost("/media", {
-          key: aiPreview.key,
-          originalName: aiPreview.name,
-          contentType: "image/png",
-          fileSize: 0,
-          source: "ai",
-        });
-      }
+      // The backend already persisted the image to the Media Library
+      // during /ai/generate-image, so no second save is needed here.
       // Attach to draft
       onAddMedia({
         path: aiPreview.path,

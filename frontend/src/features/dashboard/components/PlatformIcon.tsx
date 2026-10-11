@@ -9,10 +9,13 @@ interface PlatformIconProps {
 
 export function PlatformIcon({ platform, size = 16 }: PlatformIconProps) {
   if (!platform) return null
-  const color = PLATFORM_COLORS[platform] || 'var(--muted-foreground)'
+  // Never render an empty svg: unknown platforms get a neutral globe
+  // so the icon slot is always visible.
+  const known = platform in PLATFORM_COLORS
+  const color = known ? PLATFORM_COLORS[platform as Platform] : "#94a3b8"
 
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
       {platform === 'linkedin' && (
         <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
       )}
@@ -28,6 +31,13 @@ export function PlatformIcon({ platform, size = 16 }: PlatformIconProps) {
       )}
       {platform === 'facebook' && (
         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+      )}
+      {!known && (
+        <>
+          <circle cx="12" cy="12" r="10" fill="none" stroke={color} strokeWidth="2" />
+          <path d="M2 12h20" fill="none" stroke={color} strokeWidth="2" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke={color} strokeWidth="2" />
+        </>
       )}
     </svg>
   )

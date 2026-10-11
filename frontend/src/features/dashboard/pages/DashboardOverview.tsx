@@ -135,8 +135,9 @@ export function DashboardOverview() {
           try {
             const coverData = await apiGet(`/integrations/${p.id}/cover`);
             if (coverData?.cover) coverMap[p.id] = coverData.cover;
-          } catch {
+          } catch (err) {
             // Cover stays unset -> gradient fallback
+            console.warn(`[dashboard] cover fetch failed for integration ${p.id}:`, err);
           }
         })
       );
@@ -173,7 +174,7 @@ export function DashboardOverview() {
           <div className="flex flex-wrap items-center gap-5">
             {/* Active page avatar with platform badge */}
             <div className="relative shrink-0">
-              <Avatar className="size-20 ring-4 ring-white shadow-md">
+              <Avatar className="size-20 ring-4 ring-slate-200 shadow-md">
                 <AvatarImage
                   src={
                     activePage?.avatar
@@ -237,15 +238,15 @@ export function DashboardOverview() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <Button onClick={() => navigate("/dashboard/content/create")}>
+              <Button size="lg" onClick={() => navigate("/dashboard/content/create")}>
                 <Plus className="w-4 h-4" />
                 Create Post
               </Button>
-              <Button variant="outline" onClick={() => navigate("/dashboard/analytics")}>
+              <Button size="lg" variant="outline" onClick={() => navigate("/dashboard/analytics")}>
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </Button>
-              <Button variant="outline" onClick={() => navigate("/dashboard/content/manage")}>
+              <Button size="lg" variant="outline" onClick={() => navigate("/dashboard/content/manage")}>
                 <FolderKanban className="w-4 h-4" />
                 Manage Content
               </Button>
@@ -303,7 +304,7 @@ export function DashboardOverview() {
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <h2 className="text-base font-bold text-slate-900">Recent Activity</h2>
-            <Button variant="link" size="sm" onClick={() => navigate("/dashboard/content/schedule")}>
+            <Button variant="link" size="sm" onClick={() => navigate("/dashboard/content/manage")}>
               View All
             </Button>
           </div>

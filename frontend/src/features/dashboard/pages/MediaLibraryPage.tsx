@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Toast } from "@/components/ui/toast";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -70,6 +71,15 @@ export function MediaLibraryPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [durations, setDurations] = useState<Record<string, string>>({});
+
+  const handleVideoMetadata = (id: string) => (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const total = Math.round(e.currentTarget.duration);
+    if (!isNaN(total)) {
+      const label = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+      setDurations((prev) => (prev[id] ? prev : { ...prev, [id]: label }));
+    }
+  };
   const [aiReferenceImage, setAiReferenceImage] = useState(null);
   const [aiReferencePreview, setAiReferencePreview] = useState(null);
   const [aiReferenceUploading, setAiReferenceUploading] = useState(false);
@@ -306,19 +316,14 @@ export function MediaLibraryPage() {
   const filteredMedia = mediaList;
 
   return (
-    <div className="w-full space-y-6  text-neutral-900 pb-16 select-none">
+    <div className="w-full space-y-6 text-slate-900 pb-16">
       {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-foreground text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in">
-          <Check className="w-4 h-4 text-primary-400" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
+      {toastMsg && <Toast kind="success" message={toastMsg} />}
 
       {/* Upload Progress Indicator */}
       {uploading && (
-        <div className="fixed bottom-6 left-6 z-50 bg-foreground text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in">
-          <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
           <span>Uploading... {progress > 0 ? `${progress}%` : ""}</span>
         </div>
       )}
@@ -336,8 +341,8 @@ export function MediaLibraryPage() {
       {/* Header Title Bar */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Media Library</h1>
-          <p className="text-slate-500 mt-2 max-w-md">Store and manage all your media files in one place. Upload, organize and reuse them anytime.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Media Library</h1>
+          <p className="text-sm text-slate-500 mt-1 max-w-md">Store and manage all your media files in one place. Upload, organize and reuse them anytime.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Button variant="outline" onClick={() => setAiModalOpen(true)}>
@@ -354,8 +359,8 @@ export function MediaLibraryPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
-          <div className="size-8 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
-            <ImageIcon className="w-4 h-4 text-teal-600" />
+          <div className="size-8 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-4 h-4 text-primary-600" />
           </div>
           <div className="min-w-0">
             {statsLoading ? (
@@ -498,15 +503,24 @@ export function MediaLibraryPage() {
               className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col relative"
             >
               {/* Thumbnail Box */}
-              <div className="relative aspect-4/3 bg-gray-100 overflow-hidden flex items-center justify-center">
+              <div className="relative aspect-4/3 bg-slate-100 overflow-hidden flex items-center justify-center">
                 {/* Image / Video / Document Visual */}
                 {asset.type === "document" ? (
                   <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-4">
-                    <div className="relative bg-background border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
-                      <FileText className="w-10 h-10 text-gray-400 mb-1" />
+                    <div className="relative bg-background border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
+                      <FileText className="w-10 h-10 text-slate-400 mb-1" />
                       <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs">{asset.docType || "PDF"}</span>
                     </div>
                   </div>
+                ) : asset.type === "video" ? (
+                  <video
+                    src={asset.path}
+                    preload="metadata"
+                    muted
+                    playsInline
+                    onLoadedMetadata={handleVideoMetadata(asset._id)}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <img
                     src={asset.path}
@@ -518,14 +532,16 @@ export function MediaLibraryPage() {
                 {/* Video Play Overlay */}
                 {asset.type === "video" && (
                   <>
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xs text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                         <Play className="w-5 h-5 fill-white text-white ml-0.5" />
                       </div>
                     </div>
-                    <span className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                      {asset.duration || "00:15"}
-                    </span>
+                    {(durations[asset._id] || asset.duration) && (
+                      <span className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        {durations[asset._id] || asset.duration}
+                      </span>
+                    )}
                   </>
                 )}
 
@@ -539,12 +555,13 @@ export function MediaLibraryPage() {
                 {/* Three Dots Button Top Right */}
                 <Button
                   variant="ghost"
-                  size="icon-xs"
+                  size="icon"
+                  aria-label={`Media options for ${asset.name}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuOpenId(menuOpenId === asset._id ? null : asset._id);
                   }}
-                  className="absolute top-2.5 right-2.5 bg-black/40 text-white hover:bg-black/60"
+                  className="absolute top-2.5 right-2.5 size-10 bg-black/40 text-white hover:bg-black/60 hover:text-white"
                 >
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
@@ -553,7 +570,7 @@ export function MediaLibraryPage() {
                 {menuOpenId === asset._id && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute top-9 right-2.5 bg-background border border-gray-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
+                    className="absolute top-9 right-2.5 bg-background border border-slate-200 rounded-xl shadow-lg z-30 py-1.5 w-36 overflow-hidden animate-in fade-in"
                   >
                     <Button variant="ghost" size="sm" className="w-full justify-start" onClick={(e) => copyLink(asset.path, asset._id, e)}>
                       <Copy className="w-3.5 h-3.5" />
@@ -565,7 +582,7 @@ export function MediaLibraryPage() {
                       className="w-full justify-start"
                       onClick={() => {
                         setMenuOpenId(null);
-                        navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
+                        navigate(`/dashboard/content/create?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
                       }}
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -584,13 +601,14 @@ export function MediaLibraryPage() {
                 )}
 
                 {/* HOVER OVERLAY ACTIONS (as requested: "keep the option of hover") */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
                   <Button
                     variant="ghost"
                     size="icon-sm"
                     onClick={(e) => copyLink(asset.path, asset._id, e)}
-                    className="bg-background/90 hover:bg-background text-gray-800 shadow-md"
+                    className="bg-background/90 hover:bg-background text-slate-800 shadow-md"
                     title="Copy Link"
+                    aria-label="Copy link"
                   >
                     {copiedId === asset._id ? <Check className="w-4 h-4 text-primary-600" /> : <Copy className="w-4 h-4" />}
                   </Button>
@@ -598,7 +616,7 @@ export function MediaLibraryPage() {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/dashboard/create-post?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
+                      navigate(`/dashboard/content/create?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
                     }}
                     className="shadow-md"
                   >
@@ -619,7 +637,7 @@ export function MediaLibraryPage() {
               {/* Card Content Footer */}
               <div className="p-4 space-y-1">
                 <h4 className="font-bold text-xs text-foreground truncate">{asset.name}</h4>
-                <p className="text-[11px] text-gray-400 font-medium">
+                <p className="text-[11px] text-slate-400 font-medium">
                   {asset.size} • {asset.date}
                 </p>
               </div>
@@ -629,7 +647,7 @@ export function MediaLibraryPage() {
       )}
 
       {/* Pagination & Stats Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200/80">
         <div className="flex-1">
           {paginationMeta.pageCount > 1 && (
             <Pagination className="justify-start">
@@ -696,17 +714,26 @@ export function MediaLibraryPage() {
           )}
         </div>
 
-        <span className="text-xs text-gray-400 font-medium text-center sm:text-right shrink-0">
+        <span className="text-xs text-slate-400 font-medium text-center sm:text-right shrink-0">
           Showing {mediaList.length > 0 ? (currentPage - 1) * paginationMeta.pageSize + 1 : 0} to{" "}
           {Math.min(currentPage * paginationMeta.pageSize, paginationMeta.total)} of {paginationMeta.total}
         </span>
       </div>
 
       {/* ASSET DETAIL MODAL */}
-      {selectedAsset && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-background rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
-            <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between gap-3">
+      <Dialog
+        open={!!selectedAsset}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRenamingId(null);
+            setSelectedAsset(null);
+          }
+        }}
+      >
+        {selectedAsset && (
+          <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden">
+            <DialogTitle className="sr-only">{selectedAsset.name}</DialogTitle>
+            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
               {renamingId === selectedAsset._id ? (
                 <div className="flex items-center gap-2 flex-1 min-w-0 mr-1">
                   <div className="p-1.5 rounded-xl bg-foreground/10 text-foreground shrink-0">
@@ -727,13 +754,13 @@ export function MediaLibraryPage() {
                     }}
                     autoFocus
                     placeholder="Enter file name..."
-                    className="h-8 text-sm font-semibold text-foreground bg-background border border-gray-300 focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/20 rounded-xl px-3 flex-1 min-w-0"
+                    className="h-8 text-sm font-semibold text-foreground bg-background border border-slate-300 focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/20 rounded-xl px-3 flex-1 min-w-0"
                   />
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                       size="xs"
                       onClick={() => handleRename(selectedAsset._id)}
-                      className="bg-foreground hover:bg-foreground/85 text-white gap-1 rounded-xl px-2.5 font-medium shadow-2xs h-8 text-xs"
+                      className="gap-1 rounded-xl px-2.5 font-medium shadow-2xs h-8 text-xs"
                     >
                       <span>Save</span>
                     </Button>
@@ -741,7 +768,7 @@ export function MediaLibraryPage() {
                       size="xs"
                       variant="ghost"
                       onClick={() => setRenamingId(null)}
-                      className="text-gray-500 hover:text-gray-800 rounded-xl px-2.5 h-8 text-xs font-medium"
+                      className="text-slate-500 hover:text-slate-800 rounded-xl px-2.5 h-8 text-xs font-medium"
                     >
                       Cancel
                     </Button>
@@ -749,7 +776,7 @@ export function MediaLibraryPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className="p-1.5 rounded-xl bg-gray-100 text-gray-500 shrink-0">
+                  <div className="p-1.5 rounded-xl bg-slate-100 text-slate-500 shrink-0">
                     {selectedAsset.type === "video" ? (
                       <Video className="w-4 h-4" />
                     ) : selectedAsset.type === "document" ? (
@@ -770,68 +797,64 @@ export function MediaLibraryPage() {
                     </h3>
                     <Button
                       variant="ghost"
-                      size="icon-xs"
+                      size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
                         setRenamingId(selectedAsset._id);
                         setRenameValue(selectedAsset.name);
                       }}
-                      className="text-gray-400 group-hover:text-gray-600 hover:bg-gray-100 rounded-lg shrink-0"
+                      className="size-8 text-slate-400 group-hover:text-slate-600 hover:bg-slate-100 rounded-lg shrink-0"
                       title="Rename file"
+                      aria-label="Rename file"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => {
-                  setRenamingId(null);
-                  setSelectedAsset(null);
-                }}
-                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl shrink-0"
-                title="Close modal"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
 
             <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto custom-scroll">
-              <div className="rounded-2xl border border-gray-200 overflow-hidden bg-gray-900 max-h-[350px] flex items-center justify-center">
+              <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-900 max-h-[350px] flex items-center justify-center">
                 {selectedAsset.type === "document" ? (
                   <div className="p-12 text-center text-white space-y-2">
-                    <FileText className="w-16 h-16 mx-auto text-gray-400" />
+                    <FileText className="w-16 h-16 mx-auto text-slate-400" />
                     <p className="font-bold text-sm">{selectedAsset.name}</p>
                   </div>
+                ) : selectedAsset.type === "video" ? (
+                  <video src={selectedAsset.path} controls preload="metadata" className="max-h-[350px] w-full" />
                 ) : (
                   <img src={selectedAsset.path} alt={selectedAsset.name} className="max-h-[350px] w-full object-contain" />
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-2xl text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl text-xs">
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold">Type</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Type</span>
                   <span className="font-bold text-foreground">{selectedAsset.badge}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold">File Size</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">File Size</span>
                   <span className="font-bold text-foreground">{selectedAsset.size}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold">Source</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Source</span>
                   <span className="font-bold text-foreground">{selectedAsset.source === "ai" ? "AI Generated" : "User Upload"}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-bold">Date</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Date</span>
                   <span className="font-bold text-foreground">{selectedAsset.date}</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(selectedAsset._id)}>
+            <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteClick(selectedAsset._id)}
+                className="text-slate-500 hover:text-red-600 hover:bg-red-50"
+              >
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
               </Button>
@@ -844,8 +867,9 @@ export function MediaLibraryPage() {
                 <Button
                   size="sm"
                   onClick={() => {
+                    const asset = selectedAsset;
                     setSelectedAsset(null);
-                    navigate("/dashboard/create-post");
+                    navigate(`/dashboard/content/create?mediaPath=${encodeURIComponent(asset.path)}&mediaType=${asset.type || "image"}`);
                   }}
                 >
                   <Plus className="w-4 h-4" />
@@ -853,9 +877,9 @@ export function MediaLibraryPage() {
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
       {/* AI GENERATOR MODAL */}
       <Dialog
@@ -878,10 +902,10 @@ export function MediaLibraryPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <p className="text-xs text-gray-500 leading-relaxed">Describe the visual asset you want to generate using AI.</p>
+          <p className="text-xs text-slate-500 leading-relaxed">Describe the visual asset you want to generate using AI.</p>
 
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-gray-700">Image Prompt</label>
+            <label className="block text-xs font-bold text-slate-700">Image Prompt</label>
             <Textarea
               rows={4}
               value={aiPrompt}
@@ -891,20 +915,20 @@ export function MediaLibraryPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-gray-700">Reference Image (Optional)</label>
-            <p className="text-[11px] text-gray-400">Upload a reference image to guide the AI generation.</p>
+            <label className="block text-xs font-bold text-slate-700">Reference Image (Optional)</label>
+            <p className="text-[11px] text-slate-400">Upload a reference image to guide the AI generation.</p>
 
             <input ref={aiReferenceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReferenceImageSelect} />
 
             {aiReferencePreview ? (
               <div className="relative inline-block">
-                <img src={aiReferencePreview} alt="Reference" className="w-24 h-24 object-cover rounded-xl border border-gray-200" />
+                <img src={aiReferencePreview} alt="Reference" className="w-24 h-24 object-cover rounded-xl border border-slate-200" />
                 {aiReferenceUploading && (
                   <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
-                <Button variant="destructive" size="icon-xs" className="absolute -top-2 -right-2" onClick={handleRemoveReferenceImage}>
+                <Button variant="destructive" size="icon" aria-label="Remove reference image" className="absolute -top-2 -right-2 size-8" onClick={handleRemoveReferenceImage}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -913,10 +937,10 @@ export function MediaLibraryPage() {
                 type="button"
                 onClick={() => aiReferenceInputRef.current?.click()}
                 disabled={aiReferenceUploading}
-                className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                className="w-full border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-slate-300 transition-colors cursor-pointer disabled:opacity-50"
               >
-                <ImagePlus className="w-8 h-8 text-gray-400" />
-                <span className="text-xs text-gray-500">{aiReferenceUploading ? "Uploading..." : "Click to upload reference image"}</span>
+                <ImagePlus className="w-8 h-8 text-slate-400" />
+                <span className="text-xs text-slate-500">{aiReferenceUploading ? "Uploading..." : "Click to upload reference image"}</span>
               </button>
             )}
           </div>
@@ -939,7 +963,7 @@ export function MediaLibraryPage() {
           <DialogHeader>
             <DialogTitle>Delete Media</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-600">Are you sure you want to delete this media? This action cannot be undone.</p>
+          <p className="text-sm text-slate-600">Are you sure you want to delete this media? This action cannot be undone.</p>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
               Cancel

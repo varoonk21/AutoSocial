@@ -1,5 +1,5 @@
-import { Check, AlertCircle, Info } from "lucide-react";
 import { useCreatePost } from "../components/create-post/useCreatePost";
+import { Toast } from "@/components/ui/toast";
 import { AccountSelectCard } from "../components/create-post/AccountSelectCard";
 import { MediaCard } from "../components/create-post/MediaCard";
 import { PostDetailsCard } from "../components/create-post/PostDetailsCard";
@@ -23,12 +23,8 @@ export function CreatePost() {
     reorderMedia,
 
     // Post details
-    isAdPost,
-    setIsAdPost,
     text,
     setText,
-    language,
-    setLanguage,
     applyAiRewrite,
     undoAiRewrite,
     canUndoAi,
@@ -40,8 +36,6 @@ export function CreatePost() {
     setScheduleDate,
     scheduleTime,
     setScheduleTime,
-    timezone,
-    setTimezone,
 
     // Action Bar & Save
     isSaving,
@@ -75,18 +69,7 @@ export function CreatePost() {
   return (
     <div className="min-h-full text-slate-900 font-sans relative pb-24">
       {/* Toast Notification Container */}
-      {toastMessage && (
-        <div className="fixed top-16 right-6 z-50 bg-foreground text-background text-xs font-medium px-3.5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
-          {toastMessage.type === "success" && (
-            <Check className="w-4 h-4 text-primary-400 stroke-[2.5]" />
-          )}
-          {toastMessage.type === "error" && (
-            <AlertCircle className="w-4 h-4 text-red-400 stroke-[2.5]" />
-          )}
-          {toastMessage.type === "info" && <Info className="w-4 h-4 text-primary-400 stroke-[2.5]" />}
-          <span>{toastMessage.text}</span>
-        </div>
-      )}
+      {toastMessage && <Toast kind={toastMessage.type} message={toastMessage.text} />}
 
       {/* Main Container */}
       <div className="max-w-[1360px] mx-auto space-y-5 pb-20 lg:pb-8">
@@ -189,8 +172,8 @@ export function CreatePost() {
 
       {/* Mobile Live Preview Drawer (< 1024px) */}
       <Sheet open={isPreviewDrawerOpen} onOpenChange={setIsPreviewDrawerOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md p-4 overflow-y-auto bg-gray-50">
-          <SheetHeader className="pb-2 border-b border-gray-200">
+        <SheetContent side="right" className="w-full sm:max-w-md p-4 overflow-y-auto bg-slate-50">
+          <SheetHeader className="pb-2 border-b border-slate-200">
             <SheetTitle className="text-base font-bold text-foreground">Post Preview</SheetTitle>
           </SheetHeader>
           <div className="pt-4">

@@ -53,9 +53,9 @@ export function FileUpload({
       {uploading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl z-10">
           <div className="text-center space-y-1">
-            <p className="text-xs font-medium text-gray-600">Uploading...</p>
+            <p className="text-xs font-medium text-slate-600">Uploading...</p>
             {progress > 0 && (
-              <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}

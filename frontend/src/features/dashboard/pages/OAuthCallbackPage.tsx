@@ -129,10 +129,10 @@ export function OAuthCallbackPage() {
   // Loading state
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full mx-auto mb-4" />
-          <p className="text-sm text-gray-600">Connecting to {platform.name}...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="bg-background rounded-xl border border-slate-200 p-8 max-w-md w-full text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-slate-200 border-t-slate-900 rounded-full mx-auto mb-4" />
+          <p className="text-sm text-slate-600">Connecting to {platform.name}...</p>
         </div>
       </div>
     )
@@ -141,15 +141,15 @@ export function OAuthCallbackPage() {
   // Success state
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="bg-background rounded-xl border border-slate-200 p-8 max-w-md w-full text-center">
           <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-primary-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Connected!</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">Connected!</h2>
+          <p className="text-sm text-slate-500">
             {platform.name} has been connected successfully. Redirecting...
           </p>
         </div>
@@ -160,10 +160,10 @@ export function OAuthCallbackPage() {
   // Page selection state
   if (status === 'pages') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Select a Page</h2>
-          <p className="text-sm text-gray-500 mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="bg-background rounded-xl border border-slate-200 p-8 max-w-md w-full">
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">Select a Page</h2>
+          <p className="text-sm text-slate-500 mb-6">
             Choose which {platform.name} page to connect.
           </p>
 
@@ -175,8 +175,8 @@ export function OAuthCallbackPage() {
                 disabled={saving}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-left ${
                   selectedPage === page.id
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    ? 'border-slate-900 bg-slate-50'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
                 <img
@@ -185,13 +185,13 @@ export function OAuthCallbackPage() {
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{page.name}</p>
+                  <p className="text-sm font-medium text-slate-900 truncate">{page.name}</p>
                   {page.username && (
-                    <p className="text-xs text-gray-400">@{page.username}</p>
+                    <p className="text-xs text-slate-400">@{page.username}</p>
                   )}
                 </div>
                 {selectedPage === page.id && saving && (
-                  <div className="animate-spin w-4 h-4 border-2 border-gray-200 border-t-gray-900 rounded-full" />
+                  <div className="animate-spin w-4 h-4 border-2 border-slate-200 border-t-slate-900 rounded-full" />
                 )}
               </button>
             ))}
@@ -207,15 +207,15 @@ export function OAuthCallbackPage() {
 
   // Error state
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-background rounded-xl border border-gray-200 p-8 max-w-md w-full text-center">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="bg-background rounded-xl border border-slate-200 p-8 max-w-md w-full text-center">
         <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">Connection Failed</h2>
-        <p className="text-sm text-gray-500 mb-6">{error}</p>
+        <h2 className="text-lg font-semibold text-slate-900 mb-1">Connection Failed</h2>
+        <p className="text-sm text-slate-500 mb-6">{error}</p>
         <Button onClick={handleRetry}>Back to Connected Accounts</Button>
       </div>
     </div>

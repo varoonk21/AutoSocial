@@ -5,6 +5,7 @@ import { PLATFORMS_CONFIG, DEFAULT_PLATFORM_ID } from "./platformConfig";
 
 export interface AccountItem {
   id: string;
+  internalId?: string;
   name: string;
   provider: string; // "facebook" | "instagram" | "linkedin" | "x"
   handle?: string;
@@ -50,7 +51,6 @@ export function useCreatePost() {
   // Post details state
   const [isAdPost, setIsAdPost] = useState(false);
   const [text, setText] = useState("");
-  const [language, setLanguage] = useState("English");
   const [undoHistory, setUndoHistory] = useState<string[]>([]);
 
   // Schedule state
@@ -59,7 +59,6 @@ export function useCreatePost() {
     presetDate || new Date(Date.now() + 86400000).toISOString().split("T")[0],
   );
   const [scheduleTime, setScheduleTime] = useState(presetTime || "10:00");
-  const [timezone, setTimezone] = useState("Eastern Time (US & Canada) GMT-4");
 
   // Per-account Share-to placements
   const [shareToPlacements, setShareToPlacements] = useState<Record<string, boolean>>({
@@ -477,8 +476,6 @@ export function useCreatePost() {
     setIsAdPost,
     text,
     setText,
-    language,
-    setLanguage,
     applyAiRewrite,
     undoAiRewrite,
     canUndoAi: undoHistory.length > 0,
@@ -490,8 +487,6 @@ export function useCreatePost() {
     setScheduleDate,
     scheduleTime,
     setScheduleTime,
-    timezone,
-    setTimezone,
 
     // Share to & Privacy
     shareToPlacements,

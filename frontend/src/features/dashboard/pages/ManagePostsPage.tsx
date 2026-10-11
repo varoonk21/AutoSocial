@@ -24,6 +24,14 @@ const TABS: { id: TabType; label: string; icon: any }[] = [
   { id: "ERROR", label: "Failed", icon: AlertCircle },
 ];
 
+const EMPTY_MESSAGES: Record<TabType, string> = {
+  ALL: "No posts yet.",
+  DRAFT: "No drafts saved.",
+  QUEUE: "No scheduled posts.",
+  PUBLISHED: "No published posts yet.",
+  ERROR: "No failed posts — everything published successfully!",
+};
+
 export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,6 +118,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
     const bTime = b.publishDate ? new Date(b.publishDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
     return sortOrder === "newest" ? bTime - aTime : aTime - bTime;
   });
+  const EmptyIcon = TABS.find((t) => t.id === activeTab)?.icon || Layers;
 
   return (
     <div className="space-y-6">
@@ -190,10 +199,18 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
             ))}
           </CardContent>
         </Card>
-      ) : posts.length === 0 ? (
+      ) : sortedPosts.length === 0 ? (
         <Card className="border border-slate-200 shadow-sm rounded-xl bg-background">
           <CardContent className="p-12 text-center">
-            <p className="text-slate-400 text-sm">No posts found in this category.</p>
+            <EmptyIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 text-sm font-medium">
+              {EMPTY_MESSAGES[activeTab]}
+            </p>
+            <p className="text-slate-400 text-xs mt-1">
+              {activeTab === "QUEUE"
+                ? "Posts you schedule will appear here with their publish time."
+                : "Posts you create will show up here."}
+            </p>
             <Button
               className="mt-4"
               onClick={() => navigate("/dashboard/content/create")}

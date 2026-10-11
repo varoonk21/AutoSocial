@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "seed": "pnpm build && node --env-file=.env dist/scripts/seed.js",
     "test": "tsc && node --experimental-test-module-mocks --test \"test/**/*.test.js\"",
-    "migrate:encrypt-tokens": "tsc && node --env-file=.env dist/scripts/migrate-encrypt-tokens.js"
+    "migrate:encrypt-tokens": "tsc && node --env-file=.env dist/scripts/migrate-encrypt-tokens.js",
+    "migrate:backfill-post-platform": "tsc && node --env-file=.env dist/scripts/backfill-post-platform.js"
   },
   "dependencies": {
     "@agendajs/mongo-backend": "^4.0.3",

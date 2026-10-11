@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiDelete } from "@/lib/fetcher";
-import { PLATFORM_COLORS, STATUS_CONFIG } from "@/constants/platforms";
+import { STATUS_CONFIG } from "@/constants/platforms";
 import { queryKeys } from "../hooks/queryKeys";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ interface Post {
   publishDate: string;
   state: "QUEUE" | "PUBLISHED" | "DRAFT" | "ERROR";
   integrationId: any;
+  platform?: string;
   image?: string;
   releaseURL?: string;
 }
@@ -63,7 +64,7 @@ function PostPreviewBody({
   getPlatformFromPost,
 }: {
   post: Post;
-  getPlatformFromPost: (post: Post) => string;
+  getPlatformFromPost: (post: Post) => string | null;
 }) {
   const platform = getPlatformFromPost(post);
   const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT;
@@ -85,8 +86,12 @@ function PostPreviewBody({
         {post.content || <span className="text-slate-400 italic">No content</span>}
       </p>
       <div className="flex items-center gap-2">
-        <PlatformIcon platform={platform} size={16} />
-        <span className="text-xs font-medium text-slate-600 capitalize">{platform}</span>
+        {platform && (
+          <>
+            <PlatformIcon platform={platform} size={16} />
+            <span className="text-xs font-medium text-slate-600 capitalize">{platform}</span>
+          </>
+        )}
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConf.bg} ${statusConf.text} border ${statusConf.border}`}>
           {statusConf.label}
         </span>
@@ -203,10 +208,20 @@ export function ScheduledPostsPage() {
     navigate(`/dashboard/content/create?date=${dateStr}&time=${timeStr}`);
   };
 
+  // Resolve a post's platform: prefer the live integration, fall back to the
+  // platform snapshot stored on the post (survives deleted integrations).
+  // Returns null when neither exists — never guess "x".
+  const getPlatformFromPost = (post: Post): string | null => {
+    const integration =
+      post.integrationId && typeof post.integrationId === "object"
+        ? post.integrationId
+        : integrations.find((i: any) => i.id === post.integrationId);
+    return (integration?.platform || integration?.providerIdentifier || post.platform || null) as string | null;
+  };
+
   // Filter posts
   const filteredPosts = posts.filter((post: Post) => {
-    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i.id === post.integrationId);
-    const platform = integration?.platform || integration?.providerIdentifier || "x";
+    const platform = getPlatformFromPost(post);
     if (selectedPlatform !== "all" && platform !== selectedPlatform) return false;
     if (selectedStatus !== "all" && post.state !== selectedStatus) return false;
     return true;
@@ -262,11 +277,6 @@ export function ScheduledPostsPage() {
     .filter((p: Post) => p.state === "PUBLISHED")
     .sort((a: Post, b: Post) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
     .slice(0, 4);
-
-  const getPlatformFromPost = (post: Post) => {
-    const integration = typeof post.integrationId === "object" ? post.integrationId : integrations.find((i: any) => i.id === post.integrationId);
-    return (integration?.platform || integration?.providerIdentifier || "x") as keyof typeof PLATFORM_COLORS;
-  };
 
   const renderCalendarView = () => {
     if (viewMode === "month") {

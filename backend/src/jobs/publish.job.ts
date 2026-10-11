@@ -70,7 +70,7 @@ async function publishToIntegration(posts: any[]): Promise<void> {
   }
 
   if (integration.disabled) {
-    await markPostsError(posts, "This social channel is disabled");
+    await markPostsError(posts, "This social channel is disabled", integration.providerIdentifier);
     return;
   }
 
@@ -133,12 +133,12 @@ async function publishToIntegration(posts: any[]): Promise<void> {
           }
         } catch (refreshErr) {
           await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-          await markPostsError(posts, "Access token expired - please reconnect your social account");
+          await markPostsError(posts, "Access token expired - please reconnect your social account", integration.providerIdentifier);
           return;
         }
       } else {
         await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-        await markPostsError(posts, "Access token expired - please reconnect your social account");
+        await markPostsError(posts, "Access token expired - please reconnect your social account", integration.providerIdentifier);
         return;
       }
     }
@@ -153,6 +153,7 @@ async function publishToIntegration(posts: any[]): Promise<void> {
     for (const result of results) {
       await Post.findByIdAndUpdate(result.id, {
         state: "PUBLISHED",
+        platform: integration.providerIdentifier,
         releaseURL: result.releaseURL || "",
         postId: result.postId || "",
         error: null,
@@ -165,22 +166,23 @@ async function publishToIntegration(posts: any[]): Promise<void> {
 
     if (isRefreshError) {
       await Integration.findByIdAndUpdate(integration._id, { refreshNeeded: true });
-      await markPostsError(posts, "Access token expired - please reconnect your social account");
+      await markPostsError(posts, "Access token expired - please reconnect your social account", integration.providerIdentifier);
       logger.error({ err }, `Token refresh needed for integration ${integration._id}`);
     } else {
       const errorMsg = err.message || "Unknown error while publishing";
-      await markPostsError(posts, errorMsg);
+      await markPostsError(posts, errorMsg, integration.providerIdentifier);
       logger.error({ err }, `Failed to publish to ${integration.providerIdentifier}`);
     }
   }
 }
 
-async function markPostsError(posts: any[], errorMessage: string): Promise<void> {
+async function markPostsError(posts: any[], errorMessage: string, platform?: string): Promise<void> {
   await Promise.all(
     posts.map((p: any) =>
       Post.findByIdAndUpdate(p._id, {
         state: "ERROR",
         error: errorMessage,
+        ...(platform ? { platform } : {}),
       })
     )
   );

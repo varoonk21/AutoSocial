@@ -21,7 +21,7 @@ interface MappedPost {
   id: string;
   content: string;
   campaign: string;
-  platform: string;
+  platform: string | null;
   platformLabel: string;
   status: string;
   date: string;
@@ -95,8 +95,11 @@ export function DashboardOverview() {
             id: p._id,
             content: p.content?.slice(0, 60) + (p.content?.length > 60 ? "..." : ""),
             campaign: "",
-            platform: p.integrationId?.providerIdentifier || "x",
-            platformLabel: PLATFORM_LABELS[p.integrationId?.providerIdentifier] || "X",
+            platform: p.integrationId?.providerIdentifier || p.platform || null,
+            platformLabel:
+              PLATFORM_LABELS[p.integrationId?.providerIdentifier] ||
+              PLATFORM_LABELS[p.platform] ||
+              "—",
             status: p.state,
             date: new Date(p.publishDate).toLocaleString(),
             image: imageUrl,

@@ -3,11 +3,12 @@ import { PLATFORM_COLORS } from '@/constants/platforms'
 type Platform = keyof typeof PLATFORM_COLORS
 
 interface PlatformIconProps {
-  platform: Platform
+  platform: Platform | null | undefined
   size?: number
 }
 
 export function PlatformIcon({ platform, size = 16 }: PlatformIconProps) {
+  if (!platform) return null
   const color = PLATFORM_COLORS[platform] || 'var(--muted-foreground)'
 
   return (

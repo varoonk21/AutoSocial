@@ -13,6 +13,7 @@ export interface IEngagement {
 export interface IPost extends Document {
   userId: mongoose.Types.ObjectId;
   integrationId: mongoose.Types.ObjectId;
+  platform?: "facebook" | "instagram" | "x" | "linkedin";
   content: string;
   publishDate: Date;
   state: "QUEUE" | "PUBLISHED" | "ERROR" | "DRAFT";
@@ -32,6 +33,12 @@ const PostSchema = new mongoose.Schema<IPost>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     integrationId: { type: mongoose.Schema.Types.ObjectId, ref: "Integration" },
+    // Snapshot of the social platform at create/publish time so the UI can
+    // still identify the platform after the integration is deleted.
+    platform: {
+      type: String,
+      enum: ["facebook", "instagram", "x", "linkedin"],
+    },
     content: { type: String, required: true },
     publishDate: { type: Date, required: true },
     state: {

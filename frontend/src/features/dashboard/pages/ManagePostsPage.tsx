@@ -216,7 +216,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
               const mediaItems = JSON.parse(post.image || "[]");
               const firstMedia = mediaItems[0];
               const mediaUrl = typeof firstMedia === "string" ? firstMedia : firstMedia?.path;
-              const platform = integration?.platform || integration?.providerIdentifier || null;
+              const platform = integration?.platform || integration?.providerIdentifier || post.platform || null;
 
               const isEditable = post.state === "DRAFT" || post.state === "QUEUE";
 

@@ -55,17 +55,20 @@ async function createPost(req, res) {
       return res.status(400).json({ error: 'A publish date is required for scheduled posts' });
     }
 
-    // Validate integrations only for non-draft posts
-    if (type !== 'draft') {
-      const integrationIds = [...new Set(rawPosts.filter(p => p.integrationId).map((p) => p.integrationId))];
-      if (integrationIds.length > 0) {
-        const integrations = await Integration.find({
-          _id: { $in: integrationIds },
-          userId: req.user._id,
-        });
-        if (integrations.length !== integrationIds.length) {
-          return res.status(403).json({ error: 'One or more integrations are invalid' });
-        }
+    // Resolve integrations (if any) so we can stamp a platform snapshot on each post
+    const requestedIntegrationIds = [...new Set(rawPosts.filter(p => p.integrationId).map((p) => p.integrationId))];
+    const integrationMap = new Map();
+    if (requestedIntegrationIds.length > 0) {
+      const integrations = await Integration.find({
+        _id: { $in: requestedIntegrationIds },
+        userId: req.user._id,
+      });
+      // Validate integrations only for non-draft posts
+      if (type !== 'draft' && integrations.length !== requestedIntegrationIds.length) {
+        return res.status(403).json({ error: 'One or more integrations are invalid' });
+      }
+      for (const integration of integrations) {
+        integrationMap.set(integration._id.toString(), integration);
       }
     }
 
@@ -88,6 +91,10 @@ async function createPost(req, res) {
       };
       if (rawPost.integrationId) {
         postData.integrationId = rawPost.integrationId;
+        const integration = integrationMap.get(rawPost.integrationId.toString());
+        if (integration?.providerIdentifier) {
+          postData.platform = integration.providerIdentifier;
+        }
       }
 
       const post = await Post.create(postData);

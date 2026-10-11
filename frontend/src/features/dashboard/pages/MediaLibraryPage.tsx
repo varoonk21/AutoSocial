@@ -4,6 +4,7 @@ import {
   Upload,
   Search,
   Image as ImageIcon,
+  Images,
   Video,
   FileText,
   Sparkles,
@@ -360,7 +361,7 @@ export function MediaLibraryPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex items-center gap-2.5 shadow-2xs">
           <div className="size-8 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
-            <ImageIcon className="w-4 h-4 text-primary-600" />
+            <Images className="w-4 h-4 text-primary-600" />
           </div>
           <div className="min-w-0">
             {statsLoading ? (

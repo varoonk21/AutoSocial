@@ -34,8 +34,8 @@ export function SocialConnect({ connectedProviders = [], onConnect }: SocialConn
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-1">
-        <h3 className="text-lg font-medium text-gray-900">Connect a Social Account</h3>
-        <p className="text-sm text-gray-500">Select a platform to integrate with AutoSocial.</p>
+        <h3 className="text-lg font-medium text-slate-900">Connect a Social Account</h3>
+        <p className="text-sm text-slate-500">Select a platform to integrate with AutoSocial.</p>
       </div>
 
       {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">{error}</div>}
@@ -50,7 +50,7 @@ export function SocialConnect({ connectedProviders = [], onConnect }: SocialConn
               className={`justify-start gap-4 h-auto py-4 px-5 transition-all duration-200 rounded-2xl ${
                 isConnected 
                   ? "bg-accent/50 border-primary-200 hover:bg-accent" 
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 bg-background"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-background"
               }`}
               onClick={() => handleConnect(platform.id)}
               disabled={connecting === platform.id}
@@ -85,7 +85,7 @@ export function SocialConnect({ connectedProviders = [], onConnect }: SocialConn
                 </span>
               </div>
               {connecting === platform.id && (
-                <div className="shrink-0 w-4 h-4 rounded-full border-2 border-gray-300 border-t-gray-600 animate-spin" />
+                <div className="shrink-0 w-4 h-4 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin" />
               )}
             </Button>
           );

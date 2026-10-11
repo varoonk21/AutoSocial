@@ -100,7 +100,7 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
       <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-gray-100 text-gray-700">
+            <div className="p-2 rounded-xl bg-slate-100 text-slate-700">
               <ImageIcon className="w-5 h-5" />
             </div>
             Media Library
@@ -109,7 +109,7 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
 
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
               value={searchQuery}
@@ -135,10 +135,10 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
         <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
           {loadingMedia ? (
             <div className="flex items-center justify-center py-16">
-              <div className="w-6 h-6 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : mediaList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <ImageIcon className="w-12 h-12 mb-3 opacity-40" />
               <p className="text-sm font-medium">No images found</p>
               <p className="text-xs mt-1">Upload an image or try a different search</p>
@@ -152,8 +152,8 @@ export function MediaLibraryModal({ open, onOpenChange, onSelect }: MediaLibrary
                   onClick={() => handleSelect(item)}
                   className={`relative group aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                     selectedId === item._id
-                      ? "border-foreground ring-2 ring-gray-200"
-                      : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                      ? "border-foreground ring-2 ring-slate-200"
+                      : "border-slate-200 hover:border-slate-300 hover:shadow-md"
                   }`}
                 >
                   <img

@@ -4,7 +4,8 @@ import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
@@ -50,6 +51,7 @@ export function DashboardOverview() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState(false);
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
@@ -76,6 +78,7 @@ export function DashboardOverview() {
   async function loadPosts() {
     try {
       setPostsLoading(true);
+      setPostsError(false);
       const data = await apiGet("/posts");
       if (data.posts && data.posts.length > 0) {
         const sorted = data.posts
@@ -93,7 +96,7 @@ export function DashboardOverview() {
             content: p.content?.slice(0, 60) + (p.content?.length > 60 ? "..." : ""),
             campaign: "",
             platform: p.integrationId?.providerIdentifier || "x",
-            platformLabel: PLATFORM_LABELS[p.integrationId?.providerIdentifier] || "Twitter",
+            platformLabel: PLATFORM_LABELS[p.integrationId?.providerIdentifier] || "X",
             status: p.state,
             date: new Date(p.publishDate).toLocaleString(),
             image: imageUrl,
@@ -106,6 +109,7 @@ export function DashboardOverview() {
       }
     } catch {
       setPosts([]);
+      setPostsError(true);
     } finally {
       setPostsLoading(false);
     }
@@ -145,9 +149,9 @@ export function DashboardOverview() {
   const activePage = pages[activePageIndex] || pages[0];
 
   return (
-    <div className="space-y-8 -mt-8 -mx-10">
+    <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-8 max-w-[1400px] mx-auto space-y-8">
       {/* Cover banner */}
-      <div className="relative mx-10 mt-8 rounded-2xl overflow-hidden">
+      <div className="relative rounded-2xl overflow-hidden">
         {coverUrl ? (
           <img src={coverUrl} alt="Page cover" className="h-48 w-full object-cover" />
         ) : (
@@ -162,8 +166,7 @@ export function DashboardOverview() {
       </div>
 
       {/* Page card overlapping the cover */}
-      <div className="px-10">
-        <div className="-mt-16 relative rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div className="-mt-16 relative rounded-xl border border-slate-200 bg-white shadow-soft p-6">
           <div className="flex flex-wrap items-center gap-5">
             {/* Active page avatar with platform badge */}
             <div className="relative shrink-0">
@@ -178,7 +181,7 @@ export function DashboardOverview() {
                   }
                   alt={activePage?.name || session?.user?.name || "Page"}
                 />
-                <AvatarFallback className="bg-teal-50 text-teal-700">
+                <AvatarFallback className="bg-primary-50 text-primary-700">
                   <UserIcon className="w-8 h-8" />
                 </AvatarFallback>
               </Avatar>
@@ -211,7 +214,7 @@ export function DashboardOverview() {
                       title={p.name}
                       className={`relative rounded-full transition-all ${
                         idx === activePageIndex
-                          ? "ring-2 ring-teal-600 ring-offset-2"
+                          ? "ring-2 ring-primary-600 ring-offset-2"
                           : "opacity-60 hover:opacity-100"
                       }`}
                     >
@@ -246,11 +249,9 @@ export function DashboardOverview() {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="px-10 space-y-8">
         {/* Minimal insights */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Posts this month</p>
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -258,8 +259,9 @@ export function DashboardOverview() {
                 {statsLoading ? "—" : stats.postsThisMonth}
               </span>
               {!statsLoading && stats.postsChange !== 0 && (
-                <span className={`text-xs font-medium ${stats.postsChange > 0 ? "text-teal-600" : "text-red-500"}`}>
-                  {stats.postsChange > 0 ? "↑" : "↓"} {Math.abs(stats.postsChange)}%
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold ${stats.postsChange > 0 ? "text-primary-600" : "text-red-600"}`}>
+                  {stats.postsChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                  {Math.abs(stats.postsChange)}%
                 </span>
               )}
             </div>
@@ -298,18 +300,33 @@ export function DashboardOverview() {
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <h2 className="text-base font-bold text-slate-900">Recent Activity</h2>
-            <Button variant="link" size="sm" onClick={() => navigate("/calendar")}>
+            <Button variant="link" size="sm" onClick={() => navigate("/dashboard/content/schedule")}>
               View All
             </Button>
           </div>
 
           <div className="divide-y divide-slate-50">
             {postsLoading ? (
-              <div className="px-6 py-8 text-center text-sm text-slate-400">Loading posts...</div>
+              <div className="px-6 py-4 space-y-3">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3.5 w-2/3" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : postsError ? (
+              <div className="px-6 py-10 text-center">
+                <p className="text-sm text-slate-500 mb-3">Couldn't load recent activity. Please check your connection and try again.</p>
+                <Button size="sm" variant="outline" onClick={loadPosts}>Retry</Button>
+              </div>
             ) : posts.length === 0 ? (
               <div className="px-6 py-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">No posts yet. Published and scheduled posts will appear here.</p>
-                <Button size="sm" onClick={() => navigate("/dashboard/create-post")}>Create your first post</Button>
+                <Button size="sm" onClick={() => navigate("/dashboard/content/create")}>Create your first post</Button>
               </div>
             ) : (
               posts.map((post) => {
@@ -335,7 +352,7 @@ export function DashboardOverview() {
                         href={post.releaseURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors shrink-0"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View
@@ -347,7 +364,6 @@ export function DashboardOverview() {
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 }

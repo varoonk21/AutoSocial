@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Toast } from "@/components/ui/toast";
 import {
   Camera,
   User as UserIcon,
@@ -39,8 +40,8 @@ const NOTIFICATION_ITEMS = [
     label: "Post published",
     desc: "Get notified when a scheduled post goes live",
     icon: Send,
-    tint: "bg-teal-50",
-    iconColor: "text-teal-600",
+    tint: "bg-primary-50",
+    iconColor: "text-primary-600",
   },
   {
     key: "postFailed",
@@ -175,8 +176,8 @@ export function SettingsPage() {
         {/* Page header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
-            <p className="text-slate-500 mt-1.5">Manage your account and preferences.</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+            <p className="text-sm text-slate-500 mt-1">Manage your account and preferences.</p>
           </div>
           <Skeleton className="h-10 w-32 rounded-lg shrink-0" />
         </div>
@@ -195,7 +196,7 @@ export function SettingsPage() {
           {/* Content */}
           <div className="space-y-6">
             {/* Profile header card */}
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
               <Skeleton className="h-28 w-full rounded-none" />
               <div className="px-6 pb-6">
                 <div className="-mt-10 flex items-end justify-between gap-4">
@@ -212,7 +213,7 @@ export function SettingsPage() {
             </div>
 
             {/* Profile fields */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
               <Skeleton className="h-4 w-44 rounded-md" />
               <div className="grid sm:grid-cols-2 gap-5">
                 {[0, 1].map((i) => (
@@ -234,30 +235,34 @@ export function SettingsPage() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
-          <p className="text-slate-500 mt-1.5">Manage your account and preferences.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage your account and preferences.</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="shrink-0">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        {(activeSection === "profile" || activeSection === "notifications") && (
+          <Button onClick={handleSave} disabled={saving} className="shrink-0">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        )}
       </div>
 
       <div className="mt-6 space-y-6">
         {/* Top tab row */}
-        <div className="flex items-center gap-1 p-1 rounded-xl border border-slate-200 bg-white w-fit">
+        <div className="flex items-center gap-1 border-b border-slate-200" role="tablist" aria-label="Settings sections">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               type="button"
+              role="tab"
+              aria-selected={activeSection === item.id}
               onClick={() => setActiveSection(item.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                "flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer",
                 activeSection === item.id
-                  ? "bg-slate-900 text-white shadow-sm"
+                  ? "text-slate-900 font-semibold border-primary"
                   : item.id === "danger"
-                    ? "text-slate-500 hover:text-red-600 hover:bg-red-50"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50",
+                    ? "text-slate-500 border-transparent hover:text-red-600 hover:border-red-300"
+                    : "text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300",
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -271,7 +276,7 @@ export function SettingsPage() {
           {activeSection === "profile" && (
             <section className="space-y-6">
               {/* Profile header card */}
-              <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
                 <div
                   className="h-28 w-full"
                   style={{ background: "linear-gradient(120deg, #2f8587 0%, #5fa4a6 55%, #8cc2c3 100%)" }}
@@ -290,7 +295,7 @@ export function SettingsPage() {
                       </Avatar>
                       {uploading && (
                         <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-full">
-                          <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
+                          <Loader2 className="w-5 h-5 animate-spin text-primary-600" />
                         </div>
                       )}
                       <button
@@ -325,7 +330,7 @@ export function SettingsPage() {
               </div>
 
               {/* Profile fields */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
                 <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Personal Information</h3>
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
@@ -343,7 +348,7 @@ export function SettingsPage() {
           )}
 
           {activeSection === "notifications" && (
-            <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+            <section className="rounded-xl border border-slate-200 bg-white overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100">
                 <h3 className="text-base font-bold text-slate-900">Notifications</h3>
                 <p className="text-sm text-slate-500 mt-0.5">Choose what you want to be notified about.</p>
@@ -375,7 +380,7 @@ export function SettingsPage() {
 
           {activeSection === "security" && (
             <section className="space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100">
                   <h3 className="text-base font-bold text-slate-900">Change Password</h3>
                   <p className="text-sm text-slate-500 mt-0.5">Use a strong password you don't reuse elsewhere.</p>
@@ -416,7 +421,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between gap-4">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">Sign Out</h3>
@@ -432,7 +437,7 @@ export function SettingsPage() {
           )}
 
           {activeSection === "danger" && (
-            <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+            <section className="rounded-xl border border-slate-200 bg-white overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100">
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -447,14 +452,18 @@ export function SettingsPage() {
                     Permanently delete your account and all associated data.
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 shrink-0 cursor-pointer"
-                  onClick={() => setToast({ type: "error", msg: "Account deletion is not available yet" })}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </Button>
+                <div className="text-right shrink-0">
+                  <Button
+                    variant="outline"
+                    className="border-red-200 text-red-600 shrink-0"
+                    disabled
+                    title="Account deletion is not available yet"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </Button>
+                  <p className="text-xs text-slate-400 mt-1.5">Not available yet</p>
+                </div>
               </div>
             </section>
           )}
@@ -462,17 +471,7 @@ export function SettingsPage() {
       </div>
 
       {/* Toast */}
-      {toast && (
-        <div
-          className={cn(
-            "fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-in fade-in",
-            toast.type === "success" ? "bg-slate-900 text-white" : "bg-red-600 text-white",
-          )}
-        >
-          {toast.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-          {toast.msg}
-        </div>
-      )}
+      {toast && <Toast kind={toast.type} message={toast.msg} />}
     </div>
   );
 }

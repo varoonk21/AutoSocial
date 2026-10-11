@@ -60,7 +60,7 @@ export function PostPreviewPanel({
           </ToggleGroup>
         </div>
 
-        <div className="flex items-center gap-5 border-b border-gray-100 px-1">
+        <div className="flex items-center gap-5 border-b border-slate-100 px-1">
           {TABS.map((tab) => {
             const isActive = platform === tab.id;
             return (
@@ -69,7 +69,7 @@ export function PostPreviewPanel({
                 type="button"
                 onClick={() => onPlatformChange(tab.id)}
                 className={`flex items-center gap-1.5 pb-2 text-xs font-semibold transition-colors cursor-pointer relative ${
-                  isActive ? "text-foreground" : "text-gray-400 hover:text-gray-600"
+                  isActive ? "text-foreground" : "text-slate-400 hover:text-slate-600"
                 }`}
               >
                 <PlatformIcon platform={tab.id} size={13} />
@@ -98,9 +98,9 @@ export function PostPreviewPanel({
           />
         </div>
 
-        <div className="flex items-start gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
-          <Info className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
-          <p className="text-[10px] leading-relaxed text-gray-500">
+        <div className="flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5">
+          <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+          <p className="text-[10px] leading-relaxed text-slate-500">
             This is a preview of how your post may appear. Final rendering can vary slightly by
             platform and device.
           </p>

@@ -32,7 +32,7 @@ export function InstagramPreview({ account, text, mediaList }: PreviewProps) {
   const displayText = shouldTruncate && !isExpanded ? text.slice(0, 140) + "..." : text;
 
   return (
-    <div className="bg-background rounded-xl border border-gray-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
+    <div className="bg-background rounded-xl border border-slate-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ export function InstagramPreview({ account, text, mediaList }: PreviewProps) {
             alt={name}
             referrerPolicy="no-referrer"
             onError={handleAvatarError}
-            className="w-7 h-7 rounded-full object-cover border border-gray-200"
+            className="w-7 h-7 rounded-full object-cover border border-slate-200"
           />
           <span className="text-xs font-semibold text-slate-900">{name}</span>
         </div>
@@ -49,7 +49,7 @@ export function InstagramPreview({ account, text, mediaList }: PreviewProps) {
       </div>
 
       {/* Media Image/Video Container */}
-      <div className="bg-slate-50 relative overflow-hidden flex items-center justify-center min-h-[180px] aspect-square border-t border-b border-gray-100">
+      <div className="bg-slate-50 relative overflow-hidden flex items-center justify-center min-h-[180px] aspect-square border-t border-b border-slate-100">
         {mediaList.length > 0 ? (
           <img src={mediaList[0].path} alt="Post media" className="w-full h-full object-cover" />
         ) : (

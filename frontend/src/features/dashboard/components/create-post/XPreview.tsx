@@ -33,8 +33,7 @@ export function XPreview({ account, text, mediaList }: PreviewProps) {
   const displayText = shouldTruncate && !isExpanded ? text.slice(0, 200) + "..." : text;
 
   return (
-  return (
-    <div className="bg-background rounded-xl border border-gray-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
+    <div className="bg-background rounded-xl border border-slate-200 shadow-2xs overflow-hidden text-slate-900 font-sans">
       {/* Header */}
       <div className="flex items-start justify-between p-3 pb-2">
         <div className="flex items-center gap-2">
@@ -43,7 +42,7 @@ export function XPreview({ account, text, mediaList }: PreviewProps) {
             alt={name}
             referrerPolicy="no-referrer"
             onError={handleAvatarError}
-            className="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0"
+            className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
           />
           <div>
             <div className="flex items-center gap-1.5 text-xs">
@@ -83,13 +82,13 @@ export function XPreview({ account, text, mediaList }: PreviewProps) {
       {/* Media Box */}
       {mediaList.length > 0 ? (
         <div className="px-3 pb-2.5">
-          <div className="rounded-lg border border-gray-200 overflow-hidden bg-gray-100 relative max-h-60 flex items-center justify-center">
+          <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-100 relative max-h-60 flex items-center justify-center">
             <img src={mediaList[0].path} alt="Tweet media" className="w-full max-h-60 object-contain" />
           </div>
         </div>
       ) : (
         <div className="px-3 pb-2.5">
-          <div className="bg-slate-50 rounded-lg border border-gray-200/80 h-36 flex items-center justify-center">
+          <div className="bg-slate-50 rounded-lg border border-slate-200/80 h-36 flex items-center justify-center">
             <div className="w-20 h-20 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center relative bg-background/40">
               <svg className="w-10 h-10 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="8.5" cy="8.5" r="2.5" />
@@ -101,7 +100,7 @@ export function XPreview({ account, text, mediaList }: PreviewProps) {
       )}
 
       {/* X Action & Metrics Bar */}
-      <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-xs text-slate-400">
+      <div className="px-3 py-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
         <span className="flex items-center gap-1.5 hover:text-primary-500 cursor-pointer transition-colors">
           <MessageSquare className="w-3.5 h-3.5" /> 12
         </span>

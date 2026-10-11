@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "../../../lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative bg-background text-neutral-900 selection:bg-primary-100 selection:text-primary-900 antialiased flex items-center justify-center p-4">
+    <div className="min-h-screen w-full relative bg-background text-slate-900 selection:bg-primary-100 selection:text-primary-900 antialiased flex items-center justify-center p-4">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -50,13 +51,13 @@ export function ForgotPasswordPage() {
       />
 
       <div className="w-full max-w-sm relative z-10">
-        <div className="w-full bg-background rounded-2xl border border-gray-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
+        <div className="w-full bg-background rounded-2xl border border-slate-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
           <div className="text-center space-y-1 mb-6">
             <div className="flex justify-center mb-4">
               <img src="/Icon.png" alt="AutoSocial Icon" className="w-20 h-20 object-contain rounded-lg shadow-sm" />
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Forgot Password</h2>
-            <p className="text-sm text-neutral-500 font-normal">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Forgot Password</h2>
+            <p className="text-sm text-slate-500 font-normal">
               Enter your email address and we'll send you a link to reset your password.
             </p>
           </div>
@@ -65,7 +66,7 @@ export function ForgotPasswordPage() {
           
           {success ? (
             <div className="text-center space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
+              <div className="p-4 bg-accent border border-primary-200 rounded-xl text-sm text-primary-700">
                 Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.
               </div>
               <Button type="button" variant="outline" className="w-full" onClick={() => navigate("/login")}>
@@ -75,13 +76,14 @@ export function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Email</label>
-                <input
+                <label htmlFor="email" className="block text-[13px] font-semibold text-slate-700 mb-1.5">Email</label>
+                <Input
+                  id="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full px-3.5 py-2.5 bg-background border border-neutral-200 rounded-xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all shadow-2xs"
                   required
                 />
               </div>
@@ -96,8 +98,8 @@ export function ForgotPasswordPage() {
             </form>
           )}
 
-          <div className="pt-4 border-t border-neutral-100 text-center">
-            <Button type="button" variant="link" onClick={() => navigate("/login")} className="text-sm font-medium text-neutral-900 p-0 h-auto">
+          <div className="pt-4 border-t border-slate-100 text-center">
+            <Button type="button" variant="link" onClick={() => navigate("/login")} className="text-sm font-medium text-slate-900 p-0 h-auto">
               Back to Login
             </Button>
           </div>

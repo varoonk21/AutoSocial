@@ -367,7 +367,7 @@ export function MediaCard({
         className="hidden"
       />
 
-      <Card className="rounded-xl border border-gray-200 bg-background shadow-xs overflow-visible">
+      <Card className="rounded-xl border border-slate-200 bg-background shadow-xs overflow-visible">
         <CardContent className="p-4 space-y-3 overflow-visible">
           <div className="flex items-center justify-between">
             <div>
@@ -381,7 +381,7 @@ export function MediaCard({
                 variant="outline"
                 size="sm"
                 onClick={() => setAiModalOpen(true)}
-                className="h-8 px-2.5 border-gray-300 hover:bg-slate-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="h-8 px-2.5 border-slate-300 hover:bg-slate-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span>Generate with AI</span>
@@ -394,14 +394,14 @@ export function MediaCard({
                   variant="outline"
                   size="sm"
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="h-8 px-2.5 border-gray-300 hover:bg-gray-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="h-8 px-2.5 border-slate-300 hover:bg-slate-50 text-slate-800 font-medium text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Plus className="w-3.5 h-3.5 text-primary" />
                   <span>Add photo/video</span>
                 </Button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-background rounded-lg border border-gray-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-background rounded-lg border border-slate-200 shadow-md py-1 z-50 animate-in fade-in duration-150">
                     <button
                       type="button"
                       onClick={() => {
@@ -419,7 +419,7 @@ export function MediaCard({
                         setMenuOpen(false);
                         setMediaModalOpen(true);
                       }}
-                      className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-gray-100"
+                      className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-slate-100"
                     >
                       <Image className="w-4 h-4 text-slate-500" />
                       <span>Choose from media library</span>
@@ -473,8 +473,8 @@ export function MediaCard({
                       onDragEnter={() => handleDragEnter(idx)}
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => e.preventDefault()}
-                      className={`relative group shrink-0 w-20 h-20 rounded-lg border overflow-hidden bg-gray-100 transition-all cursor-grab active:cursor-grabbing ${
-                        isCover ? "border-primary ring-2 ring-primary/15" : "border-gray-200 hover:border-gray-300"
+                      className={`relative group shrink-0 w-20 h-20 rounded-lg border overflow-hidden bg-slate-100 transition-all cursor-grab active:cursor-grabbing ${
+                        isCover ? "border-primary ring-2 ring-primary/15" : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
                       {item.type === "video" ? (

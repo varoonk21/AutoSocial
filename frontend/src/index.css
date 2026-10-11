@@ -5,10 +5,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none !important;
-}
+/* Scrollbars are left visible (accessibility): hiding them removes the only
+   scroll affordance for keyboard and touch users. */
 
 /* ─── Global design tokens ──────────────────────────────────────────────────
    Core palette (the only brand colors in the app):

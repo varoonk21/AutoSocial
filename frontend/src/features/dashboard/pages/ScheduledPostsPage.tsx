@@ -6,9 +6,11 @@ import { PLATFORM_COLORS, STATUS_CONFIG } from "@/constants/platforms";
 import { queryKeys } from "../hooks/queryKeys";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
+import { Toast } from "@/components/ui/toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Select,
@@ -33,7 +35,8 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  MoreVertical,
+  Eye,
+  Trash2,
   LayoutGrid,
   CalendarDays,
 } from "lucide-react";
@@ -110,7 +113,7 @@ export function ScheduledPostsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // React Query hooks
-  const { data: postsData } = useQuery({
+  const { data: postsData, isLoading: postsLoading } = useQuery({
     queryKey: queryKeys.posts,
     queryFn: () => apiGet("/posts"),
   });
@@ -268,7 +271,7 @@ export function ScheduledPostsPage() {
   const renderCalendarView = () => {
     if (viewMode === "month") {
       return (
-        <Card className="border border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
           <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/70">
             {DAYS_OF_WEEK.map((day) => (
               <div key={day} className="py-3 text-center text-xs font-semibold text-slate-600">
@@ -276,7 +279,7 @@ export function ScheduledPostsPage() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 bg-slate-50/30">
+          <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 bg-slate-50/30">
             {calendarCells.map((cell, idx) => {
               const cellPosts = getPostsForDate(cell.date);
               const currentDay = isToday(cell.date);
@@ -330,7 +333,7 @@ export function ScheduledPostsPage() {
 
     if (viewMode === "week") {
       return (
-        <Card className="border border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
           <div className="flex border-b border-slate-200 bg-slate-50/80 sticky top-0 z-10">
             <div className="w-14 shrink-0" />
             {weekDays.map((day) => {
@@ -420,14 +423,7 @@ export function ScheduledPostsPage() {
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in ${
-          toast.type === "success" ? "bg-foreground" : "bg-red-600"
-        }`}>
-          {toast.type === "success" ? <CheckCircle2 className="w-4 h-4 text-primary-400" /> : <AlertCircle className="w-4 h-4" />}
-          <span>{toast.message}</span>
-        </div>
-      )}
+      {toast && <Toast kind={toast.type} message={toast.message} />}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
@@ -453,7 +449,7 @@ export function ScheduledPostsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Schedule</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Plan and manage your content calendar.</p>
+          <p className="text-sm text-slate-500 mt-1">Plan and manage your content calendar.</p>
         </div>
         <Button onClick={() => navigate("/dashboard/content/create")}>
           <Plus className="w-4 h-4" />
@@ -550,10 +546,16 @@ export function ScheduledPostsPage() {
         {/* Right: Sidebar */}
         <div className="space-y-6">
           {/* Monthly Overview */}
-          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-slate-900 text-sm">Monthly Overview</h3>
-              <span className="text-xs font-semibold text-slate-900 cursor-pointer hover:underline">View Analytics</span>
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard/analytics")}
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700 hover:underline"
+              >
+                View Analytics
+              </button>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-primary-50/60 border border-primary-100 p-3.5 rounded-xl flex items-center justify-between">
@@ -586,12 +588,12 @@ export function ScheduledPostsPage() {
                 </div>
               </div>
 
-              <div className="bg-rose-50/60 border border-rose-100 p-3.5 rounded-xl flex items-center justify-between">
+              <div className="bg-red-50/60 border border-red-100 p-3.5 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-extrabold text-rose-900">{failedCount}</div>
-                  <div className="text-[11px] font-medium text-rose-600 mt-0.5">Failed</div>
+                  <div className="text-xl font-extrabold text-red-900">{failedCount}</div>
+                  <div className="text-[11px] font-medium text-red-600 mt-0.5">Failed</div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
                   <AlertCircle className="w-4 h-4" />
                 </div>
               </div>
@@ -599,14 +601,30 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Upcoming Posts */}
-          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-slate-900 text-sm">Upcoming Posts</h3>
-              <span className="text-xs font-semibold text-slate-400">
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard/content/manage?tab=queue")}
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700 hover:underline"
+              >
                 View all
-              </span>
+              </button>
             </div>
-            {upcomingPosts.length === 0 ? (
+            {postsLoading ? (
+              <div className="space-y-3">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-2">
+                    <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-2.5 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : upcomingPosts.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-4">No upcoming posts scheduled.</p>
             ) : (
               <div className="space-y-3">
@@ -628,16 +646,33 @@ export function ScheduledPostsPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-slate-900 truncate">{post.content || "Scheduled Post"}</p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
                             {pubDate.toLocaleDateString([], { month: "short", day: "numeric" })} • {pubDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon-xs" onClick={() => handleDelete(post._id)}>
-                        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
-                      </Button>
+                      <div className="flex items-center shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Preview post"
+                          onClick={() => setPreviewPost(post)}
+                          className="size-10 text-slate-400 hover:text-slate-700"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Delete post"
+                          onClick={() => handleDelete(post._id)}
+                          className="size-10 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
@@ -646,14 +681,26 @@ export function ScheduledPostsPage() {
           </Card>
 
           {/* Recent Published */}
-          <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-5">
+          <Card className="border border-slate-200 shadow-sm rounded-xl bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-slate-900 text-sm">Recent Published</h3>
               <span className="text-xs font-semibold text-slate-400">
                 {publishedCount} total
               </span>
             </div>
-            {recentPublished.length === 0 ? (
+            {postsLoading ? (
+              <div className="space-y-3">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-2">
+                    <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-2.5 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentPublished.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-4">No published posts yet.</p>
             ) : (
               <div className="space-y-3">
@@ -675,7 +722,7 @@ export function ScheduledPostsPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-slate-900 truncate">{post.content || "Published Post"}</p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                           <PlatformIcon platform={platform} size={10} />
                           <span>
                             {pubDate.toLocaleDateString([], { month: "short", day: "numeric" })}

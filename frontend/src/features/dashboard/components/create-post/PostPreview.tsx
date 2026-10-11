@@ -29,10 +29,10 @@ export function PostPreview({
   const pConfig = PLATFORMS_CONFIG[activePlatformId] || PLATFORMS_CONFIG.facebook;
 
   return (
-    <Card className="rounded-xl border border-gray-200 bg-background shadow-xs">
+    <Card className="rounded-xl border border-slate-200 bg-background shadow-xs">
       <CardContent className="p-4 space-y-3">
         {/* Header Title & Desktop/Mobile Segmented Toggle */}
-        <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+        <div className="flex items-center justify-between pb-1 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-900 tracking-tight">
             {pConfig.name} Feed preview
           </h3>
@@ -55,7 +55,7 @@ export function PostPreview({
         </div>
 
         {/* Platform Tabs Selector Bar */}
-        <div className="flex items-center gap-4 border-b border-gray-100 pb-1 px-0.5 overflow-x-auto">
+        <div className="flex items-center gap-4 border-b border-slate-100 pb-1 px-0.5 overflow-x-auto">
           {Object.values(PLATFORMS_CONFIG).map((p) => {
             const isActive = activePlatformId === p.id;
             return (

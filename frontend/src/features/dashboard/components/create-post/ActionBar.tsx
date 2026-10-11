@@ -36,10 +36,11 @@ export function ActionBar({
                 variant="outline"
                 size="sm"
                 onClick={onOpenMobilePreview}
+                aria-label="Open post preview"
                 className="h-8 px-2.5 text-xs font-semibold text-slate-700 border-slate-300 hover:bg-slate-100 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Preview</span>
+                <span className="hidden sm:inline">Preview</span>
               </Button>
             )}
 
@@ -58,7 +59,7 @@ export function ActionBar({
               variant="outline"
               size="sm"
               onClick={onSaveDraft}
-              className="h-8 px-2.5 text-xs font-semibold text-gray-800 border-slate-300 hover:bg-slate-100 cursor-pointer rounded-xl"
+              className="h-8 px-2.5 text-xs font-semibold text-slate-800 border-slate-300 hover:bg-slate-100 cursor-pointer rounded-xl"
             >
               Finish later
             </Button>
@@ -70,7 +71,7 @@ export function ActionBar({
               disabled={!isValid || isSaving}
               className={`h-8 px-3.5 text-xs font-bold text-white shadow-md transition-all rounded-xl cursor-pointer ${
                 !isValid
-                  ? "bg-gray-300 text-slate-500 shadow-none cursor-not-allowed"
+                  ? "bg-slate-300 text-slate-500 shadow-none cursor-not-allowed"
                   : "bg-primary hover:bg-primary-hover active:scale-[0.98] shadow-primary/20"
               }`}
             >

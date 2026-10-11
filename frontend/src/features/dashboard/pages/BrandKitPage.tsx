@@ -6,6 +6,7 @@ import { useImageStore } from "@/store/imageStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -156,8 +157,90 @@ export function BrandKitPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full flex items-center justify-center py-20">
-        <div className="text-sm text-slate-500">Loading brand kit...</div>
+      <div className="w-full space-y-6 antialiased" aria-busy="true" aria-label="Loading brand kit">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-72 max-w-full" />
+          </div>
+          <Skeleton className="h-9 w-32 shrink-0" />
+        </div>
+
+        {/* Notice bar */}
+        <Skeleton className="h-11 w-full rounded-xl" />
+
+        {/* Two-column grid mirroring the real layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="space-y-4">
+            {/* Logo & Assets */}
+            <Card>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-28" />
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 gap-3">
+                  <Skeleton className="h-[120px] rounded-xl" />
+                  <Skeleton className="h-[120px] rounded-xl" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Brand Colors */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-20 rounded-lg" />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2.5">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-8 flex-1 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-4">
+            {/* Brand Fonts */}
+            <Card>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 gap-3">
+                  <Skeleton className="h-9 w-full rounded-lg" />
+                  <Skeleton className="h-9 w-full rounded-lg" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Brand Voice & Tone */}
+            <Card>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-36" />
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-7 w-20 rounded-md" />
+                  ))}
+                </div>
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-40" />
+                  <Skeleton className="h-16 w-full rounded-lg" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -370,9 +453,20 @@ export function BrandKitPage() {
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
               <div className="flex flex-wrap gap-2">
-                <ToggleGroup multiple value={selectedTones} onValueChange={(value) => setSelectedTones(value)} variant="outline" size="sm">
+                <ToggleGroup
+                  multiple
+                  value={selectedTones}
+                  onValueChange={(value) => setSelectedTones(value)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
                   {TONE_OPTIONS.map((tone) => (
-                    <ToggleGroupItem key={tone} value={tone}>
+                    <ToggleGroupItem
+                      key={tone}
+                      value={tone}
+                      className="data-[state=on]:bg-primary data-[state=on]:text-white data-[state=on]:border-primary data-[state=on]:shadow-sm data-[state=on]:hover:bg-primary/90 data-[state=on]:hover:text-white"
+                    >
                       {tone}
                     </ToggleGroupItem>
                   ))}

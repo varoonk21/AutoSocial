@@ -28,7 +28,7 @@ export function SignupPage() {
       }
 
       if (data) {
-        navigate("/dashboard");
+        navigate("/loading");
       }
     } catch {
       setError("An unexpected error occurred");

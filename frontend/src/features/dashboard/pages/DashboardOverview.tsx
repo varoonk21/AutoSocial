@@ -9,6 +9,7 @@ import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, Trending
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
+import { useIntegrations } from "../hooks/useIntegrationQueries";
 
 interface Stats {
   postsThisMonth: number;
@@ -42,6 +43,7 @@ export function DashboardOverview() {
   const navigate = useNavigate();
   const { data: session } = useSession();
   const getImageUrl = useImageStore((state) => state.getImageUrl);
+  const { data: integrationsData, isLoading: integrationsLoading } = useIntegrations();
   const [posts, setPosts] = useState<MappedPost[]>([]);
   const [stats, setStats] = useState<Stats>({
     postsThisMonth: 0,
@@ -52,16 +54,39 @@ export function DashboardOverview() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState(false);
-  const [pages, setPages] = useState<PageInfo[]>([]);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [covers, setCovers] = useState<Record<string, string>>({});
 
+  const pages = (integrationsData?.integrations || []) as PageInfo[];
+  const activePage = pages[activePageIndex] || pages[0];
+
   useEffect(() => {
     loadStats();
     loadPosts();
-    loadPages();
   }, []);
+
+  useEffect(() => {
+    if (!integrationsLoading && pages.length > 0) {
+      const fbPages = pages.filter((i) => i.platform === "facebook");
+      const coverMap: Record<string, string> = {};
+      Promise.all(
+        fbPages.map(async (p) => {
+          try {
+            const coverData = await apiGet(`/integrations/${p.id}/cover`);
+            if (coverData?.cover) coverMap[p.id] = coverData.cover;
+          } catch (err) {
+            console.warn(`[dashboard] cover fetch failed for integration ${p.id}:`, err);
+          }
+        })
+      ).then(() => {
+        setCovers(coverMap);
+        if (pages[0] && coverMap[pages[0].id]) {
+          setCoverUrl(coverMap[pages[0].id]);
+        }
+      });
+    }
+  }, [integrationsLoading, pages]);
 
   async function loadStats() {
     try {
@@ -117,40 +142,6 @@ export function DashboardOverview() {
       setPostsLoading(false);
     }
   }
-
-  async function loadPages() {
-    try {
-      const data = await apiGet("/integrations/list");
-      const integrations: PageInfo[] = data.integrations || [];
-      // Show all connected pages (Facebook, Instagram, etc.)
-      const displayPages = integrations;
-      setPages(displayPages);
-      setActivePageIndex(0);
-
-      // Fetch cover photos for Facebook pages (others use the gradient fallback)
-      const fbPages = integrations.filter((i) => i.platform === "facebook");
-      const coverMap: Record<string, string> = {};
-      await Promise.all(
-        fbPages.map(async (p) => {
-          try {
-            const coverData = await apiGet(`/integrations/${p.id}/cover`);
-            if (coverData?.cover) coverMap[p.id] = coverData.cover;
-          } catch (err) {
-            // Cover stays unset -> gradient fallback
-            console.warn(`[dashboard] cover fetch failed for integration ${p.id}:`, err);
-          }
-        })
-      );
-      setCovers(coverMap);
-      if (displayPages[0] && coverMap[displayPages[0].id]) {
-        setCoverUrl(coverMap[displayPages[0].id]);
-      }
-    } catch {
-      // Pages stay empty
-    }
-  }
-
-  const activePage = pages[activePageIndex] || pages[0];
 
   return (
     <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-8 max-w-[1400px] mx-auto space-y-8">

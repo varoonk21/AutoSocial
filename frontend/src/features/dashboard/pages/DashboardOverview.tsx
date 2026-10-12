@@ -336,7 +336,7 @@ export function DashboardOverview() {
               posts.map((post) => {
                 const statusConf = STATUS_CONFIG[post.status] || STATUS_CONFIG.DRAFT;
                 return (
-                  <div key={post.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
+                  <div key={post.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
                     <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                       {post.image ? (
                         <img src={post.image} alt="" className="w-full h-full object-cover" />

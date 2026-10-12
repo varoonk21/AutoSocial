@@ -239,7 +239,8 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
 
               return (
                 <div key={post._id} className="p-5 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-start gap-4 min-w-0">
                     {/* Media Thumbnail */}
                     <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80">
                       {mediaUrl ? (
@@ -274,9 +275,10 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
                         </span>
                       </div>
                     </div>
+                    </div>
 
                     {/* Actions & Timestamp */}
-                    <div className="flex items-center gap-4 shrink-0">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:justify-end">
                       {publishDate && (
                         <div className="text-xs text-slate-400 flex items-center gap-1 whitespace-nowrap">
                           <Calendar className="w-3.5 h-3.5" />

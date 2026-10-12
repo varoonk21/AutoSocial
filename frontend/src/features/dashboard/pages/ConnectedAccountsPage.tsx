@@ -132,7 +132,7 @@ export function ConnectedAccountsPage() {
       ) : (
         <div className="bg-background rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-soft">
           {integrations.map((integration) => (
-            <div key={integration.id} className="flex items-center gap-4 px-6 py-4">
+            <div key={integration.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-4">
               <img
                 src={integration.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(integration.name)}&background=e2e8f0&color=64748b`}
                 alt={integration.name}

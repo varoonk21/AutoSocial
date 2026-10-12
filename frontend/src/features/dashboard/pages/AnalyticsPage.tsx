@@ -193,7 +193,8 @@ export function AnalyticsPage() {
           <div className="bg-background rounded-xl border border-slate-200 p-6 shadow-soft">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Posts Over Time</h3>
             {data.monthlyPosts.length > 0 ? (
-              <div className="flex items-end gap-3 h-48">
+              <div className="overflow-x-auto">
+              <div className="flex items-end gap-3 h-48 min-w-[480px]">
                 {data.monthlyPosts.map((entry) => {
                   const height = (entry.count / maxMonthly) * 100;
                   const years = new Set(data.monthlyPosts.map((m) => m._id.year));
@@ -215,6 +216,7 @@ export function AnalyticsPage() {
                     </div>
                   );
                 })}
+              </div>
               </div>
             ) : (
               <div className="h-48 flex items-center justify-center text-slate-400 text-sm">

@@ -277,6 +277,8 @@ export function ScheduledPostsPage() {
     if (viewMode === "month") {
       return (
         <Card className="border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
+          <div className="overflow-x-auto">
+            <div className="min-w-[640px]">
           <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/70">
             {DAYS_OF_WEEK.map((day) => (
               <div key={day} className="py-3 text-center text-xs font-semibold text-slate-600">
@@ -332,6 +334,8 @@ export function ScheduledPostsPage() {
               );
             })}
           </div>
+            </div>
+          </div>
         </Card>
       );
     }
@@ -339,6 +343,8 @@ export function ScheduledPostsPage() {
     if (viewMode === "week") {
       return (
         <Card className="border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
+          <div className="overflow-x-auto">
+            <div className="min-w-[720px]">
           <div className="flex border-b border-slate-200 bg-slate-50/80 sticky top-0 z-10">
             <div className="w-14 shrink-0" />
             {weekDays.map((day) => {
@@ -417,6 +423,8 @@ export function ScheduledPostsPage() {
                 </div>
               );
             })}
+          </div>
+            </div>
           </div>
         </Card>
       );

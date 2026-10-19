@@ -1,0 +1,76 @@
+/* Apple-style interaction layer for the dashboard.
+   Principles: instant press feedback, translucent materials, spring-like easing,
+   and full prefers-reduced-motion / transparency / contrast support. */
+
+/* 1. Response — feedback on pointer-down, not on release */
+.apple-press {
+  transition: transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.apple-press:active {
+  transform: scale(0.96);
+}
+
+/* Softer press for large surfaces (cards, rows) */
+.apple-press-soft {
+  transition: transform 140ms cubic-bezier(0.32, 0.72, 0, 1), background-color 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.apple-press-soft:active {
+  transform: scale(0.99);
+}
+
+/* 2. Hover lift — subtle, physical */
+.apple-lift {
+  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 200ms ease;
+}
+.apple-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgba(15, 23, 42, 0.12), 0 2px 6px -2px rgba(15, 23, 42, 0.06);
+}
+
+/* 3. Translucent material — floating layer, content scrolls underneath.
+   Bright top edge = light catching the material. */
+.glass-bar {
+  background: rgba(255, 255, 255, 0.68);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 8px 28px -6px rgba(15, 23, 42, 0.18),
+    0 2px 8px -2px rgba(15, 23, 42, 0.08);
+}
+
+/* 4. Reduced motion — cross-fade equivalents, no springs/slides */
+@media (prefers-reduced-motion: reduce) {
+  .apple-press,
+  .apple-press-soft,
+  .apple-lift {
+    transition: none;
+  }
+  .apple-press:active,
+  .apple-press-soft:active {
+    transform: none;
+  }
+  .apple-lift:hover {
+    transform: none;
+  }
+}
+
+/* 5. Reduced transparency — frostier, near-solid materials */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-bar {
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* 6. High contrast — defined borders on surfaces */
+@media (prefers-contrast: more) {
+  .glass-bar {
+    background: #ffffff;
+    border: 1.5px solid #0f172a;
+  }
+}

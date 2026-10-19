@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
@@ -10,6 +10,8 @@ import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
 import { useIntegrations, useIntegrationCover } from "../hooks/useIntegrationQueries";
 import { usePosts, usePostsStats } from "../hooks/usePostQueries";
+import { useSpring } from "@/hooks/useSpring";
+import "./dashboard-apple.css";
 
 interface Stats {
   postsThisMonth: number;
@@ -39,6 +41,38 @@ interface PageInfo {
   targetId: string;
 }
 
+/**
+ * Staggered spring entrance. Sections fade + rise with a critically damped
+ * spring (no overshoot) instead of blinking in. Interruptible by construction;
+ * instant under prefers-reduced-motion (the hook snaps to the target).
+ */
+function Reveal({ children, delay = 0, distance = 18 }: { children: React.ReactNode; delay?: number; distance?: number }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setOn(true), delay * 1000);
+    return () => window.clearTimeout(t);
+  }, [delay]);
+  const v = useSpring(on ? 1 : 0, { damping: 1, response: 0.5 });
+  if (v <= 0.001 && !on) return <div style={{ opacity: 0 }}>{children}</div>;
+  return (
+    <div
+      style={{
+        opacity: v,
+        transform: `translateY(${(1 - v) * distance}px)`,
+        willChange: "transform, opacity",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Stat numbers glide to their value on a spring instead of popping in. */
+function CountUp({ value }: { value: number }) {
+  const v = useSpring(value, { damping: 1, response: 0.7 });
+  return <>{Math.round(v)}</>;
+}
+
 export function DashboardOverview() {
   const navigate = useNavigate();
   const { data: session } = useSession();
@@ -47,6 +81,8 @@ export function DashboardOverview() {
   const { data: postsData, isLoading: postsLoading, isError: postsError, refetch: refetchPosts } = usePosts();
   const { data: statsData, isLoading: statsLoading } = usePostsStats();
   const [activePageIndex, setActivePageIndex] = useState(0);
+  const [pastCover, setPastCover] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const pages = (integrationsData?.integrations || []) as PageInfo[];
   const activePage = pages[activePageIndex] || pages[0];
@@ -55,6 +91,25 @@ export function DashboardOverview() {
     activePage?.platform === "facebook" ? activePage.id : undefined
   );
   const coverUrl = coverData?.cover || null;
+
+  // Floating glass bar: materializes once the cover scrolls away.
+  // Listens to the layout's scroll container (<main>), not window.
+  useEffect(() => {
+    const scroller = rootRef.current?.closest("main");
+    if (!scroller) return;
+    const onScroll = () => setPastCover(scroller.scrollTop > 220);
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, []);
+  const barV = useSpring(pastCover ? 1 : 0, { damping: 1, response: 0.32 });
+
+  const avatarSrc = activePage?.avatar
+    ? activePage.avatar
+    : session?.user?.image
+      ? getImageUrl(session.user.image)
+      : undefined;
+  const displayName = activePage?.name || session?.user?.name || "Your Workspace";
 
   const posts: MappedPost[] = (postsData?.posts || [])
     .filter((p: any) => p.state !== "DRAFT")
@@ -91,8 +146,36 @@ export function DashboardOverview() {
   };
 
   return (
-    <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-8 max-w-[1400px] mx-auto space-y-8">
+    <div ref={rootRef} className="px-4 sm:px-10 pt-6 sm:pt-8 pb-8 max-w-[1400px] mx-auto space-y-8">
+      {/* Floating glass bar — a translucent material layer; content scrolls underneath */}
+      <div className="fixed inset-x-0 top-[68px] lg:top-4 z-30 flex justify-center px-4 pointer-events-none">
+        <div
+          className="glass-bar flex items-center gap-3 pl-2 pr-2 py-1.5 rounded-full"
+          style={{
+            opacity: barV,
+            transform: `translateY(${(1 - barV) * -14}px) scale(${0.94 + barV * 0.06})`,
+            pointerEvents: barV > 0.5 ? "auto" : "none",
+            visibility: barV <= 0.01 ? "hidden" : "visible",
+          }}
+        >
+          <Avatar className="size-8">
+            <AvatarImage src={avatarSrc} alt={displayName} />
+            <AvatarFallback className="bg-primary-50 text-primary-700">
+              <UserIcon className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-semibold text-slate-900 tracking-[-0.01em] max-w-[180px] truncate">
+            {displayName}
+          </span>
+          <Button size="sm" className="rounded-full apple-press" onClick={() => navigate("/dashboard/content/create")}>
+            <Plus className="w-4 h-4" />
+            Create
+          </Button>
+        </div>
+      </div>
+
       {/* Cover banner */}
+      <Reveal distance={12}>
       <div className="relative rounded-2xl overflow-hidden">
         {coverUrl ? (
           <img src={coverUrl} alt="Page cover" className="h-48 w-full object-cover" />
@@ -106,22 +189,18 @@ export function DashboardOverview() {
         )}
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/25 to-transparent" />
       </div>
+      </Reveal>
 
       {/* Page card overlapping the cover */}
+      <Reveal delay={0.06}>
       <div className="-mt-16 relative rounded-xl border border-slate-200 bg-white shadow-soft p-6">
           <div className="flex flex-wrap items-center gap-5">
             {/* Active page avatar with platform badge */}
             <div className="relative shrink-0">
               <Avatar className="size-20 ring-4 ring-slate-200 shadow-md">
                 <AvatarImage
-                  src={
-                    activePage?.avatar
-                      ? activePage.avatar
-                      : session?.user?.image
-                        ? getImageUrl(session.user.image)
-                        : undefined
-                  }
-                  alt={activePage?.name || session?.user?.name || "Page"}
+                  src={avatarSrc}
+                  alt={displayName}
                 />
                 <AvatarFallback className="bg-primary-50 text-primary-700">
                   <UserIcon className="w-8 h-8" />
@@ -135,8 +214,8 @@ export function DashboardOverview() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
-                {activePage?.name || session?.user?.name || "Your Workspace"}
+              <h1 className="text-xl font-bold text-slate-900 tracking-[-0.015em] truncate">
+                {displayName}
               </h1>
               <p className="text-sm text-slate-500 mt-1">
                 {activePage
@@ -153,7 +232,7 @@ export function DashboardOverview() {
                         setActivePageIndex(idx);
                       }}
                       title={p.name}
-                      className={`relative rounded-full transition-all ${
+                      className={`apple-press relative rounded-full transition-all ${
                         idx === activePageIndex
                           ? "ring-2 ring-primary-600 ring-offset-2"
                           : "opacity-60 hover:opacity-100"
@@ -175,29 +254,31 @@ export function DashboardOverview() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <Button size="lg" onClick={() => navigate("/dashboard/content/create")}>
+              <Button size="lg" className="apple-press" onClick={() => navigate("/dashboard/content/create")}>
                 <Plus className="w-4 h-4" />
                 Create Post
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/dashboard/analytics")}>
+              <Button size="lg" variant="outline" className="apple-press" onClick={() => navigate("/dashboard/analytics")}>
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/dashboard/content/manage")}>
+              <Button size="lg" variant="outline" className="apple-press" onClick={() => navigate("/dashboard/content/manage")}>
                 <FolderKanban className="w-4 h-4" />
                 Manage Content
               </Button>
             </div>
           </div>
         </div>
+      </Reveal>
 
         {/* Minimal insights */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+          <Reveal delay={0.12}>
+          <div className="apple-lift rounded-xl border border-slate-200 bg-white px-5 py-4 h-full">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Posts this month</p>
             <div className="mt-1.5 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">
-                {statsLoading ? "—" : stats.postsThisMonth}
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">
+                {statsLoading ? "—" : <CountUp value={stats.postsThisMonth} />}
               </span>
               {!statsLoading && stats.postsChange !== 0 && (
                 <span className={`inline-flex items-center gap-1 text-xs font-semibold ${stats.postsChange > 0 ? "text-primary-600" : "text-red-600"}`}>
@@ -208,16 +289,18 @@ export function DashboardOverview() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+          </Reveal>
+          <Reveal delay={0.18}>
+          <div className="apple-lift rounded-xl border border-slate-200 bg-white px-5 py-4 h-full">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">By platform</p>
             <div className="mt-2 flex items-center gap-3">
               {statsLoading ? (
                 <span className="text-2xl font-bold text-slate-900">—</span>
               ) : Object.keys(stats.postsByPlatform).length > 0 ? (
                 Object.entries(stats.postsByPlatform).map(([platform, count]) => (
-                  <span key={platform} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                  <span key={platform} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 tabular-nums">
                     <PlatformIcon platform={platform} size={14} />
-                    {count}
+                    <CountUp value={count} />
                   </span>
                 ))
               ) : (
@@ -226,22 +309,26 @@ export function DashboardOverview() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+          </Reveal>
+          <Reveal delay={0.24}>
+          <div className="apple-lift rounded-xl border border-slate-200 bg-white px-5 py-4 h-full">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Upcoming</p>
             <div className="mt-1.5 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">
-                {statsLoading ? "—" : stats.upcomingPosts}
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">
+                {statsLoading ? "—" : <CountUp value={stats.upcomingPosts} />}
               </span>
               <span className="text-xs text-slate-500">next 7 days</span>
             </div>
           </div>
+          </Reveal>
         </div>
 
         {/* Recent activity */}
+        <Reveal delay={0.3}>
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-900">Recent Activity</h2>
-            <Button variant="link" size="sm" onClick={() => navigate("/dashboard/content/manage")}>
+            <h2 className="text-base font-bold text-slate-900 tracking-[-0.01em]">Recent Activity</h2>
+            <Button variant="link" size="sm" className="apple-press" onClick={() => navigate("/dashboard/content/manage")}>
               View All
             </Button>
           </div>
@@ -262,18 +349,18 @@ export function DashboardOverview() {
             ) : postsError ? (
               <div className="px-6 py-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">Couldn't load recent activity. Please check your connection and try again.</p>
-                <Button size="sm" variant="outline" onClick={() => refetchPosts()}>Retry</Button>
+                <Button size="sm" variant="outline" className="apple-press" onClick={() => refetchPosts()}>Retry</Button>
               </div>
             ) : posts.length === 0 ? (
               <div className="px-6 py-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">No posts yet. Published and scheduled posts will appear here.</p>
-                <Button size="sm" onClick={() => navigate("/dashboard/content/create")}>Create your first post</Button>
+                <Button size="sm" className="apple-press" onClick={() => navigate("/dashboard/content/create")}>Create your first post</Button>
               </div>
             ) : (
               posts.map((post) => {
                 const statusConf = STATUS_CONFIG[post.status] || STATUS_CONFIG.DRAFT;
                 return (
-                  <div key={post.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
+                  <div key={post.id} className="apple-press-soft flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3.5 hover:bg-slate-50/60">
                     <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                       {post.image ? (
                         <img src={post.image} alt="" className="w-full h-full object-cover" />
@@ -293,7 +380,7 @@ export function DashboardOverview() {
                         href={post.releaseURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors shrink-0"
+                        className="apple-press inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 shrink-0"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View
@@ -305,6 +392,7 @@ export function DashboardOverview() {
             )}
           </div>
         </div>
+        </Reveal>
     </div>
   );
 }

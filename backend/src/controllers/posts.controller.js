@@ -50,7 +50,8 @@ async function createPost(req, res) {
       return res.status(400).json({ error: 'At least one post is required' });
     }
 
-    const publishDate = type === 'now' ? new Date() : (date ? new Date(date) : null);
+    const parsedDate = date ? new Date(date) : null;
+    const publishDate = type === 'now' ? new Date() : (parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : null);
     if (type !== 'draft' && !publishDate) {
       return res.status(400).json({ error: 'A publish date is required for scheduled posts' });
     }

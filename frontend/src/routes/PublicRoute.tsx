@@ -1,8 +1,15 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSession } from "@/lib/auth-client";
 
 export function PublicRoute() {
   const { data: session, isPending } = useSession();
+  const location = useLocation();
+
+  const isPreloading = location.pathname === "/loading";
+
+  if (isPreloading) {
+    return <Outlet />;
+  }
 
   if (isPending) {
     return (

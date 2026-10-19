@@ -5,7 +5,7 @@ import { queryKeys } from './queryKeys'
 export function useMedia(params: Record<string, string> = {}) {
   const query = new URLSearchParams(params).toString()
   return useQuery({
-    queryKey: [...queryKeys.media, params],
+    queryKey: queryKeys.mediaList(params),
     queryFn: () => apiGetPaginated(`/media${query ? `?${query}` : ''}`),
   })
 }

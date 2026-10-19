@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiGet } from "../../../lib/fetcher";
 import { STATUS_CONFIG, PLATFORM_LABELS } from "../../../constants/platforms";
 import { PlatformIcon } from "../components/PlatformIcon";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,8 @@ import { ExternalLink, Plus, BarChart3, FolderKanban, User as UserIcon, Trending
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
 import { useImageStore } from "@/store/imageStore";
-import { useIntegrations } from "../hooks/useIntegrationQueries";
+import { useIntegrations, useIntegrationCover } from "../hooks/useIntegrationQueries";
+import { usePosts, usePostsStats } from "../hooks/usePostQueries";
 
 interface Stats {
   postsThisMonth: number;
@@ -43,105 +43,52 @@ export function DashboardOverview() {
   const navigate = useNavigate();
   const { data: session } = useSession();
   const getImageUrl = useImageStore((state) => state.getImageUrl);
-  const { data: integrationsData, isLoading: integrationsLoading } = useIntegrations();
-  const [posts, setPosts] = useState<MappedPost[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    postsThisMonth: 0,
-    postsChange: 0,
-    upcomingPosts: 0,
-    postsByPlatform: {},
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [postsLoading, setPostsLoading] = useState(true);
-  const [postsError, setPostsError] = useState(false);
-  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const { data: integrationsData } = useIntegrations();
+  const { data: postsData, isLoading: postsLoading, isError: postsError, refetch: refetchPosts } = usePosts();
+  const { data: statsData, isLoading: statsLoading } = usePostsStats();
   const [activePageIndex, setActivePageIndex] = useState(0);
-  const [covers, setCovers] = useState<Record<string, string>>({});
 
   const pages = (integrationsData?.integrations || []) as PageInfo[];
   const activePage = pages[activePageIndex] || pages[0];
 
-  useEffect(() => {
-    loadStats();
-    loadPosts();
-  }, []);
+  const { data: coverData } = useIntegrationCover(
+    activePage?.platform === "facebook" ? activePage.id : undefined
+  );
+  const coverUrl = coverData?.cover || null;
 
-  useEffect(() => {
-    if (!integrationsLoading && pages.length > 0) {
-      const fbPages = pages.filter((i) => i.platform === "facebook");
-      const coverMap: Record<string, string> = {};
-      Promise.all(
-        fbPages.map(async (p) => {
-          try {
-            const coverData = await apiGet(`/integrations/${p.id}/cover`);
-            if (coverData?.cover) coverMap[p.id] = coverData.cover;
-          } catch (err) {
-            console.warn(`[dashboard] cover fetch failed for integration ${p.id}:`, err);
-          }
-        })
-      ).then(() => {
-        setCovers(coverMap);
-        if (pages[0] && coverMap[pages[0].id]) {
-          setCoverUrl(coverMap[pages[0].id]);
-        }
-      });
-    }
-  }, [integrationsLoading, pages]);
+  const posts: MappedPost[] = (postsData?.posts || [])
+    .filter((p: any) => p.state !== "DRAFT")
+    .sort((a: any, b: any) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+    .slice(0, 10)
+    .map((p: any) => {
+      let imageUrl: string | null = null;
+      try {
+        const mediaItems = JSON.parse(p.image || "[]");
+        const first = mediaItems[0];
+        if (first) imageUrl = typeof first === "string" ? first : first?.path || null;
+      } catch { /* ignore */ }
+      return {
+        id: p._id,
+        content: p.content?.slice(0, 60) + (p.content?.length > 60 ? "..." : ""),
+        campaign: "",
+        platform: p.integrationId?.providerIdentifier || p.platform || null,
+        platformLabel:
+          PLATFORM_LABELS[p.integrationId?.providerIdentifier] ||
+          PLATFORM_LABELS[p.platform] ||
+          "—",
+        status: p.state,
+        date: new Date(p.publishDate).toLocaleString(),
+        image: imageUrl,
+        releaseURL: p.releaseURL || null,
+      };
+    });
 
-  async function loadStats() {
-    try {
-      setStatsLoading(true);
-      const data = await apiGet("/posts/stats");
-      setStats(data);
-    } catch {
-      // Stats will remain at defaults
-    } finally {
-      setStatsLoading(false);
-    }
-  }
-
-  async function loadPosts() {
-    try {
-      setPostsLoading(true);
-      setPostsError(false);
-      const data = await apiGet("/posts");
-      if (data.posts && data.posts.length > 0) {
-        const sorted = data.posts
-          .filter((p: any) => p.state !== "DRAFT")
-          .sort((a: any, b: any) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
-        const mapped = sorted.slice(0, 10).map((p: any) => {
-          let imageUrl: string | null = null;
-          try {
-            const mediaItems = JSON.parse(p.image || "[]");
-            const first = mediaItems[0];
-            if (first) imageUrl = typeof first === "string" ? first : first?.path || null;
-          } catch { /* ignore */ }
-          return {
-            id: p._id,
-            content: p.content?.slice(0, 60) + (p.content?.length > 60 ? "..." : ""),
-            campaign: "",
-            platform: p.integrationId?.providerIdentifier || p.platform || null,
-            platformLabel:
-              PLATFORM_LABELS[p.integrationId?.providerIdentifier] ||
-              PLATFORM_LABELS[p.platform] ||
-              "—",
-            status: p.state,
-            date: new Date(p.publishDate).toLocaleString(),
-            image: imageUrl,
-            releaseURL: p.releaseURL || null,
-          };
-        });
-        setPosts(mapped);
-      } else {
-        setPosts([]);
-      }
-    } catch {
-      setPosts([]);
-      setPostsError(true);
-    } finally {
-      setPostsLoading(false);
-    }
-  }
+  const stats: Stats = statsData || {
+    postsThisMonth: 0,
+    postsChange: 0,
+    upcomingPosts: 0,
+    postsByPlatform: {},
+  };
 
   return (
     <div className="px-4 sm:px-10 pt-6 sm:pt-8 pb-8 max-w-[1400px] mx-auto space-y-8">
@@ -204,7 +151,6 @@ export function DashboardOverview() {
                       type="button"
                       onClick={() => {
                         setActivePageIndex(idx);
-                        setCoverUrl(covers[p.id] || null);
                       }}
                       title={p.name}
                       className={`relative rounded-full transition-all ${
@@ -316,7 +262,7 @@ export function DashboardOverview() {
             ) : postsError ? (
               <div className="px-6 py-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">Couldn't load recent activity. Please check your connection and try again.</p>
-                <Button size="sm" variant="outline" onClick={loadPosts}>Retry</Button>
+                <Button size="sm" variant="outline" onClick={() => refetchPosts()}>Retry</Button>
               </div>
             ) : posts.length === 0 ? (
               <div className="px-6 py-10 text-center">

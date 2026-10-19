@@ -9,6 +9,14 @@ export function useIntegrations() {
   })
 }
 
+export function useIntegrationCover(id?: string) {
+  return useQuery({
+    queryKey: queryKeys.integrationCover(id ?? ''),
+    queryFn: () => apiGet<{ cover?: string }>(`/integrations/${id}/cover`),
+    enabled: !!id,
+  })
+}
+
 export function useDeleteIntegration() {
   const queryClient = useQueryClient()
 

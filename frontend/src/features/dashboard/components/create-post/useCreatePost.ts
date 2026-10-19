@@ -402,6 +402,13 @@ export function useCreatePost() {
         }
         showToast("success", "Draft saved successfully!");
       } else {
+        const scheduledAt = isScheduleOn ? new Date(`${scheduleDate}T${scheduleTime}:00`) : null;
+        if (scheduledAt && Number.isNaN(scheduledAt.getTime())) {
+          showToast("error", "Please specify a valid date and time for scheduling.");
+          setIsSaving(false);
+          return;
+        }
+
         const posts = selectedAccountIds.map((integrationId) => ({
           integrationId,
           content: fullContent,
@@ -409,13 +416,14 @@ export function useCreatePost() {
             isAdPost,
             privacySetting,
             shareToPlacements,
-            scheduledFor: isScheduleOn ? `${scheduleDate}T${scheduleTime}:00` : undefined,
+            scheduledFor: scheduledAt ? scheduledAt.toISOString() : undefined,
           },
           media: mediaPayload,
         }));
 
         await apiPost("/posts", {
           type: isScheduleOn ? "schedule" : "now",
+          date: scheduledAt ? scheduledAt.toISOString() : undefined,
           posts,
         });
 

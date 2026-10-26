@@ -16,11 +16,8 @@ import {
   Plus,
   X,
   Check,
-  ChevronLeft,
-  ChevronRight,
   ImagePlus,
   Pencil,
-  Save,
   User as UserIcon,
 } from "lucide-react";
 import { apiGetPaginated, apiPost, apiPut, apiDelete } from "../../../lib/fetcher";
@@ -62,6 +59,8 @@ export function MediaLibraryPage() {
   const [stats, setStats] = useState({ total: 0, images: 0, videos: 0, ai: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [mediaLoading, setMediaLoading] = useState(true);
+  const [mediaError, setMediaError] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Modals & Interactivity
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -72,6 +71,7 @@ export function MediaLibraryPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [toastKind, setToastKind] = useState<"success" | "error">("success");
   const [durations, setDurations] = useState<Record<string, string>>({});
 
   const handleVideoMetadata = (id: string) => (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -88,29 +88,34 @@ export function MediaLibraryPage() {
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
 
-  // Load from backend & listen to Header custom actions
+  // Runs on mount and whenever filters/search/sort/page change
   useEffect(() => {
     fetchBackendMedia();
+  }, [typeFilter, sourceFilter, debouncedSearch, sortBy, currentPage]);
 
-    const handleHeaderAction = (e) => {
-      if (e.detail?.action === "upload-media") {
-        fileInputRef.current?.click();
-      } else if (e.detail?.action === "ai-generator") {
-        setAiModalOpen(true);
-      }
-    };
-
-    window.addEventListener("header-action", handleHeaderAction);
-    return () => window.removeEventListener("header-action", handleHeaderAction);
-  }, []);
-
+  // Reset to page 1 whenever the result set changes, so a filter applied
+  // from page 3 doesn't land on an empty page 3 of the new results
   useEffect(() => {
-    fetchBackendMedia();
-  }, [typeFilter, sourceFilter, searchQuery, sortBy, currentPage]);
+    setCurrentPage(1);
+  }, [typeFilter, sourceFilter, debouncedSearch, sortBy]);
+
+  // Close the 3-dot menu on outside click
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const close = () => setMenuOpenId(null);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [menuOpenId]);
 
   useEffect(() => {
     fetchStats();
   }, []);
+
+  // Debounce search so typing doesn't fire one request per keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   const fetchStats = async () => {
     try {
@@ -137,13 +142,14 @@ export function MediaLibraryPage() {
   const fetchBackendMedia = async () => {
     try {
       setMediaLoading(true);
+      setMediaError(false);
       const params = new URLSearchParams();
       if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
       if (sourceFilter && sourceFilter !== "all") params.append("source", sourceFilter);
-      if (searchQuery) params.append("search", searchQuery);
+      if (debouncedSearch) params.append("search", debouncedSearch);
       params.append("page", currentPage.toString());
 
-      if (sortBy === "recent" || sortBy === "newest") params.append("sort", "createdAt:desc");
+      if (sortBy === "recent") params.append("sort", "createdAt:desc");
       else if (sortBy === "oldest") params.append("sort", "createdAt:asc");
       else if (sortBy === "name-asc" || sortBy === "name") params.append("sort", "originalName:asc");
       else if (sortBy === "name-desc") params.append("sort", "originalName:desc");
@@ -152,20 +158,25 @@ export function MediaLibraryPage() {
       const { items, meta } = await apiGetPaginated(`/media${queryString ? `?${queryString}` : ""}`);
 
       if (items) {
-        const backendItems = items.map((item) => ({
-          _id: item._id,
-          name: item.originalName || item.name || "uploaded-file.jpg",
-          type: item.type === "video" ? "video" : "image",
-          badge: item.type === "video" ? "VIDEO" : "IMAGE",
-          path: item.path,
-          size: item.fileSize ? `${(item.fileSize / 1024 / 1024).toFixed(1)} MB` : "0 MB",
-          date: new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          source: item.source || "user",
-        }));
+        const backendItems = items.map((item) => {
+          const type = item.type === "video" ? "video" : item.type === "document" ? "document" : "image";
+          return {
+            _id: item._id,
+            name: item.originalName || item.name || "uploaded-file.jpg",
+            type,
+            badge: type.toUpperCase(),
+            docType: type === "document" ? "PDF" : undefined,
+            path: item.path,
+            size: item.fileSize ? `${(item.fileSize / 1024 / 1024).toFixed(1)} MB` : "0 MB",
+            date: new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+            source: item.source || "user",
+          };
+        });
         setMediaList(backendItems);
         setPaginationMeta(meta);
       }
     } catch (e) {
+      setMediaError(true);
     } finally {
       setMediaLoading(false);
     }
@@ -173,34 +184,33 @@ export function MediaLibraryPage() {
 
   const handleFileUpload = async (files) => {
     if (!files || !files.length) return;
-    try {
-      const newItems = [];
-      for (const file of Array.from(files)) {
-        const isVid = file.type.startsWith("video");
-        const isPdf = file.type.includes("pdf");
-
-        let fileUrl = URL.createObjectURL(file);
-        try {
-          const media = await upload(file);
-          if (media?.path) fileUrl = media.path;
-        } catch (e) {}
-
+    const newItems = [];
+    let failed = 0;
+    for (const file of Array.from(files)) {
+      try {
+        const media = await upload(file);
+        if (!media?._id) throw new Error("Upload returned no record");
+        const type = media.type === "video" ? "video" : "image";
         newItems.push({
-          _id: String(Date.now() + Math.random()),
-          name: file.name,
-          type: isVid ? "video" : isPdf ? "document" : "image",
-          badge: isVid ? "VIDEO" : isPdf ? "DOCUMENT" : "IMAGE",
-          docType: isPdf ? "PDF" : undefined,
-          duration: isVid ? "00:20" : undefined,
-          path: fileUrl,
-          size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+          _id: media._id,
+          name: media.originalName || file.name,
+          type,
+          badge: type.toUpperCase(),
+          path: media.path || getImageUrl(media.key),
+          size: media.fileSize ? `${(media.fileSize / 1024 / 1024).toFixed(1)} MB` : "0 MB",
           date: "Just now",
           source: "user",
         });
+      } catch (e) {
+        failed += 1;
       }
+    }
+    if (newItems.length > 0) {
       setMediaList((prev) => [...newItems, ...prev]);
       showToast("Media uploaded successfully!");
-    } finally {
+    }
+    if (failed > 0) {
+      showToast(`Failed to upload ${failed} file${failed > 1 ? "s" : ""}`, "error");
     }
   };
 
@@ -224,7 +234,7 @@ export function MediaLibraryPage() {
       setAiReferencePreview(null);
       showToast("AI Media generated!");
     } catch (e) {
-      showToast("Failed to generate AI media");
+      showToast("Failed to generate AI media", "error");
     } finally {
       setAiGenerating(false);
     }
@@ -244,7 +254,7 @@ export function MediaLibraryPage() {
         setAiReferenceImage(media);
       }
     } catch (err) {
-      showToast("Failed to upload reference image");
+      showToast("Failed to upload reference image", "error");
       setAiReferencePreview(null);
     } finally {
       setAiReferenceUploading(false);
@@ -273,7 +283,7 @@ export function MediaLibraryPage() {
       if (selectedAsset?._id === deleteConfirmId) setSelectedAsset(null);
       showToast("Media deleted");
     } catch (err) {
-      showToast("Failed to delete media");
+      showToast("Failed to delete media", "error");
     } finally {
       setDeleteConfirmId(null);
     }
@@ -288,7 +298,8 @@ export function MediaLibraryPage() {
     showToast("Link copied to clipboard!");
   };
 
-  const showToast = (msg) => {
+  const showToast = (msg, kind: "success" | "error" = "success") => {
+    setToastKind(kind);
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 3000);
   };
@@ -307,19 +318,16 @@ export function MediaLibraryPage() {
       }
       showToast("File renamed successfully!");
     } catch {
-      showToast("Failed to rename file");
+      showToast("Failed to rename file", "error");
     } finally {
       setRenamingId(null);
     }
   };
 
-  // Filtered List (filtering done on backend)
-  const filteredMedia = mediaList;
-
   return (
     <div className="w-full space-y-6 text-slate-900 pb-16">
       {/* Toast Notification */}
-      {toastMsg && <Toast kind="success" message={toastMsg} />}
+      {toastMsg && <Toast kind={toastKind} message={toastMsg} />}
 
       {/* Upload Progress Indicator */}
       {uploading && (
@@ -329,7 +337,7 @@ export function MediaLibraryPage() {
         </div>
       )}
 
-      {/* Hidden File Input for Header Trigger */}
+      {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -429,7 +437,6 @@ export function MediaLibraryPage() {
             <SelectItem value="recent">Recently updated</SelectItem>
             <SelectItem value="name-asc">Name A-Z</SelectItem>
             <SelectItem value="name-desc">Name Z-A</SelectItem>
-            <SelectItem value="newest">Newest</SelectItem>
             <SelectItem value="oldest">Oldest</SelectItem>
           </SelectContent>
         </Select>
@@ -489,15 +496,43 @@ export function MediaLibraryPage() {
             </div>
           ))}
         </div>
-      ) : filteredMedia.length === 0 ? (
+      ) : mediaError ? (
         <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center bg-white">
           <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-slate-800">No media found</h3>
-          <p className="text-xs text-slate-400 mt-1">Upload images or videos to build your media library.</p>
+          <h3 className="text-sm font-semibold text-slate-800">Couldn't load your media</h3>
+          <p className="text-xs text-slate-400 mt-1">Please check your connection and try again.</p>
+          <Button className="mt-4" onClick={fetchBackendMedia}>
+            Retry
+          </Button>
+        </div>
+      ) : mediaList.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center bg-white">
+          <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-slate-800">
+            {searchQuery || typeFilter !== "all" || sourceFilter !== "all" ? "No results found" : "No media found"}
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">
+            {searchQuery || typeFilter !== "all" || sourceFilter !== "all"
+              ? "Try a different search or clear your filters."
+              : "Upload images or videos to build your media library."}
+          </p>
+          {(searchQuery || typeFilter !== "all" || sourceFilter !== "all") && (
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => {
+                setSearchQuery("");
+                setTypeFilter("all");
+                setSourceFilter("all");
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredMedia.map((asset) => (
+          {mediaList.map((asset) => (
             <div
               key={asset._id}
               onClick={() => setSelectedAsset(asset)}
@@ -663,43 +698,66 @@ export function MediaLibraryPage() {
                   />
                 </PaginationItem>
 
-                {Array.from({ length: Math.min(5, paginationMeta.pageCount) }).map((_, i) => {
-                  const pageNum = i + 1;
+                {(() => {
+                  const total = paginationMeta.pageCount;
+                  const start = Math.max(1, Math.min(currentPage - 2, total - 4));
+                  const end = Math.min(total, start + 4);
+                  const pages = [];
+                  for (let p = start; p <= end; p++) pages.push(p);
                   return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        href="#"
-                        isActive={currentPage === pageNum}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(pageNum);
-                        }}
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
+                    <>
+                      {start > 1 && (
+                        <>
+                          <PaginationItem>
+                            <PaginationLink href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(1); }}>
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                          {start > 2 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                        </>
+                      )}
+                      {pages.map((pageNum) => (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            href="#"
+                            isActive={currentPage === pageNum}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(pageNum);
+                            }}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      {end < total && (
+                        <>
+                          {end < total - 1 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                          <PaginationItem>
+                            <PaginationLink
+                              href="#"
+                              isActive={currentPage === total}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(total);
+                              }}
+                            >
+                              {total}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </>
+                      )}
+                    </>
                   );
-                })}
-
-                {paginationMeta.pageCount > 5 && (
-                  <>
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        isActive={currentPage === paginationMeta.pageCount}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(paginationMeta.pageCount);
-                        }}
-                      >
-                        {paginationMeta.pageCount}
-                      </PaginationLink>
-                    </PaginationItem>
-                  </>
-                )}
+                })()}
 
                 <PaginationItem>
                   <PaginationNext
@@ -815,7 +873,7 @@ export function MediaLibraryPage() {
               )}
             </div>
 
-            <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto custom-scroll">
+            <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
               <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-900 max-h-[350px] flex items-center justify-center">
                 {selectedAsset.type === "document" ? (
                   <div className="p-12 text-center text-white space-y-2">

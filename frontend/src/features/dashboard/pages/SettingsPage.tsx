@@ -11,13 +11,10 @@ import {
   User as UserIcon,
   Bell,
   ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
   Send,
   XCircle,
   KeyRound,
   LogOut,
-  Trash2,
   Loader2,
 } from "lucide-react";
 import { useFileUpload } from "../hooks/useFileUpload";
@@ -29,7 +26,6 @@ const NAV_ITEMS = [
   { id: "profile", label: "Profile", icon: UserIcon },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: ShieldCheck },
-  { id: "danger", label: "Danger Zone", icon: AlertTriangle },
 ] as const;
 
 type SectionId = (typeof NAV_ITEMS)[number]["id"];
@@ -86,12 +82,16 @@ export function SettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<{ name: string; notifications: typeof notifications } | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
   // Change password
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
@@ -101,17 +101,24 @@ export function SettingsPage() {
   async function loadSettings() {
     try {
       const data = await apiGet("/settings");
-      setName(data.name || "");
-      setEmail(data.email || "");
-      setNotifications(
-        data.notifications || {
-          postPublished: true,
-          postFailed: true,
-          tokenExpiring: true,
-        },
-      );
+      const loadedName = data.name || "";
+      const loadedEmail = data.email || "";
+      const loadedNotifications = data.notifications || {
+        postPublished: true,
+        postFailed: true,
+        tokenExpiring: true,
+      };
+      setName(loadedName);
+      setEmail(loadedEmail);
+      setNotifications(loadedNotifications);
+      setSavedSnapshot({ name: loadedName, notifications: loadedNotifications });
     } catch (err) {
       console.error("Failed to load settings:", err);
+      // Don't leave the form blank: fall back to the signed-in session
+      setName(session?.user?.name || "");
+      setEmail(session?.user?.email || "");
+      setToast({ type: "error", msg: "Couldn't load your settings. Showing your account info instead." });
+      setTimeout(() => setToast(null), 4000);
     } finally {
       setLoading(false);
     }
@@ -122,6 +129,7 @@ export function SettingsPage() {
     setToast(null);
     try {
       await apiPut("/settings", { name, notifications });
+      setSavedSnapshot({ name, notifications });
       setToast({ type: "success", msg: "Settings saved successfully!" });
       setTimeout(() => setToast(null), 3000);
     } catch (err) {
@@ -239,30 +247,43 @@ export function SettingsPage() {
           <p className="text-sm text-slate-500 mt-1">Manage your account and preferences.</p>
         </div>
         {(activeSection === "profile" || activeSection === "notifications") && (
-          <Button onClick={handleSave} disabled={saving} className="shrink-0">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <Button
+              onClick={handleSave}
+              disabled={
+                saving ||
+                !savedSnapshot ||
+                (savedSnapshot.name === name &&
+                  JSON.stringify(savedSnapshot.notifications) === JSON.stringify(notifications))
+              }
+              className="shrink-0"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+            {savedSnapshot &&
+              (savedSnapshot.name !== name ||
+                JSON.stringify(savedSnapshot.notifications) !== JSON.stringify(notifications)) && (
+                <p className="text-xs text-amber-600 font-medium">You have unsaved changes</p>
+              )}
+          </div>
         )}
       </div>
 
       <div className="mt-6 space-y-6">
         {/* Top tab row */}
-        <div className="flex items-center gap-1 border-b border-slate-200" role="tablist" aria-label="Settings sections">
+        <div className="flex items-center gap-1 border-b border-slate-200" aria-label="Settings sections">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               type="button"
-              role="tab"
-              aria-selected={activeSection === item.id}
+              aria-current={activeSection === item.id ? "true" : undefined}
               onClick={() => setActiveSection(item.id)}
               className={cn(
                 "flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer",
                 activeSection === item.id
                   ? "text-slate-900 font-semibold border-primary"
-                  : item.id === "danger"
-                    ? "text-slate-500 border-transparent hover:text-red-600 hover:border-red-300"
-                    : "text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300",
+                  : "text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300",
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -303,7 +324,7 @@ export function SettingsPage() {
                         onClick={openPicker}
                         disabled={uploading}
                         title="Change picture"
-                        className="absolute -bottom-1 -right-1 size-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md hover:bg-slate-700 transition-colors cursor-pointer"
+                        className="absolute -bottom-1 -right-1 size-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md hover:bg-slate-700 transition-colors cursor-pointer"
                       >
                         <Camera className="w-4 h-4" />
                       </button>
@@ -316,10 +337,17 @@ export function SettingsPage() {
                         accept="image/jpeg,image/png,image/gif,image/webp"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) upload(file);
+                          if (!file) return;
+                          if (file.size > 10 * 1024 * 1024) {
+                            setToast({ type: "error", msg: "Image must be under 10MB" });
+                            setTimeout(() => setToast(null), 3000);
+                            e.target.value = "";
+                            return;
+                          }
+                          upload(file);
                         }}
                       />
-                      <p className="text-xs text-slate-400 text-right">JPG, GIF or PNG · Max 10MB</p>
+                      <p className="text-xs text-slate-400 text-right">JPG, PNG, GIF or WEBP · Max 10MB</p>
                     </div>
                   </div>
                   <div className="mt-4">
@@ -388,30 +416,66 @@ export function SettingsPage() {
                 <div className="p-6 space-y-4 max-w-md">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Current password</label>
-                    <Input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="••••••••"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pr-16"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 text-xs text-slate-500"
+                      >
+                        {showCurrentPassword ? "Hide" : "Show"}
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">New password</label>
-                    <Input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pr-16"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 text-xs text-slate-500"
+                      >
+                        {showNewPassword ? "Hide" : "Show"}
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm new password</label>
-                    <Input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pr-16"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 text-xs text-slate-500"
+                      >
+                        {showConfirmPassword ? "Hide" : "Show"}
+                      </Button>
+                    </div>
                   </div>
                   <Button onClick={handleChangePassword} disabled={changingPassword} variant="outline">
                     {changingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
@@ -436,37 +500,6 @@ export function SettingsPage() {
             </section>
           )}
 
-          {activeSection === "danger" && (
-            <section className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-500" />
-                  Danger Zone
-                </h3>
-                <p className="text-sm text-slate-500 mt-0.5">Irreversible actions — proceed with caution.</p>
-              </div>
-              <div className="px-6 py-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Delete account</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Permanently delete your account and all associated data.
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <Button
-                    variant="outline"
-                    className="border-red-200 text-red-600 shrink-0"
-                    disabled
-                    title="Account deletion is not available yet"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </Button>
-                  <p className="text-xs text-slate-400 mt-1.5">Not available yet</p>
-                </div>
-              </div>
-            </section>
-          )}
         </div>
       </div>
 

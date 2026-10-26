@@ -295,7 +295,7 @@ export function ScheduledPostsPage() {
                   key={idx}
                   onClick={() => handleDayClick(cell.date)}
                   className={`min-h-27.5 p-2 flex flex-col justify-between transition-colors cursor-pointer group hover:bg-primary-50/30 ${
-                    cell.isCurrentMonth ? "bg-slate-50/50 text-slate-400" : "bg-white"
+                    cell.isCurrentMonth ? "bg-white" : "bg-slate-50/50 text-slate-400"
                   }`}
                 >
                   <div className="flex items-center justify-between">

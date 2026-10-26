@@ -11,10 +11,9 @@ const PLATFORMS = [
 
 interface SocialConnectProps {
   connectedProviders?: string[];
-  onConnect?: () => void;
 }
 
-export function SocialConnect({ connectedProviders = [], onConnect }: SocialConnectProps) {
+export function SocialConnect({ connectedProviders = [] }: SocialConnectProps) {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -81,7 +80,7 @@ export function SocialConnect({ connectedProviders = [], onConnect }: SocialConn
               <div className="flex flex-col items-start text-left flex-1 space-y-0.5">
                 <span className="text-[15px] font-semibold text-slate-800">{platform.name}</span>
                 <span className="text-[13px] text-slate-500 font-medium">
-                  {isConnected ? "Connected" : "Connect account"}
+                  {isConnected ? "Connected · Reconnect" : "Connect account"}
                 </span>
               </div>
               {connecting === platform.id && (

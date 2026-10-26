@@ -19,7 +19,9 @@ export function BrandKitPage() {
   const { data: brandKitData, isLoading } = useBrandKit();
   const saveMutation = useSaveBrandKit();
 
-  const [showNotice, setShowNotice] = useState(true);
+  const [noticeDismissed, setNoticeDismissed] = useState(
+    () => localStorage.getItem("brandkit-notice-dismissed") === "1",
+  );
   const [primaryLogoId, setPrimaryLogoId] = useState(null);
   const [watermarkLogoId, setWatermarkLogoId] = useState(null);
   const [primaryLogoUrl, setPrimaryLogoUrl] = useState(null);
@@ -32,7 +34,8 @@ export function BrandKitPage() {
   const [selectedTones, setSelectedTones] = useState(["Professional", "Bold"]);
   const [styleNotes, setStyleNotes] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [hexError, setHexError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState(false);
+  const [hexErrors, setHexErrors] = useState<Record<string, string>>({});
   const savedSnapshot = useRef<string>("");
 
   const buildSnapshot = (v: {
@@ -105,8 +108,12 @@ export function BrandKitPage() {
       {
         onSuccess: () => {
           savedSnapshot.current = currentSnapshot();
+          setSaveError(false);
           setSavedSuccess(true);
           setTimeout(() => setSavedSuccess(false), 3000);
+        },
+        onError: () => {
+          setSaveError(true);
         },
       },
     );
@@ -131,11 +138,15 @@ export function BrandKitPage() {
       const cleaned = e.target.value.replace(/[^0-9a-fA-F#]/g, "").slice(0, 7);
       const normalized = cleaned && !cleaned.startsWith("#") ? `#${cleaned}` : cleaned;
       setter(normalized);
-      setHexError(
-        normalized !== "" && !/^#[0-9a-fA-F]{6}$/.test(normalized)
-          ? `${label} needs a 6-digit hex code (e.g. #2F8587)`
-          : null,
-      );
+      setHexErrors((prev) => {
+        const next = { ...prev };
+        if (normalized !== "" && !/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+          next[label] = `${label} needs a 6-digit hex code (e.g. #2F8587)`;
+        } else {
+          delete next[label];
+        }
+        return next;
+      });
     };
 
   const previewColor = (v: string, fallback: string) =>
@@ -261,13 +272,16 @@ export function BrandKitPage() {
           {!savedSuccess && isDirty && (
             <span className="text-xs font-medium text-slate-400">Unsaved changes</span>
           )}
-          <Button onClick={handleSave} disabled={saveMutation.isPending}>
+          {saveError && (
+            <span className="text-xs font-medium text-red-600">Couldn't save. Try again.</span>
+          )}
+          <Button onClick={handleSave} disabled={saveMutation.isPending || !isDirty}>
             {saveMutation.isPending ? "Saving..." : "Save Brand Kit"}
           </Button>
         </div>
       </div>
 
-      {showNotice && (
+      {!noticeDismissed && !primaryLogoId && !watermarkLogoId && !styleNotes.trim() && (
         <div className="bg-accent/70 border border-primary-200 rounded-xl px-4 py-2.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5">
             <div className="w-5 h-5 rounded-full bg-background text-primary-700 flex items-center justify-center font-semibold text-[11px] shrink-0">
@@ -275,7 +289,16 @@ export function BrandKitPage() {
             </div>
             <p className="text-xs font-medium text-foreground">Complete your Brand Kit to unlock personalized AI generation.</p>
           </div>
-          <Button variant="ghost" size="icon-sm" onClick={() => setShowNotice(false)} title="Dismiss notice" aria-label="Dismiss notice">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {
+              localStorage.setItem("brandkit-notice-dismissed", "1");
+              setNoticeDismissed(true);
+            }}
+            title="Dismiss notice"
+            aria-label="Dismiss notice"
+          >
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -311,7 +334,7 @@ export function BrandKitPage() {
                           <Plus className="w-4 h-4" />
                         </div>
                         <p className="text-[11px] font-medium text-slate-700">
-                          Drag and drop or <span className="text-primary-600">click to upload</span>
+                          <span className="text-primary-600">Click to upload</span>
                         </p>
                         <p className="text-[10px] text-slate-400 mt-0.5">PNG, SVG (Max 5MB)</p>
                       </>
@@ -371,22 +394,23 @@ export function BrandKitPage() {
             <CardContent className="pt-0">
               <div className="space-y-2.5">
                 {[
-                  { label: "Primary", value: primaryColor, set: setPrimaryColor },
-                  { label: "Secondary", value: secondaryColor, set: setSecondaryColor },
-                  { label: "Accent", value: accentColor, set: setAccentColor },
+                  { label: "Primary", value: primaryColor, set: setPrimaryColor, fallback: "#2F8587" },
+                  { label: "Secondary", value: secondaryColor, set: setSecondaryColor, fallback: "#FFFFFF" },
+                  { label: "Accent", value: accentColor, set: setAccentColor, fallback: "#DDF3D4" },
                 ].map((c) => (
-                  <div key={c.label} className="flex items-center gap-3">
+                  <div key={c.label} className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-slate-500 w-16">{c.label}</span>
                     <div className="flex items-center gap-2.5 flex-1">
                       <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-200 shadow-xs shrink-0 cursor-pointer">
                         <input
                           type="color"
-                          value={previewColor(c.value, "#2F8587")}
+                          value={previewColor(c.value, c.fallback)}
                           onChange={(e) => c.set(e.target.value)}
                           className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                           aria-label={`${c.label} color picker`}
                         />
-                        <div className="w-full h-full rounded-full" style={{ backgroundColor: previewColor(c.value, "#2F8587") }} />
+                        <div className="w-full h-full rounded-full" style={{ backgroundColor: previewColor(c.value, c.fallback) }} />
                       </div>
                       <input
                         type="text"
@@ -397,10 +421,11 @@ export function BrandKitPage() {
                         aria-invalid={c.value !== "" && !/^#[0-9a-fA-F]{6}$/.test(c.value)}
                       />
                     </div>
+                    </div>
+                    {hexErrors[c.label] && <p className="text-xs text-red-600 pl-[76px]">{hexErrors[c.label]}</p>}
                   </div>
                 ))}
               </div>
-              {hexError && <p className="text-xs text-red-600 mt-2">{hexError}</p>}
             </CardContent>
           </Card>
         </div>

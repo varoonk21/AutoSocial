@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toast } from "@/components/ui/toast";
 import { Plus, Trash2 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 function StatusPill({ status }: { status: string }) {
   if (status === "reauth_required") {
@@ -22,9 +23,16 @@ function StatusPill({ status }: { status: string }) {
       </span>
     );
   }
+  if (status === "active") {
+    return (
+      <span className="px-2.5 py-1 bg-accent text-primary-700 text-xs font-medium rounded-full border border-primary-200">
+        Active
+      </span>
+    );
+  }
   return (
-    <span className="px-2.5 py-1 bg-accent text-primary-700 text-xs font-medium rounded-full border border-primary-200">
-      Active
+    <span className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-medium rounded-full border border-slate-200">
+      Unknown
     </span>
   );
 }
@@ -33,6 +41,7 @@ export function ConnectedAccountsPage() {
   const [integrations, setIntegrations] = useState<any[]>([]);
   const [showConnect, setShowConnect] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [disconnectTarget, setDisconnectTarget] = useState<any | null>(null);
   const [toast, setToast] = useState<{ kind: "success" | "error"; message: string } | null>(null);
@@ -43,11 +52,12 @@ export function ConnectedAccountsPage() {
 
   async function loadIntegrations() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet("/integrations/list");
       setIntegrations(data.integrations || []);
     } catch {
-      // Error state is rendered below via the empty gate
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -104,7 +114,7 @@ export function ConnectedAccountsPage() {
 
       {showConnect && (
         <div className="bg-background rounded-xl border border-slate-200 p-6 shadow-soft">
-          <SocialConnect connectedProviders={connectedProviders} onConnect={loadIntegrations} />
+          <SocialConnect connectedProviders={connectedProviders} />
         </div>
       )}
 
@@ -121,23 +131,33 @@ export function ConnectedAccountsPage() {
             </div>
           ))}
         </div>
-      ) : integrations.length === 0 && !showConnect ? (
+      ) : loadError ? (
+        <div className="bg-background rounded-xl border border-slate-200 p-12 text-center shadow-soft">
+          <p className="text-slate-400 text-sm mb-4">Couldn't load your connected accounts.</p>
+          <Button onClick={loadIntegrations} className="gap-2">
+            Retry
+          </Button>
+        </div>
+      ) : integrations.length === 0 ? (
         <div className="bg-background rounded-xl border border-slate-200 p-12 text-center shadow-soft">
           <p className="text-slate-400 text-sm mb-4">No accounts connected yet.</p>
-          <Button onClick={() => setShowConnect(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Connect your first account
-          </Button>
+          {!showConnect && (
+            <Button onClick={() => setShowConnect(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Connect your first account
+            </Button>
+          )}
         </div>
       ) : (
         <div className="bg-background rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-soft">
           {integrations.map((integration) => (
             <div key={integration.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-4">
-              <img
-                src={integration.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(integration.name)}&background=e2e8f0&color=64748b`}
-                alt={integration.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <Avatar className="w-10 h-10 shrink-0">
+                <AvatarImage src={integration.avatar || undefined} alt={integration.name} />
+                <AvatarFallback className="bg-slate-100 text-slate-500 text-xs font-semibold">
+                  {integration.name?.slice(0, 2).toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900 truncate">{integration.name}</p>
                 <p className="text-xs text-slate-400 capitalize">{integration.platform}</p>

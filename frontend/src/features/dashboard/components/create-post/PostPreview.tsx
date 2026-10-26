@@ -3,7 +3,9 @@ import { PLATFORMS_CONFIG } from "./platformConfig";
 import { AccountItem, MediaItem } from "./useCreatePost";
 import { FacebookPreview } from "./FacebookPreview";
 import { InstagramPreview } from "./InstagramPreview";
-import { FacebookLogo, InstagramLogo } from "./PlatformIcons";
+import { XPreview } from "./XPreview";
+import { LinkedInPreview } from "./LinkedInPreview";
+import { PlatformIcon } from "../PlatformIcon";
 import { Card, CardContent } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -67,11 +69,7 @@ export function PostPreview({
                   isActive ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                {p.id === "facebook" ? (
-                  <FacebookLogo className="w-3.5 h-3.5 shrink-0" />
-                ) : (
-                  <InstagramLogo className="w-3.5 h-3.5 shrink-0" />
-                )}
+                <PlatformIcon platform={p.id as "facebook" | "instagram" | "x" | "linkedin"} size={14} />
                 <span>{p.shortName}</span>
 
                 {isActive && (
@@ -93,6 +91,14 @@ export function PostPreview({
 
           {activePlatformId === "instagram" && (
             <InstagramPreview account={account} text={text} mediaList={mediaList} />
+          )}
+
+          {activePlatformId === "x" && (
+            <XPreview account={account} text={text} mediaList={mediaList} />
+          )}
+
+          {activePlatformId === "linkedin" && (
+            <LinkedInPreview account={account} text={text} mediaList={mediaList} />
           )}
         </div>
       </CardContent>

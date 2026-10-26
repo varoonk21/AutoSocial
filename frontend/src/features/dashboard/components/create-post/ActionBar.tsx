@@ -61,7 +61,7 @@ export function ActionBar({
               onClick={onSaveDraft}
               className="h-8 px-2.5 text-xs font-semibold text-slate-800 border-slate-300 hover:bg-slate-100 cursor-pointer rounded-xl"
             >
-              Finish later
+              Save draft
             </Button>
 
             <Button
@@ -123,7 +123,7 @@ export function ActionBar({
             Cancel
           </Button>
 
-          {/* Finish later (Draft) Button */}
+          {/* Save draft (Draft) Button */}
           <Button
             type="button"
             variant="outline"
@@ -131,7 +131,7 @@ export function ActionBar({
             onClick={onSaveDraft}
             className="h-8 px-3 text-xs font-semibold text-slate-800 border-slate-300 hover:bg-slate-50 cursor-pointer rounded-lg shadow-none"
           >
-            Finish later
+            Save draft
           </Button>
 
           {/* Primary teal Publish/Schedule Button */}

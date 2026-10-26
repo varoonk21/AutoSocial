@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { authClient } from "../../../lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AuthLayout } from "../components/AuthLayout";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ export function ResetPasswordPage() {
     setError("");
 
     try {
-      const { data, error: authError } = await authClient.resetPassword({
+      const { error: authError } = await authClient.resetPassword({
         newPassword: password,
         token: token,
       });
@@ -61,21 +62,8 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative bg-background text-slate-900 selection:bg-primary-100 selection:text-primary-900 antialiased flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(45deg, transparent 49%, var(--border) 49%, var(--border) 51%, transparent 51%),
-            linear-gradient(-45deg, transparent 49%, var(--border) 49%, var(--border) 51%, transparent 51%)
-          `,
-          backgroundSize: "50px 50px",
-          WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)",
-          maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%)",
-        }}
-      />
-
-      <div className="w-full max-w-sm relative z-10">
+    <AuthLayout>
+      <div className="w-full max-w-sm">
         <div className="w-full bg-background rounded-2xl border border-slate-200/70 shadow-[0_18px_64px_-14px_rgba(0,0,0,0.2)] p-8 space-y-5">
           <div className="text-center space-y-1 mb-6">
             <div className="flex justify-center mb-4">
@@ -122,7 +110,6 @@ export function ResetPasswordPage() {
                     className="pr-16"
                     required
                     minLength={8}
-                    disabled={!token}
                   />
                   <Button
                     type="button"
@@ -130,7 +117,6 @@ export function ResetPasswordPage() {
                     variant="ghost"
                     size="sm"
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 text-xs text-slate-500"
-                    disabled={!token}
                   >
                     {showPassword ? "Hide" : "Show"}
                   </Button>
@@ -148,11 +134,10 @@ export function ResetPasswordPage() {
                   placeholder="••••••••"
                   required
                   minLength={8}
-                  disabled={!token}
                 />
               </div>
 
-              <Button type="submit" disabled={loading || !token || !password || !confirmPassword} className="w-full mt-2">
+              <Button type="submit" disabled={loading || !password || !confirmPassword} className="w-full mt-2">
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
@@ -169,6 +154,6 @@ export function ResetPasswordPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

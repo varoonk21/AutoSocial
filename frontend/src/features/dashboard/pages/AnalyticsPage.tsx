@@ -6,14 +6,6 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Distinct series colors drawn from the --chart-1…5 token scale so every
-// legend entry is decodable. Status dots reuse STATUS_CONFIG.
-const STATUS_BAR_COLORS: Record<string, string> = {
-  PUBLISHED: "bg-primary-600",
-  QUEUE: "bg-primary-300",
-  DRAFT: "bg-slate-400",
-  ERROR: "bg-red-500",
-};
 const PLATFORM_BAR_COLORS = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"];
 
 interface AnalyticsData {
@@ -37,11 +29,12 @@ export function AnalyticsPage() {
   }, []);
 
   async function loadAnalytics() {
+    setLoading(true);
     try {
       const result = await apiGet("/posts/analytics");
       setData(result);
     } catch {
-      // Data stays null
+      // Data stays null -> error state below
     } finally {
       setLoading(false);
     }
@@ -82,7 +75,7 @@ export function AnalyticsPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="bg-background rounded-xl border border-slate-200 p-6 shadow-soft">
-              <h3 className="text-sm font-semibold text-slate-500 mb-4">Total Posts</h3>
+              <h3 className="text-sm font-semibold text-slate-500 mb-4">Total Content</h3>
               <p className="text-3xl font-bold text-slate-900">{totalAcrossAll.toLocaleString()}</p>
               <p className="text-sm text-slate-500 mt-2">
                 {data.totalPosts.toLocaleString()} published · {data.totalScheduled.toLocaleString()} scheduled ·{" "}
@@ -141,8 +134,8 @@ export function AnalyticsPage() {
                 ].map(({ key, label }) => {
                   const count = data.postsByStatus[key] || 0;
                   const pct = totalAcrossAll > 0 ? Math.round((count / totalAcrossAll) * 100) : 0;
-                  const color = STATUS_BAR_COLORS[key];
                   const dot = STATUS_CONFIG[key as keyof typeof STATUS_CONFIG]?.dot || "bg-slate-400";
+                  const color = dot;
                   return (
                     <div key={key} className="flex items-center gap-3">
                       <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
@@ -195,9 +188,10 @@ export function AnalyticsPage() {
             {data.monthlyPosts.length > 0 ? (
               <div className="overflow-x-auto">
               <div className="flex items-end gap-3 h-48 min-w-[480px]">
-                {data.monthlyPosts.map((entry) => {
-                  const height = (entry.count / maxMonthly) * 100;
+                {(() => {
                   const years = new Set(data.monthlyPosts.map((m) => m._id.year));
+                  return data.monthlyPosts.map((entry) => {
+                  const height = (entry.count / maxMonthly) * 100;
                   const label = years.size > 1
                     ? `${MONTH_NAMES[entry._id.month - 1]} '${String(entry._id.year).slice(2)}`
                     : MONTH_NAMES[entry._id.month - 1];
@@ -215,7 +209,8 @@ export function AnalyticsPage() {
                       <span className="text-xs text-slate-500">{label}</span>
                     </div>
                   );
-                })}
+                  });
+                })()}
               </div>
               </div>
             ) : (
@@ -228,6 +223,13 @@ export function AnalyticsPage() {
       ) : (
         <div className="bg-background rounded-xl border border-slate-200 p-12 text-center">
           <p className="text-slate-500">Unable to load analytics data.</p>
+          <button
+            type="button"
+            onClick={loadAnalytics}
+            className="mt-4 inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+          >
+            Retry
+          </button>
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 import { useCreatePost } from "../components/create-post/useCreatePost";
 import { Toast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AccountSelectCard } from "../components/create-post/AccountSelectCard";
 import { MediaCard } from "../components/create-post/MediaCard";
 import { PostDetailsCard } from "../components/create-post/PostDetailsCard";
@@ -42,6 +44,9 @@ export function CreatePost() {
     lastSaved,
     handlePublish,
     handleCancel,
+    confirmCancelOpen,
+    setConfirmCancelOpen,
+    confirmCancel,
 
     // Preview
     activePreviewPlatform,
@@ -50,12 +55,12 @@ export function CreatePost() {
     setViewMode,
     isPreviewDrawerOpen,
     setIsPreviewDrawerOpen,
-    activePlatformConfig,
 
     // Validation & Toast
     validationErrors,
     toastMessage,
     cardRefs,
+    effectiveMaxChars,
   } = useCreatePost();
 
   const isFormValid =
@@ -109,7 +114,7 @@ export function CreatePost() {
               text={text}
               onChangeText={setText}
               mediaList={mediaList}
-              maxCharacters={activePlatformConfig.maxCharacters}
+              maxCharacters={effectiveMaxChars.limit}
               onApplyAiRewrite={applyAiRewrite}
               onUndoAi={undoAiRewrite}
               canUndoAi={canUndoAi}
@@ -169,6 +174,26 @@ export function CreatePost() {
         onOpenMobilePreview={() => setIsPreviewDrawerOpen(true)}
         variant="fixed"
       />
+
+      {/* Discard changes confirmation */}
+      <Dialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Discard this post?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-500">
+            You have unsaved changes. Leaving now will discard them.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setConfirmCancelOpen(false)}>
+              Keep editing
+            </Button>
+            <Button variant="destructive" size="sm" onClick={confirmCancel}>
+              Discard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Mobile Live Preview Drawer (< 1024px) */}
       <Sheet open={isPreviewDrawerOpen} onOpenChange={setIsPreviewDrawerOpen}>

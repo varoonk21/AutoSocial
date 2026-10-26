@@ -51,21 +51,20 @@ export function Layout() {
         <AppSidebar />
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — only mounted while open, so the closed drawer
+          doesn't linger in the DOM and tab order */}
       {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/40 animate-in fade-in duration-150"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <>
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/40 animate-in fade-in duration-150"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="lg:hidden fixed inset-y-0 left-0 z-50 w-[260px] animate-in slide-in-from-left duration-200">
+            <AppSidebar />
+          </div>
+        </>
       )}
-      <div
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-[260px] transform transition-transform duration-200 ease-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <AppSidebar />
-      </div>
 
       <main className="flex-1 min-w-0 overflow-y-auto pt-14 lg:pt-0">
         {isDashboardHome ? (

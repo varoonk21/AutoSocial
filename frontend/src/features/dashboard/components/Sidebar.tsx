@@ -22,7 +22,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { to: "/dashboard", icon: "home", label: "Dashboard", end: true },
   { to: "/dashboard/brand-kit", icon: "brand-kit", label: "Brand Kit" },
   { to: "/dashboard/media-library", icon: "media", label: "Media Library" },
   { to: "/dashboard/analytics", icon: "analytics", label: "Analytics" },
@@ -67,10 +66,7 @@ const ICONS: Record<string, React.ReactNode> = {
 const isContentChildRoute = (path: string) => {
   return (
     path.startsWith("/dashboard/content") ||
-    path.startsWith("/dashboard/create-post") ||
-    path.startsWith("/dashboard/scheduled-posts") ||
-    path.startsWith("/dashboard/calendar") ||
-    path.startsWith("/dashboard/drafts")
+    CONTENT_SUBMENU.some((item) => item.matchPaths.some((p) => path.startsWith(p)))
   );
 };
 
@@ -121,10 +117,7 @@ export function AppSidebar() {
     <aside className="w-[260px] shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
       {/* Logo */}
       <div className="px-5 pt-5 pb-4">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/dashboard")}
-        >
+        <NavLink to="/dashboard" end className="flex items-center gap-2 w-fit rounded-lg">
           <img
             src="/Icon.png"
             alt="AutoSocial"
@@ -133,7 +126,7 @@ export function AppSidebar() {
           <span className="font-bold text-slate-900 text-lg tracking-tight">
             AutoSocial
           </span>
-        </div>
+        </NavLink>
       </div>
 
       {/* Nav */}
@@ -177,7 +170,7 @@ export function AppSidebar() {
           )}
         </div>
 
-        {NAV_ITEMS.filter((item) => item.to !== "/dashboard").map((item) => (
+        {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

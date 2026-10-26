@@ -44,9 +44,11 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
   const [posts, setPosts] = useState<any[]>([]);
   const [integrations, setIntegrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState(false);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
 
   async function loadData() {
     setLoading(true);
+    setLoadError(false);
     try {
       const [intRes, postsRes] = await Promise.all([
         apiGet("/integrations/list"),
@@ -74,6 +77,7 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
       setPosts(postsRes.posts || []);
     } catch (err) {
       console.error("Failed to load posts:", err);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -96,15 +100,17 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     setDeleting(deleteTarget);
+    setDeleteError(false);
     try {
       await apiDelete(`/posts/${deleteTarget}`);
       setPosts((prev) => prev.filter((p) => p._id !== deleteTarget));
-    } catch (err) {
-      console.error("Failed to delete post:", err);
-    } finally {
-      setDeleting(null);
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
+    } catch (err) {
+      console.error("Failed to delete post:", err);
+      setDeleteError(true);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -199,6 +205,18 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
             ))}
           </CardContent>
         </Card>
+      ) : loadError ? (
+        <Card className="border border-slate-200 shadow-sm rounded-xl bg-background">
+          <CardContent className="p-12 text-center">
+            <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 text-sm font-medium">
+              Couldn't load your posts. Please check your connection and try again.
+            </p>
+            <Button className="mt-4" onClick={loadData}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       ) : sortedPosts.length === 0 ? (
         <Card className="border border-slate-200 shadow-sm rounded-xl bg-background">
           <CardContent className="p-12 text-center">
@@ -230,9 +248,14 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
 
               const publishDate = post.publishDate ? new Date(post.publishDate) : null;
               const statusConf = STATUS_CONFIG[post.state] || STATUS_CONFIG.DRAFT;
-              const mediaItems = JSON.parse(post.image || "[]");
-              const firstMedia = mediaItems[0];
-              const mediaUrl = typeof firstMedia === "string" ? firstMedia : firstMedia?.path;
+              let mediaUrl: string | undefined;
+              try {
+                const mediaItems = JSON.parse(post.image || "[]");
+                const firstMedia = mediaItems[0];
+                mediaUrl = typeof firstMedia === "string" ? firstMedia : firstMedia?.path;
+              } catch {
+                mediaUrl = undefined;
+              }
               const platform = integration?.platform || integration?.providerIdentifier || post.platform || null;
 
               const isEditable = post.state === "DRAFT" || post.state === "QUEUE";
@@ -337,6 +360,11 @@ export function ManagePostsPage({ initialTab }: ManagePostsPageProps) {
           <p className="text-sm text-slate-500">
             Are you sure you want to delete this post? This action cannot be undone.
           </p>
+          {deleteError && (
+            <p className="text-xs text-red-600 font-medium">
+              Couldn't delete the post. Please try again.
+            </p>
+          )}
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(false)}>
               Cancel

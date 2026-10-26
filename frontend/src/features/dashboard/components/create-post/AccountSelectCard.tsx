@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Check, ChevronDown, Plus, ShieldAlert } from "lucide-react";
 import { AccountItem } from "./useCreatePost";
 import { PLATFORMS_CONFIG } from "./platformConfig";
-import { FacebookLogo, InstagramLogo } from "./PlatformIcons";
+import { PlatformIcon } from "../PlatformIcon";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface AccountSelectCardProps {
@@ -48,10 +48,7 @@ export function AccountSelectCard({
   };
 
   const renderBadge = (provider: string) => {
-    if (provider === "facebook") {
-      return <FacebookLogo className="w-3.5 h-3.5" />;
-    }
-    return <InstagramLogo className="w-3.5 h-3.5" />;
+    return <PlatformIcon platform={provider as "facebook" | "instagram" | "x" | "linkedin"} size={14} />;
   };
 
   return (

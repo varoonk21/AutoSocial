@@ -49,7 +49,6 @@ export function useCreatePost() {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
 
   // Post details state
-  const [isAdPost, setIsAdPost] = useState(false);
   const [text, setText] = useState("");
   const [undoHistory, setUndoHistory] = useState<string[]>([]);
 
@@ -60,21 +59,11 @@ export function useCreatePost() {
   );
   const [scheduleTime, setScheduleTime] = useState(presetTime || "10:00");
 
-  // Per-account Share-to placements
-  const [shareToPlacements, setShareToPlacements] = useState<Record<string, boolean>>({
-    fb_feed: true,
-    fb_story: false,
-    ig_feed: true,
-    ig_story: false,
-  });
-
-  // Privacy settings
-  const [privacySetting, setPrivacySetting] = useState<"public" | "restricted">("public");
-
   // Action Bar state
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [editingDraftId, setEditingDraftId] = useState<string | null>(draftIdParam || null);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
   // Preview state
   const [activePreviewPlatform, setActivePreviewPlatform] = useState<string>(DEFAULT_PLATFORM_ID);
@@ -100,81 +89,39 @@ export function useCreatePost() {
     schedule: useRef<HTMLDivElement>(null),
   };
 
-  // Fetch connected accounts from backend or use realistic mock fallback
+  // Fetch connected accounts from backend. No fallback data: when nothing
+  // is connected, the composer shows its "Connect account" empty state.
   useEffect(() => {
     setLoadingAccounts(true);
     apiGet("/integrations/list")
       .then((data: any) => {
         const list = data.integrations || [];
-        if (list.length > 0) {
-          const mapped = list.map((acc: any) => {
-            const provider = (acc.platform || "facebook").toLowerCase();
-            let avatarUrl = acc.avatar;
-            if (!avatarUrl && acc.targetId && (provider === "facebook" || provider === "instagram")) {
-              avatarUrl = `https://graph.facebook.com/${acc.targetId}/picture?type=large`;
-            }
-            if (!avatarUrl) {
-              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(acc.name || "User")}&background=2F8587&color=fff`;
-            }
+        const mapped = list.map((acc: any) => {
+          const provider = (acc.platform || "facebook").toLowerCase();
+          let avatarUrl = acc.avatar;
+          if (!avatarUrl && acc.targetId && (provider === "facebook" || provider === "instagram")) {
+            avatarUrl = `https://graph.facebook.com/${acc.targetId}/picture?type=large`;
+          }
+          if (!avatarUrl) {
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(acc.name || "User")}&background=2F8587&color=fff`;
+          }
 
-            return {
-              id: acc.id,
-              internalId: acc.targetId,
-              name: acc.name || "Connected Account",
-              provider,
-              handle: "@" + (acc.name || "account").toLowerCase().replace(/\s+/g, ""),
-              avatar: avatarUrl,
-            };
-          });
-          setAccounts(mapped);
-          setSelectedAccountIds([mapped[0].id]);
-        } else {
-          useMockAccounts();
-        }
+          return {
+            id: acc.id,
+            internalId: acc.targetId,
+            name: acc.name || "Connected Account",
+            provider,
+            handle: "@" + (acc.name || "account").toLowerCase().replace(/\s+/g, ""),
+            avatar: avatarUrl,
+          };
+        });
+        setAccounts(mapped);
+        if (mapped.length > 0) setSelectedAccountIds([mapped[0].id]);
       })
       .catch(() => {
-        useMockAccounts();
+        setAccounts([]);
       })
       .finally(() => setLoadingAccounts(false));
-
-    function useMockAccounts() {
-      const mockAccounts: AccountItem[] = [
-        {
-          id: "acc_fb_1",
-          name: "AutoSocial Brand",
-          provider: "facebook",
-          handle: "@autosocial",
-          avatar:
-            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop",
-        },
-        {
-          id: "acc_ig_1",
-          name: "autosocial_app",
-          provider: "instagram",
-          handle: "@autosocial_app",
-          avatar:
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-        },
-        {
-          id: "acc_li_1",
-          name: "AutoSocial Technologies",
-          provider: "linkedin",
-          handle: "company/autosocial",
-          avatar:
-            "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&h=100&fit=crop",
-        },
-        {
-          id: "acc_x_1",
-          name: "AutoSocial",
-          provider: "x",
-          handle: "@autosocial",
-          avatar:
-            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
-        },
-      ];
-      setAccounts(mockAccounts);
-      setSelectedAccountIds([mockAccounts[0].id]);
-    }
   }, []);
 
   // Update active preview platform when account selection changes
@@ -333,19 +280,28 @@ export function useCreatePost() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Toggle placement
-  const toggleShareToPlacement = (placementId: string) => {
-    setShareToPlacements((prev) => ({
-      ...prev,
-      [placementId]: !prev[placementId],
-    }));
-  };
-
   // Toast notification helper
   const showToast = (type: "success" | "error" | "info", message: string) => {
     setToastMessage({ type, text: message });
     setTimeout(() => setToastMessage(null), 4000);
   };
+
+  // Character limit that actually binds: the strictest limit among the
+  // selected accounts (e.g. X's 280 beats Facebook's 63,206). Publishing
+  // over a platform's limit fails server-side, so enforce it here.
+  const effectiveMaxChars = (() => {
+    const selected = accounts.filter((a) => selectedAccountIds.includes(a.id));
+    if (selected.length === 0) {
+      const fallback = PLATFORMS_CONFIG[activePreviewPlatform] || PLATFORMS_CONFIG.facebook;
+      return { limit: fallback.maxCharacters, platform: fallback.name };
+    }
+    let strictest = PLATFORMS_CONFIG[selected[0].provider] || PLATFORMS_CONFIG.facebook;
+    for (const acc of selected) {
+      const cfg = PLATFORMS_CONFIG[acc.provider];
+      if (cfg && cfg.maxCharacters < strictest.maxCharacters) strictest = cfg;
+    }
+    return { limit: strictest.maxCharacters, platform: strictest.name };
+  })();
 
   // Validate form
   const validateForm = (): boolean => {
@@ -357,6 +313,8 @@ export function useCreatePost() {
 
     if (!text.trim() && mediaList.length === 0) {
       errors.content = "Please enter some text or add a photo/video before publishing.";
+    } else if (text.length > effectiveMaxChars.limit) {
+      errors.content = `Text is ${text.length - effectiveMaxChars.limit} characters over the ${effectiveMaxChars.platform} limit (${effectiveMaxChars.limit}). Shorten it or remove ${effectiveMaxChars.platform} from the selected accounts.`;
     }
 
     if (isScheduleOn && (!scheduleDate || !scheduleTime)) {
@@ -413,9 +371,6 @@ export function useCreatePost() {
           integrationId,
           content: fullContent,
           settings: {
-            isAdPost,
-            privacySetting,
-            shareToPlacements,
             scheduledFor: scheduledAt ? scheduledAt.toISOString() : undefined,
           },
           media: mediaPayload,
@@ -449,17 +404,18 @@ export function useCreatePost() {
     }
   };
 
-  // Cancel action
+  // Cancel action — opens the discard-changes dialog (rendered by the page)
   const handleCancel = () => {
     if (hasChangesRef.current || text.trim() || mediaList.length > 0) {
-      if (
-        window.confirm("You have unsaved changes. Are you sure you want to discard them and exit?")
-      ) {
-        navigate("/dashboard");
-      }
+      setConfirmCancelOpen(true);
     } else {
       navigate("/dashboard");
     }
+  };
+
+  const confirmCancel = () => {
+    setConfirmCancelOpen(false);
+    navigate("/dashboard");
   };
 
   const selectedAccounts = accounts.filter((a) => selectedAccountIds.includes(a.id));
@@ -480,13 +436,12 @@ export function useCreatePost() {
     reorderMedia,
 
     // Details
-    isAdPost,
-    setIsAdPost,
     text,
     setText,
     applyAiRewrite,
     undoAiRewrite,
     canUndoAi: undoHistory.length > 0,
+    effectiveMaxChars,
 
     // Schedule
     isScheduleOn,
@@ -496,17 +451,14 @@ export function useCreatePost() {
     scheduleTime,
     setScheduleTime,
 
-    // Share to & Privacy
-    shareToPlacements,
-    toggleShareToPlacement,
-    privacySetting,
-    setPrivacySetting,
-
     // Action Bar & Save
     isSaving,
     lastSaved,
     handlePublish,
     handleCancel,
+    confirmCancelOpen,
+    setConfirmCancelOpen,
+    confirmCancel,
 
     // Preview
     activePreviewPlatform,

@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { ModuleLoader } from "./ModuleLoader";
 import { NotFoundPage } from "./NotFoundPage";
+import { HomePage } from "./HomePage";
 
 const AuthRoutes = lazy(() => import("@/features/auth/routes"));
 const DashboardRoutes = lazy(() => import("@/features/dashboard/routes"));
@@ -13,6 +14,10 @@ const OAuthCallbackPage = lazy(() =>
 );
 
 export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+  },
   {
     path: "/*",
     element: (
